@@ -1,0 +1,659 @@
+'use client'
+
+import { useState } from 'react'
+import Navbar from '@/components/layout/Navbar'
+import Footer from '@/components/layout/Footer'
+import { SERVICES, LANGUAGES, DAY_NAMES } from '@/lib/mock-data'
+import {
+  IconCircleCheck,
+  IconUpload,
+  IconCheck,
+  IconShieldCheck,
+} from '@tabler/icons-react'
+
+// ─── Types ───────────────────────────────────────────────────────────────────
+
+interface HoursRow {
+  closed: boolean
+  open: string
+  close: string
+}
+
+interface FormData {
+  // Step 1
+  email: string
+  password: string
+  passwordConfirm: string
+  // Step 2
+  garagenaam: string
+  adres: string
+  stad: string
+  telefoon: string
+  bedrijfsEmail: string
+  website: string
+  services: string[]
+  languages: string[]
+  // Step 3
+  kvkNumber: string
+  // Step 4
+  description: string
+  // hours: indexed by day number (0=Sun … 6=Sat), Mon-Sun order rendered separately
+  hours: Record<number, HoursRow>
+}
+
+// ─── Constants ───────────────────────────────────────────────────────────────
+
+// Mon=1 … Sun=0 displayed in Mon-Sun order
+const WEEKDAYS_ORDER = [1, 2, 3, 4, 5, 6, 0]
+
+const defaultHours: Record<number, HoursRow> = {
+  0: { closed: true, open: '', close: '' },
+  1: { closed: false, open: '08:00', close: '17:30' },
+  2: { closed: false, open: '08:00', close: '17:30' },
+  3: { closed: false, open: '08:00', close: '17:30' },
+  4: { closed: false, open: '08:00', close: '17:30' },
+  5: { closed: false, open: '08:00', close: '17:00' },
+  6: { closed: true, open: '', close: '' },
+}
+
+const STEP_LABELS = ['Account', 'Bedrijfsgegevens', 'KVK verificatie', 'Profiel']
+
+// ─── Component ───────────────────────────────────────────────────────────────
+
+export default function GarageAanmeldenPage() {
+  const [step, setStep] = useState(1)
+  const [kvkVerifying, setKvkVerifying] = useState(false)
+  const [kvkVerified, setKvkVerified] = useState(false)
+  const [kvkBusinessName, setKvkBusinessName] = useState('')
+
+  const [formData, setFormData] = useState<FormData>({
+    email: '',
+    password: '',
+    passwordConfirm: '',
+    garagenaam: '',
+    adres: '',
+    stad: '',
+    telefoon: '',
+    bedrijfsEmail: '',
+    website: '',
+    services: [],
+    languages: [],
+    kvkNumber: '',
+    description: '',
+    hours: defaultHours,
+  })
+
+  // ─── Helpers ───────────────────────────────────────────────────────────────
+
+  function set<K extends keyof FormData>(key: K, value: FormData[K]) {
+    setFormData(prev => ({ ...prev, [key]: value }))
+  }
+
+  function toggleChip(field: 'services' | 'languages', value: string) {
+    setFormData(prev => {
+      const arr = prev[field]
+      return {
+        ...prev,
+        [field]: arr.includes(value) ? arr.filter(v => v !== value) : [...arr, value],
+      }
+    })
+  }
+
+  function updateHours(day: number, patch: Partial<HoursRow>) {
+    setFormData(prev => ({
+      ...prev,
+      hours: {
+        ...prev.hours,
+        [day]: { ...prev.hours[day], ...patch },
+      },
+    }))
+  }
+
+  function handleKvkVerify() {
+    if (!formData.kvkNumber || formData.kvkNumber.length < 8) return
+    setKvkVerifying(true)
+    setTimeout(() => {
+      setKvkVerifying(false)
+      setKvkVerified(true)
+      setKvkBusinessName(formData.garagenaam || 'Uw Garage B.V.')
+    }, 1000)
+  }
+
+  // ─── Step indicator ────────────────────────────────────────────────────────
+
+  function StepLabel({ index }: { index: number }) {
+    const num = index + 1
+    const isDone = step > num
+    const isActive = step === num
+    return (
+      <span
+        className={`text-[11px] font-sans ${
+          isDone
+            ? 'text-neutral-900'
+            : isActive
+            ? 'text-primary font-bold'
+            : 'text-neutral-300'
+        }`}
+      >
+        {STEP_LABELS[index]}
+      </span>
+    )
+  }
+
+  // ─── Chip ──────────────────────────────────────────────────────────────────
+
+  function Chip({
+    label,
+    selected,
+    onClick,
+  }: {
+    label: string
+    selected: boolean
+    onClick: () => void
+  }) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        className={`rounded-full px-3 py-[6px] text-[13px] font-sans transition-colors duration-150 ${
+          selected
+            ? 'bg-primary text-white border border-primary'
+            : 'border border-neutral-100 text-neutral-900 hover:border-primary'
+        }`}
+      >
+        {label}
+      </button>
+    )
+  }
+
+  // ─── Step content ──────────────────────────────────────────────────────────
+
+  function StepOne() {
+    return (
+      <div className="flex flex-col gap-5">
+        <h2 className="text-[22px] sm:text-[26px] font-normal font-serif text-neutral-900">
+          Maak een account aan
+        </h2>
+        <div className="flex flex-col gap-4">
+          <div>
+            <label className="block text-[13px] font-sans text-neutral-900 mb-1">
+              E-mailadres
+            </label>
+            <input
+              type="email"
+              className="input-field"
+              placeholder="uw@email.nl"
+              value={formData.email}
+              onChange={e => set('email', e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="block text-[13px] font-sans text-neutral-900 mb-1">
+              Wachtwoord
+            </label>
+            <input
+              type="password"
+              className="input-field"
+              placeholder="Minimaal 8 tekens"
+              value={formData.password}
+              onChange={e => set('password', e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="block text-[13px] font-sans text-neutral-900 mb-1">
+              Wachtwoord bevestigen
+            </label>
+            <input
+              type="password"
+              className="input-field"
+              placeholder="Herhaal uw wachtwoord"
+              value={formData.passwordConfirm}
+              onChange={e => set('passwordConfirm', e.target.value)}
+            />
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  function StepTwo() {
+    return (
+      <div className="flex flex-col gap-5">
+        <h2 className="text-[22px] sm:text-[26px] font-normal font-serif text-neutral-900">
+          Uw bedrijfsgegevens
+        </h2>
+        <div className="flex flex-col gap-4">
+          <div>
+            <label className="block text-[13px] font-sans text-neutral-900 mb-1">
+              Garagenaam
+            </label>
+            <input
+              type="text"
+              className="input-field"
+              placeholder="Naam van uw garage"
+              value={formData.garagenaam}
+              onChange={e => set('garagenaam', e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="block text-[13px] font-sans text-neutral-900 mb-1">
+              Adres
+            </label>
+            <input
+              type="text"
+              className="input-field"
+              placeholder="Straatnaam en huisnummer"
+              value={formData.adres}
+              onChange={e => set('adres', e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="block text-[13px] font-sans text-neutral-900 mb-1">
+              Stad
+            </label>
+            <input
+              type="text"
+              className="input-field"
+              placeholder="Plaatsnaam"
+              value={formData.stad}
+              onChange={e => set('stad', e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="block text-[13px] font-sans text-neutral-900 mb-1">
+              Telefoonnummer
+            </label>
+            <input
+              type="tel"
+              className="input-field"
+              placeholder="010-123-4567"
+              value={formData.telefoon}
+              onChange={e => set('telefoon', e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="block text-[13px] font-sans text-neutral-900 mb-1">
+              E-mailadres garage
+            </label>
+            <input
+              type="email"
+              className="input-field"
+              placeholder="info@uwgarage.nl"
+              value={formData.bedrijfsEmail}
+              onChange={e => set('bedrijfsEmail', e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="block text-[13px] font-sans text-neutral-900 mb-1">
+              Website{' '}
+              <span className="text-neutral-300 font-normal">(optioneel)</span>
+            </label>
+            <input
+              type="url"
+              className="input-field"
+              placeholder="www.uwgarage.nl"
+              value={formData.website}
+              onChange={e => set('website', e.target.value)}
+            />
+          </div>
+
+          {/* Diensten */}
+          <div>
+            <label className="block text-[13px] font-sans text-neutral-900 mb-2">
+              Diensten
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {SERVICES.map(service => (
+                <Chip
+                  key={service}
+                  label={service}
+                  selected={formData.services.includes(service)}
+                  onClick={() => toggleChip('services', service)}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Talen */}
+          <div>
+            <label className="block text-[13px] font-sans text-neutral-900 mb-2">
+              Talen
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {LANGUAGES.map(lang => (
+                <Chip
+                  key={lang}
+                  label={lang}
+                  selected={formData.languages.includes(lang)}
+                  onClick={() => toggleChip('languages', lang)}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  function StepThree() {
+    return (
+      <div className="flex flex-col gap-5">
+        <h2 className="text-[22px] sm:text-[26px] font-normal font-serif text-neutral-900">
+          KVK verificatie
+        </h2>
+        <p className="text-[14px] font-sans text-neutral-500 leading-relaxed">
+          Om uw garage te registreren op TrustGarage.nl vragen wij u uw KVK-nummer te
+          verifiëren. Dit waarborgt de betrouwbaarheid van ons platform voor zowel
+          garages als klanten. Uw KVK-nummer bestaat uit 8 cijfers en is te vinden op
+          uw KVK-uittreksel.
+        </p>
+
+        <div className="border-[1.5px] border-primary bg-[#F7FDF9] rounded-[9px] p-4 flex flex-col gap-4">
+          <div>
+            <label className="block text-[13px] font-sans text-neutral-900 mb-1">
+              KVK-nummer
+            </label>
+            <input
+              type="text"
+              className="input-field font-mono tracking-widest"
+              placeholder="12345678"
+              maxLength={8}
+              value={formData.kvkNumber}
+              onChange={e => {
+                setKvkVerified(false)
+                set('kvkNumber', e.target.value.replace(/\D/g, ''))
+              }}
+            />
+          </div>
+
+          {kvkVerified ? (
+            <div className="flex items-center gap-2 text-primary text-[14px] font-sans font-medium">
+              <IconCircleCheck size={20} className="text-primary flex-shrink-0" />
+              Geverifieerd: {kvkBusinessName}
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={handleKvkVerify}
+              disabled={kvkVerifying || formData.kvkNumber.length < 8}
+              className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {kvkVerifying ? 'Bezig met verifiëren…' : 'Verifieer KVK'}
+            </button>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  function StepFour() {
+    return (
+      <div className="flex flex-col gap-6">
+        <h2 className="text-[22px] sm:text-[26px] font-normal font-serif text-neutral-900">
+          Profiel afwerken
+        </h2>
+
+        {/* Description */}
+        <div>
+          <label className="block text-[13px] font-sans text-neutral-900 mb-1">
+            Beschrijving
+          </label>
+          <textarea
+            className="input-field min-h-[100px] resize-y"
+            placeholder="Vertel klanten over uw garage, specialisaties en wat u onderscheidt…"
+            value={formData.description}
+            onChange={e => set('description', e.target.value)}
+          />
+        </div>
+
+        {/* Photo upload */}
+        <div>
+          <label className="block text-[13px] font-sans text-neutral-900 mb-2">
+            Foto&#39;s
+          </label>
+          <div className="border-2 border-dashed border-neutral-100 rounded-xl p-8 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-primary hover:bg-[#F7FDF9] transition-colors duration-150">
+            <IconUpload size={28} className="text-neutral-300" />
+            <span className="text-[13px] font-sans text-neutral-500">
+              Klik om foto&#39;s te uploaden
+            </span>
+            <span className="text-[11px] font-sans text-neutral-300">
+              PNG, JPG tot 5 MB
+            </span>
+          </div>
+        </div>
+
+        {/* Openingstijden */}
+        <div>
+          <label className="block text-[13px] font-sans text-neutral-900 mb-3">
+            Openingstijden
+          </label>
+          <div className="flex flex-col gap-2">
+            {WEEKDAYS_ORDER.map(dayNum => {
+              const row = formData.hours[dayNum]
+              const dayLabel = DAY_NAMES[dayNum]
+              return (
+                <div
+                  key={dayNum}
+                  className="flex items-center gap-3 py-2 border-b border-neutral-100 last:border-0"
+                >
+                  {/* Day name */}
+                  <span className="w-[88px] text-[13px] font-sans text-neutral-900 flex-shrink-0">
+                    {dayLabel}
+                  </span>
+
+                  {/* Gesloten toggle */}
+                  <button
+                    type="button"
+                    onClick={() =>
+                      updateHours(dayNum, {
+                        closed: !row.closed,
+                        open: row.closed ? '08:00' : '',
+                        close: row.closed ? '17:00' : '',
+                      })
+                    }
+                    className={`text-[12px] font-sans px-3 py-[5px] rounded-full border transition-colors duration-150 flex-shrink-0 ${
+                      row.closed
+                        ? 'bg-neutral-100 border-neutral-100 text-neutral-500'
+                        : 'bg-primary-light border-primary text-primary'
+                    }`}
+                  >
+                    {row.closed ? 'Gesloten' : 'Open'}
+                  </button>
+
+                  {/* Time inputs */}
+                  <div className="flex items-center gap-2 flex-1">
+                    <input
+                      type="time"
+                      className="input-field py-[5px] text-[13px] flex-1 min-w-0 disabled:opacity-40 disabled:cursor-not-allowed"
+                      value={row.open}
+                      disabled={row.closed}
+                      onChange={e => updateHours(dayNum, { open: e.target.value })}
+                    />
+                    <span className="text-neutral-300 text-[13px] flex-shrink-0">–</span>
+                    <input
+                      type="time"
+                      className="input-field py-[5px] text-[13px] flex-1 min-w-0 disabled:opacity-40 disabled:cursor-not-allowed"
+                      value={row.close}
+                      disabled={row.closed}
+                      onChange={e => updateHours(dayNum, { close: e.target.value })}
+                    />
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // ─── Sidebar ───────────────────────────────────────────────────────────────
+
+  function Sidebar() {
+    const steps = STEP_LABELS
+    return (
+      <aside className="hidden lg:flex flex-col gap-5 w-[300px] flex-shrink-0">
+        {/* Progress list */}
+        <div className="card p-5 flex flex-col gap-3">
+          <p className="text-[13px] font-sans font-medium text-neutral-900 mb-1">
+            Voortgang
+          </p>
+          {steps.map((label, i) => {
+            const num = i + 1
+            const isDone = step > num
+            const isActive = step === num
+            return (
+              <div key={num} className="flex items-center gap-3">
+                <div
+                  className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 border-2 transition-colors duration-150 ${
+                    isDone
+                      ? 'bg-primary border-primary'
+                      : isActive
+                      ? 'border-primary bg-white'
+                      : 'border-neutral-100 bg-white'
+                  }`}
+                >
+                  {isDone ? (
+                    <IconCheck size={13} className="text-white" />
+                  ) : isActive ? (
+                    <div className="w-2.5 h-2.5 rounded-full bg-primary" />
+                  ) : null}
+                </div>
+                <span
+                  className={`text-[13px] font-sans ${
+                    isDone
+                      ? 'text-neutral-900'
+                      : isActive
+                      ? 'text-primary font-medium'
+                      : 'text-neutral-300'
+                  }`}
+                >
+                  {label}
+                </span>
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Plan preview */}
+        <div className="card p-5 flex flex-col gap-4">
+          <div className="flex items-center gap-2">
+            <IconShieldCheck size={18} className="text-primary" />
+            <p className="text-[15px] font-sans font-medium text-neutral-900">
+              Gratis plan
+            </p>
+          </div>
+          <ul className="flex flex-col gap-2">
+            {[
+              'Vermeld op TrustGarage.nl',
+              'Klantbeoordelingen ontvangen',
+              'Openingstijden en diensten',
+              'KVK-geverifieerd badge',
+              'Contactgegevens zichtbaar',
+            ].map(item => (
+              <li key={item} className="flex items-start gap-2 text-[13px] font-sans text-neutral-500">
+                <IconCircleCheck size={15} className="text-primary mt-[2px] flex-shrink-0" />
+                {item}
+              </li>
+            ))}
+          </ul>
+          <button
+            type="button"
+            className="btn-primary w-full text-[13px] mt-1"
+          >
+            Upgrade naar Premium
+          </button>
+        </div>
+      </aside>
+    )
+  }
+
+  // ─── Render ────────────────────────────────────────────────────────────────
+
+  return (
+    <div className="min-h-screen bg-surface flex flex-col">
+      <Navbar />
+
+      {/* Progress bar */}
+      <div className="bg-white border-b border-neutral-100">
+        <div className="max-w-site mx-auto px-4 sm:px-6">
+          {/* Segment bar */}
+          <div className="flex gap-[3px] pt-3">
+            {[1, 2, 3, 4].map(n => (
+              <div
+                key={n}
+                className={`flex-1 h-[4px] rounded-full transition-colors duration-300 ${
+                  step >= n ? 'bg-primary' : 'bg-neutral-100'
+                }`}
+              />
+            ))}
+          </div>
+          {/* Step labels */}
+          <div className="flex pb-3 pt-[6px]">
+            {STEP_LABELS.map((label, i) => (
+              <div key={label} className="flex-1">
+                <StepLabel index={i} />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Main content */}
+      <main className="flex-1 max-w-site mx-auto px-4 sm:px-6 py-8 w-full">
+        <div className="flex gap-8 items-start">
+          {/* Form panel */}
+          <div className="flex-1 min-w-0">
+            <div className="bg-white border border-neutral-100 rounded-xl shadow-card p-6 sm:p-8">
+              {step === 1 && <StepOne />}
+              {step === 2 && <StepTwo />}
+              {step === 3 && <StepThree />}
+              {step === 4 && <StepFour />}
+
+              {/* Navigation buttons */}
+              <div className="border-t border-neutral-100 mt-6 pt-4 flex justify-between items-center">
+                {step > 1 ? (
+                  <button
+                    type="button"
+                    onClick={() => setStep(s => s - 1)}
+                    className="btn-ghost"
+                  >
+                    Terug
+                  </button>
+                ) : (
+                  <div />
+                )}
+
+                {step < 4 ? (
+                  <button
+                    type="button"
+                    onClick={() => setStep(s => s + 1)}
+                    className="btn-primary"
+                  >
+                    Volgende
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      // Mock submit
+                      alert('Uw profiel is aangemaakt!')
+                    }}
+                    className="btn-primary"
+                  >
+                    Profiel aanmaken
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Sidebar: only on step 4 */}
+          {step === 4 && <Sidebar />}
+        </div>
+      </main>
+
+      <Footer />
+    </div>
+  )
+}

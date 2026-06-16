@@ -1,0 +1,82 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary: #0F6E56;
+  --primary-dark: #085041;
+  --primary-light: #E1F5EE;
+}
+
+@layer base {
+  html {
+    font-family: system-ui, Arial, sans-serif;
+    color: #1A1A1A;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary text-white rounded-md px-5 py-[10px] text-[14px] font-medium transition-colors duration-150 hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply bg-transparent text-primary border border-primary rounded-md px-5 py-[10px] text-[14px] font-medium transition-colors duration-150 hover:bg-primary-light disabled:opacity-50;
+  }
+
+  .btn-ghost {
+    @apply bg-transparent text-neutral-900 border border-neutral-100 rounded-md px-5 py-[10px] text-[14px] font-medium transition-colors duration-150 hover:bg-surface disabled:opacity-50;
+  }
+
+  .btn-danger {
+    @apply bg-transparent text-danger border border-red-200 rounded-md px-5 py-[10px] text-[14px] font-medium transition-colors duration-150 hover:bg-red-50;
+  }
+
+  .input-field {
+    @apply w-full h-[40px] px-3 border border-[#D8D8D8] rounded-md bg-white text-[14px] text-neutral-900 outline-none transition-all duration-100;
+    @apply hover:border-neutral-300 focus:border-primary focus:shadow-[0_0_0_3px_rgba(15,110,86,0.12)];
+  }
+
+  .input-field::placeholder {
+    @apply text-neutral-300;
+  }
+
+  .badge-kvk {
+    @apply inline-flex items-center gap-1 bg-primary-light text-primary text-[11px] font-medium px-2 py-[3px] rounded-sm;
+  }
+
+  .badge-english {
+    @apply inline-flex items-center gap-1 bg-info-light text-info text-[11px] font-medium px-2 py-[3px] rounded-sm;
+  }
+
+  .badge-service {
+    @apply inline-flex items-center bg-[#F5F5F5] text-neutral-500 text-[11px] px-2 py-[3px] rounded-sm;
+  }
+
+  .badge-premium {
+    @apply inline-flex items-center bg-[#FAEEDA] text-[#633806] text-[11px] font-medium px-2 py-[3px] rounded-sm;
+  }
+
+  .card {
+    @apply bg-white border border-neutral-100 rounded-xl shadow-card transition-all duration-150 hover:shadow-card-hover hover:border-neutral-300;
+  }
+
+  .star {
+    color: #EF9F27;
+  }
+}
+
+@layer utilities {
+  .page-fade-in {
+    animation: fadeIn 300ms ease-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+}
