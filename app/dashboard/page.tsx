@@ -82,7 +82,7 @@ function DashboardSidebar({ onClose }: { onClose?: () => void }) {
   )
 }
 
-export function DashboardLayout({ children }: { children: React.ReactNode }) {
+function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false)
 
   return (

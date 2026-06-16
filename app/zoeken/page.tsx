@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
@@ -19,7 +19,7 @@ import type { Garage } from '@/types'
 
 const RESULTS_PER_PAGE = 10
 
-export default function ZoekenPage() {
+function ZoekenContent() {
   const searchParams = useSearchParams()
   const initialQuery = searchParams.get('q') ?? ''
 
@@ -548,5 +548,13 @@ export default function ZoekenPage() {
 
       <Footer />
     </>
+  )
+}
+
+export default function ZoekenPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-surface flex items-center justify-center text-neutral-500">Laden...</div>}>
+      <ZoekenContent />
+    </Suspense>
   )
 }
