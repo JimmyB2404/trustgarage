@@ -1,18 +1,29 @@
 'use client'
 import { useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { usePathname } from 'next/navigation'
-import { IconMenu2, IconX } from '@tabler/icons-react'
+import { IconMenu2, IconX, IconUser } from '@tabler/icons-react'
+import { useAuth } from '@/context/AuthContext'
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const pathname = usePathname()
+  const router = useRouter()
+  const { user, loading, signOut } = useAuth()
 
   const navLinks = [
     { href: '/zoeken', label: 'Zoek een garage' },
     { href: '/voor-garages', label: 'Voor garages' },
     { href: '/over-ons', label: 'Over ons' },
   ]
+
+  async function handleSignOut() {
+    await signOut()
+    router.push('/')
+    router.refresh()
+    setMobileOpen(false)
+  }
 
   return (
     <>
@@ -38,12 +49,32 @@ export default function Navbar() {
 
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center gap-2">
-            <Link href="/inloggen" className="btn-ghost text-[13px] py-[7px] px-4 rounded-md">
-              Inloggen
-            </Link>
-            <Link href="/registreren" className="btn-primary text-[13px] py-[7px] px-4 rounded-md">
-              Aanmelden
-            </Link>
+            {!loading && user ? (
+              <>
+                <Link
+                  href="/dashboard"
+                  className="flex items-center gap-1.5 text-[13px] text-neutral-500 hover:text-neutral-900 transition-colors px-3 py-[7px]"
+                >
+                  <IconUser size={15} />
+                  Dashboard
+                </Link>
+                <button
+                  onClick={handleSignOut}
+                  className="btn-ghost text-[13px] py-[7px] px-4 rounded-md"
+                >
+                  Uitloggen
+                </button>
+              </>
+            ) : (
+              <>
+                <Link href="/inloggen" className="btn-ghost text-[13px] py-[7px] px-4 rounded-md">
+                  Inloggen
+                </Link>
+                <Link href="/registreren" className="btn-primary text-[13px] py-[7px] px-4 rounded-md">
+                  Aanmelden
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile hamburger */}
@@ -80,12 +111,29 @@ export default function Navbar() {
               </Link>
             ))}
             <div className="mt-auto flex flex-col gap-3">
-              <Link href="/inloggen" onClick={() => setMobileOpen(false)} className="btn-ghost text-center w-full">
-                Inloggen
-              </Link>
-              <Link href="/registreren" onClick={() => setMobileOpen(false)} className="btn-primary text-center w-full">
-                Aanmelden
-              </Link>
+              {!loading && user ? (
+                <>
+                  <Link
+                    href="/dashboard"
+                    onClick={() => setMobileOpen(false)}
+                    className="btn-ghost text-center w-full"
+                  >
+                    Dashboard
+                  </Link>
+                  <button onClick={handleSignOut} className="btn-danger text-center w-full">
+                    Uitloggen
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link href="/inloggen" onClick={() => setMobileOpen(false)} className="btn-ghost text-center w-full">
+                    Inloggen
+                  </Link>
+                  <Link href="/registreren" onClick={() => setMobileOpen(false)} className="btn-primary text-center w-full">
+                    Aanmelden
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>

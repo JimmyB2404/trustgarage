@@ -1,25 +1,38 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { IconCircleCheck } from '@tabler/icons-react'
+import { IconCircleCheck, IconAlertCircle } from '@tabler/icons-react'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
+import { createClient } from '@/lib/supabase'
 
 export default function InloggenPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  const router = useRouter()
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
-    // Supabase auth not yet configured — simulate success
-    setTimeout(() => {
+    setError(null)
+
+    const supabase = createClient()
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
+
+    if (error) {
+      setError('E-mailadres of wachtwoord is onjuist.')
       setLoading(false)
-      setSuccess(true)
-    }, 800)
+      return
+    }
+
+    setSuccess(true)
+    router.push('/dashboard')
+    router.refresh()
   }
 
   return (
@@ -39,7 +52,15 @@ export default function InloggenPage() {
               </h1>
             </div>
 
-            {/* Success state */}
+            {/* Error */}
+            {error && (
+              <div className="flex items-center gap-2 bg-red-50 text-danger text-[13px] font-medium px-4 py-3 rounded-lg mb-5">
+                <IconAlertCircle size={17} className="shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
+
+            {/* Success */}
             {success && (
               <div className="flex items-center gap-2 bg-primary-light text-primary text-[13px] font-medium px-4 py-3 rounded-lg mb-5">
                 <IconCircleCheck size={17} className="shrink-0" />

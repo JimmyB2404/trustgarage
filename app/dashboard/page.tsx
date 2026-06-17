@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import {
   IconChartBar,
   IconStar,
@@ -14,6 +14,7 @@ import {
   IconLogout,
 } from '@tabler/icons-react'
 import { cn } from '@/lib/utils'
+import { useAuth } from '@/context/AuthContext'
 
 // ─── Shared Dashboard Layout ─────────────────────────────────────────────────
 
@@ -26,6 +27,15 @@ const navItems = [
 
 function DashboardSidebar({ onClose }: { onClose?: () => void }) {
   const pathname = usePathname()
+  const router = useRouter()
+  const { signOut } = useAuth()
+
+  async function handleSignOut() {
+    await signOut()
+    router.push('/')
+    router.refresh()
+    onClose?.()
+  }
 
   return (
     <div className="flex flex-col h-full py-4 px-3">
@@ -73,7 +83,10 @@ function DashboardSidebar({ onClose }: { onClose?: () => void }) {
 
       {/* Uitloggen */}
       <div className="mt-auto border-t border-neutral-100 pt-3">
-        <button className="flex items-center gap-2 px-3 py-2 rounded-md text-[14px] text-danger hover:bg-red-50 w-full transition-colors duration-150">
+        <button
+          onClick={handleSignOut}
+          className="flex items-center gap-2 px-3 py-2 rounded-md text-[14px] text-danger hover:bg-red-50 w-full transition-colors duration-150"
+        >
           <IconLogout size={16} />
           Uitloggen
         </button>

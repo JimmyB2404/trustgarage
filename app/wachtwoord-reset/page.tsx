@@ -2,23 +2,35 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { IconCircleCheck, IconArrowLeft } from '@tabler/icons-react'
+import { IconCircleCheck, IconArrowLeft, IconAlertCircle } from '@tabler/icons-react'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
+import { createClient } from '@/lib/supabase'
 
 export default function WachtwoordResetPage() {
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
-    // Supabase auth not yet configured — simulate success
-    setTimeout(() => {
+    setError(null)
+
+    const supabase = createClient()
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/account/nieuw-wachtwoord`,
+    })
+
+    if (error) {
+      setError('Er is iets misgegaan. Controleer het e-mailadres en probeer opnieuw.')
       setLoading(false)
-      setSuccess(true)
-    }, 800)
+      return
+    }
+
+    setSuccess(true)
+    setLoading(false)
   }
 
   return (
@@ -43,7 +55,15 @@ export default function WachtwoordResetPage() {
               Vul uw e-mailadres in. U ontvangt een link om uw wachtwoord te resetten.
             </p>
 
-            {/* Success state */}
+            {/* Error */}
+            {error && (
+              <div className="flex items-center gap-2 bg-red-50 text-danger text-[13px] font-medium px-4 py-3 rounded-lg mb-5">
+                <IconAlertCircle size={17} className="shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
+
+            {/* Success */}
             {success && (
               <div className="flex items-center gap-2 bg-primary-light text-primary text-[13px] font-medium px-4 py-3 rounded-lg mb-5">
                 <IconCircleCheck size={17} className="shrink-0" />
@@ -51,33 +71,35 @@ export default function WachtwoordResetPage() {
               </div>
             )}
 
-            <form onSubmit={handleSubmit} noValidate>
-              {/* Email */}
-              <div className="mb-1">
-                <label htmlFor="email" className="block text-[13px] font-medium text-neutral-900 mb-1">
-                  E-mailadres
-                </label>
-                <input
-                  id="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  placeholder="uw@email.nl"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  className="input-field"
-                />
-              </div>
+            {!success && (
+              <form onSubmit={handleSubmit} noValidate>
+                {/* Email */}
+                <div className="mb-1">
+                  <label htmlFor="email" className="block text-[13px] font-medium text-neutral-900 mb-1">
+                    E-mailadres
+                  </label>
+                  <input
+                    id="email"
+                    type="email"
+                    autoComplete="email"
+                    required
+                    placeholder="uw@email.nl"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    className="input-field"
+                  />
+                </div>
 
-              {/* Submit */}
-              <button
-                type="submit"
-                disabled={loading || success}
-                className="btn-primary w-full mt-6"
-              >
-                {loading ? 'Versturen...' : 'Reset link versturen'}
-              </button>
-            </form>
+                {/* Submit */}
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="btn-primary w-full mt-6"
+                >
+                  {loading ? 'Versturen...' : 'Reset link versturen'}
+                </button>
+              </form>
+            )}
 
             {/* Back to login */}
             <div className="mt-6 text-center">

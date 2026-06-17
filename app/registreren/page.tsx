@@ -2,9 +2,10 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { IconCircleCheck } from '@tabler/icons-react'
+import { IconCircleCheck, IconAlertCircle } from '@tabler/icons-react'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
+import { createClient } from '@/lib/supabase'
 
 export default function RegistrerenPage() {
   const [naam, setNaam] = useState('')
@@ -12,16 +13,41 @@ export default function RegistrerenPage() {
   const [password, setPassword] = useState('')
   const [passwordConfirm, setPasswordConfirm] = useState('')
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    setError(null)
+
+    if (password !== passwordConfirm) {
+      setError('Wachtwoorden komen niet overeen.')
+      return
+    }
+
+    if (password.length < 8) {
+      setError('Wachtwoord moet minimaal 8 tekens bevatten.')
+      return
+    }
+
     setLoading(true)
-    // Supabase auth not yet configured — simulate success
-    setTimeout(() => {
+
+    const supabase = createClient()
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { name: naam },
+      },
+    })
+
+    if (error) {
+      setError('Er is iets misgegaan. Probeer het opnieuw.')
       setLoading(false)
-      setSuccess(true)
-    }, 800)
+      return
+    }
+
+    setSuccess(true)
   }
 
   return (
@@ -41,92 +67,107 @@ export default function RegistrerenPage() {
               </h1>
             </div>
 
-            {/* Success state */}
-            {success && (
-              <div className="flex items-center gap-2 bg-primary-light text-primary text-[13px] font-medium px-4 py-3 rounded-lg mb-5">
-                <IconCircleCheck size={17} className="shrink-0" />
-                <span>Account aangemaakt! Controleer uw e-mail om te bevestigen.</span>
+            {/* Error */}
+            {error && (
+              <div className="flex items-center gap-2 bg-red-50 text-danger text-[13px] font-medium px-4 py-3 rounded-lg mb-5">
+                <IconAlertCircle size={17} className="shrink-0" />
+                <span>{error}</span>
               </div>
             )}
 
-            <form onSubmit={handleSubmit} noValidate>
-              {/* Naam */}
-              <div className="mb-4">
-                <label htmlFor="naam" className="block text-[13px] font-medium text-neutral-900 mb-1">
-                  Volledige naam
-                </label>
-                <input
-                  id="naam"
-                  type="text"
-                  autoComplete="name"
-                  required
-                  placeholder="Jan de Vries"
-                  value={naam}
-                  onChange={e => setNaam(e.target.value)}
-                  className="input-field"
-                />
+            {/* Success */}
+            {success && (
+              <div className="flex flex-col gap-1 bg-primary-light text-primary text-[13px] font-medium px-4 py-3 rounded-lg mb-5">
+                <div className="flex items-center gap-2">
+                  <IconCircleCheck size={17} className="shrink-0" />
+                  <span>Account aangemaakt!</span>
+                </div>
+                <p className="text-[12px] pl-[25px] text-primary/80">
+                  Controleer uw inbox en klik op de bevestigingslink om in te loggen.
+                </p>
               </div>
+            )}
 
-              {/* Email */}
-              <div className="mb-4">
-                <label htmlFor="email" className="block text-[13px] font-medium text-neutral-900 mb-1">
-                  E-mailadres
-                </label>
-                <input
-                  id="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  placeholder="uw@email.nl"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  className="input-field"
-                />
-              </div>
+            {!success && (
+              <form onSubmit={handleSubmit} noValidate>
+                {/* Naam */}
+                <div className="mb-4">
+                  <label htmlFor="naam" className="block text-[13px] font-medium text-neutral-900 mb-1">
+                    Volledige naam
+                  </label>
+                  <input
+                    id="naam"
+                    type="text"
+                    autoComplete="name"
+                    required
+                    placeholder="Jan de Vries"
+                    value={naam}
+                    onChange={e => setNaam(e.target.value)}
+                    className="input-field"
+                  />
+                </div>
 
-              {/* Password */}
-              <div className="mb-4">
-                <label htmlFor="password" className="block text-[13px] font-medium text-neutral-900 mb-1">
-                  Wachtwoord
-                </label>
-                <input
-                  id="password"
-                  type="password"
-                  autoComplete="new-password"
-                  required
-                  placeholder="Minimaal 8 tekens"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  className="input-field"
-                />
-              </div>
+                {/* Email */}
+                <div className="mb-4">
+                  <label htmlFor="email" className="block text-[13px] font-medium text-neutral-900 mb-1">
+                    E-mailadres
+                  </label>
+                  <input
+                    id="email"
+                    type="email"
+                    autoComplete="email"
+                    required
+                    placeholder="uw@email.nl"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    className="input-field"
+                  />
+                </div>
 
-              {/* Password confirm */}
-              <div className="mb-1">
-                <label htmlFor="password-confirm" className="block text-[13px] font-medium text-neutral-900 mb-1">
-                  Wachtwoord bevestigen
-                </label>
-                <input
-                  id="password-confirm"
-                  type="password"
-                  autoComplete="new-password"
-                  required
-                  placeholder="••••••••"
-                  value={passwordConfirm}
-                  onChange={e => setPasswordConfirm(e.target.value)}
-                  className="input-field"
-                />
-              </div>
+                {/* Password */}
+                <div className="mb-4">
+                  <label htmlFor="password" className="block text-[13px] font-medium text-neutral-900 mb-1">
+                    Wachtwoord
+                  </label>
+                  <input
+                    id="password"
+                    type="password"
+                    autoComplete="new-password"
+                    required
+                    placeholder="Minimaal 8 tekens"
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    className="input-field"
+                  />
+                </div>
 
-              {/* Submit */}
-              <button
-                type="submit"
-                disabled={loading || success}
-                className="btn-primary w-full mt-6"
-              >
-                {loading ? 'Account aanmaken...' : 'Account aanmaken'}
-              </button>
-            </form>
+                {/* Password confirm */}
+                <div className="mb-1">
+                  <label htmlFor="password-confirm" className="block text-[13px] font-medium text-neutral-900 mb-1">
+                    Wachtwoord bevestigen
+                  </label>
+                  <input
+                    id="password-confirm"
+                    type="password"
+                    autoComplete="new-password"
+                    required
+                    placeholder="••••••••"
+                    value={passwordConfirm}
+                    onChange={e => setPasswordConfirm(e.target.value)}
+                    className="input-field"
+                  />
+                </div>
+
+                {/* Submit */}
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="btn-primary w-full mt-6"
+                >
+                  {loading ? 'Account aanmaken...' : 'Account aanmaken'}
+                </button>
+              </form>
+            )}
 
             {/* Divider */}
             <div className="flex items-center gap-3 my-5">
