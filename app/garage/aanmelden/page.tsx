@@ -687,10 +687,10 @@ export default function GarageAanmeldenPage() {
         <div className="flex gap-8 items-start">
           <div className="flex-1 min-w-0">
             <div className="bg-white border border-neutral-100 rounded-xl shadow-card p-6 sm:p-8">
-              {step === 1 && <StepOne />}
-              {step === 2 && <StepTwo />}
-              {step === 3 && <StepThree />}
-              {step === 4 && <StepFour />}
+              {step === 1 && StepOne()}
+              {step === 2 && StepTwo()}
+              {step === 3 && StepThree()}
+              {step === 4 && StepFour()}
 
               {/* Error message */}
               {error && (
@@ -736,7 +736,7 @@ export default function GarageAanmeldenPage() {
             </div>
           </div>
 
-          {step === 4 && <Sidebar />}
+          {step === 4 && Sidebar()}
         </div>
       </main>
 
