@@ -15,6 +15,7 @@ import {
 } from '@tabler/icons-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/context/AuthContext'
+import { useGarage, type GarageData } from '@/hooks/useGarage'
 
 // ─── Shared Dashboard Layout ─────────────────────────────────────────────────
 
@@ -142,6 +143,21 @@ function DashboardLayout({ children }: { children: React.ReactNode }) {
   )
 }
 
+// ─── Profile completeness ─────────────────────────────────────────────────────
+
+function computeCompleteness(g: GarageData): number {
+  let score = 0
+  if (g.name) score += 20
+  if (g.address && g.city) score += 15
+  if (g.phone) score += 10
+  if (g.email) score += 10
+  if (g.website) score += 10
+  if (g.description && g.description.length > 30) score += 15
+  if (g.garage_services.length > 0) score += 10
+  if (g.garage_hours.length > 0) score += 10
+  return score
+}
+
 // ─── Mock week data ───────────────────────────────────────────────────────────
 
 const weekData = [
@@ -159,6 +175,15 @@ const maxViews = Math.max(...weekData.map((d) => d.views))
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
+  const { garage, loading } = useGarage()
+
+  const reviews = garage?.reviews ?? []
+  const reviewCount = reviews.length
+  const avgRating = reviewCount > 0 ? reviews.reduce((s, r) => s + r.rating, 0) / reviewCount : 0
+  const unanswered = reviews.filter(r => r.garage_replies.length === 0).length
+  const repliesGiven = reviews.filter(r => r.garage_replies.length > 0).length
+  const completeness = garage ? computeCompleteness(garage) : 0
+
   return (
     <DashboardLayout>
       <h3 className="text-[22px] font-medium text-neutral-900 mb-6">Overzicht</h3>
@@ -168,30 +193,41 @@ export default function DashboardPage() {
         {/* Profielweergaven */}
         <div className="bg-white border border-neutral-100 rounded-[9px] p-4">
           <p className="text-[12px] text-neutral-500 mb-1">Profielweergaven</p>
-          <p className="text-[28px] font-semibold text-neutral-900 leading-none mb-2">247</p>
-          <div className="flex items-center gap-1 text-[12px] text-primary">
+          <p className="text-[28px] font-semibold text-neutral-900 leading-none mb-2">—</p>
+          <div className="flex items-center gap-1 text-[12px] text-neutral-300">
             <IconTrendingUp size={13} />
-            <span>+12% deze week</span>
+            <span>Binnenkort beschikbaar</span>
           </div>
         </div>
 
         {/* Reviews */}
         <div className="bg-white border border-neutral-100 rounded-[9px] p-4">
           <p className="text-[12px] text-neutral-500 mb-1">Reviews</p>
-          <p className="text-[28px] font-semibold text-neutral-900 leading-none mb-2">12</p>
-          <div className="flex items-center gap-1 text-[12px] text-danger">
-            <span className="inline-block w-2 h-2 rounded-full bg-danger" />
-            2 onbeantwoord
-          </div>
+          <p className="text-[28px] font-semibold text-neutral-900 leading-none mb-2">
+            {loading ? '—' : reviewCount}
+          </p>
+          {unanswered > 0 ? (
+            <div className="flex items-center gap-1 text-[12px] text-danger">
+              <span className="inline-block w-2 h-2 rounded-full bg-danger" />
+              {unanswered} onbeantwoord
+            </div>
+          ) : (
+            <div className="flex items-center gap-1 text-[12px] text-primary">
+              <IconCircleCheck size={13} />
+              <span>Alles beantwoord</span>
+            </div>
+          )}
         </div>
 
         {/* Gemiddelde rating */}
         <div className="bg-white border border-neutral-100 rounded-[9px] p-4">
           <p className="text-[12px] text-neutral-500 mb-1">Gemiddelde rating</p>
-          <p className="text-[28px] font-semibold text-neutral-900 leading-none mb-2">4.8</p>
+          <p className="text-[28px] font-semibold text-neutral-900 leading-none mb-2">
+            {loading ? '—' : reviewCount > 0 ? avgRating.toFixed(1) : '—'}
+          </p>
           <div className="flex items-center gap-[2px]">
             {[1, 2, 3, 4, 5].map((s) => (
-              <svg key={s} width="12" height="12" viewBox="0 0 16 16" fill={s <= 4 ? '#EF9F27' : '#E4E4E4'}>
+              <svg key={s} width="12" height="12" viewBox="0 0 16 16" fill={s <= Math.round(avgRating) ? '#EF9F27' : '#E4E4E4'}>
                 <path d="M8 1l1.854 4.146L14 5.854l-3 2.854.708 4.146L8 10.854l-3.708 1.952L5 8.708 2 5.854l4.146-.708z" />
               </svg>
             ))}
@@ -201,10 +237,12 @@ export default function DashboardPage() {
         {/* Reacties gegeven */}
         <div className="bg-white border border-neutral-100 rounded-[9px] p-4">
           <p className="text-[12px] text-neutral-500 mb-1">Reacties gegeven</p>
-          <p className="text-[28px] font-semibold text-neutral-900 leading-none mb-2">8</p>
+          <p className="text-[28px] font-semibold text-neutral-900 leading-none mb-2">
+            {loading ? '—' : repliesGiven}
+          </p>
           <div className="flex items-center gap-1 text-[12px] text-primary">
             <IconCircleCheck size={13} />
-            <span>van de 12 reviews</span>
+            <span>van de {reviewCount} reviews</span>
           </div>
         </div>
       </div>
@@ -235,13 +273,15 @@ export default function DashboardPage() {
       <div className="bg-white rounded-[9px] border border-neutral-100 p-5 mt-4">
         <div className="flex items-center justify-between mb-3">
           <p className="text-[14px] font-medium text-neutral-900">Profielvolledigheid</p>
-          <span className="text-[14px] font-semibold text-primary">65%</span>
+          <span className="text-[14px] font-semibold text-primary">{completeness}%</span>
         </div>
         <div className="h-[5px] bg-[#F0F0F0] rounded-full overflow-hidden">
-          <div className="h-full bg-primary rounded-full" style={{ width: '65%' }} />
+          <div className="h-full bg-primary rounded-full" style={{ width: `${completeness}%` }} />
         </div>
         <p className="text-[12px] text-neutral-500 mt-2">
-          Voeg meer informatie toe om beter gevonden te worden.
+          {completeness < 100
+            ? 'Voeg meer informatie toe om beter gevonden te worden.'
+            : 'Uw profiel is volledig ingevuld.'}
         </p>
       </div>
 
