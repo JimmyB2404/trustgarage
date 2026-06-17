@@ -40,8 +40,16 @@ function ZoekenContent() {
     supabase
       .from('garages')
       .select('*, garage_services(service_name), garage_languages(language), garage_hours(day_of_week, open_time, close_time, is_closed), reviews(rating)')
-      .then(({ data }) => {
-        setAllGarages((data ?? []).map(transformGarage))
+      .then(({ data, error }) => {
+        if (error) {
+          console.error('[TrustGarage] Garages fetch error:', error)
+          return
+        }
+        try {
+          setAllGarages((data ?? []).map(transformGarage))
+        } catch (e) {
+          console.error('[TrustGarage] transformGarage error:', e)
+        }
       })
   }, [])
 
