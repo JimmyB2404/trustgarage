@@ -16,6 +16,7 @@ import { fetchGarageBySlug } from '@/lib/garages'
 import { getDayName, isGarageOpen, getTodayHours, getInitials } from '@/lib/utils'
 import type { Review } from '@/types'
 import ReviewButton from '@/components/ui/ReviewButton'
+import ViewTracker from '@/components/ui/ViewTracker'
 
 interface PageProps {
   params: { slug: string }
@@ -83,6 +84,7 @@ export default async function GarageProfilePage({ params }: PageProps) {
 
   return (
     <>
+      <ViewTracker garageId={garage.id} />
       <Navbar />
 
       {/* Breadcrumb */}

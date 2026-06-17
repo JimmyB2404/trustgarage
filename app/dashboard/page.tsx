@@ -16,6 +16,7 @@ import {
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/context/AuthContext'
 import { useGarage, type GarageData } from '@/hooks/useGarage'
+import { useDashboardViews } from '@/hooks/useDashboardViews'
 
 // ─── Shared Dashboard Layout ─────────────────────────────────────────────────
 
@@ -163,6 +164,7 @@ function computeCompleteness(g: GarageData): number {
 
 export default function DashboardPage() {
   const { garage, loading } = useGarage()
+  const { weekViews, totalViews, loadingViews } = useDashboardViews(garage?.id)
 
   const reviews = garage?.reviews ?? []
   const reviewCount = reviews.length
@@ -170,6 +172,7 @@ export default function DashboardPage() {
   const unanswered = reviews.filter(r => r.garage_replies.length === 0).length
   const repliesGiven = reviews.filter(r => r.garage_replies.length > 0).length
   const completeness = garage ? computeCompleteness(garage) : 0
+  const maxViews = Math.max(...weekViews.map(d => d.views), 1)
 
   return (
     <DashboardLayout reviewBadge={unanswered}>
@@ -180,10 +183,12 @@ export default function DashboardPage() {
         {/* Profielweergaven */}
         <div className="bg-white border border-neutral-100 rounded-[9px] p-4">
           <p className="text-[12px] text-neutral-500 mb-1">Profielweergaven</p>
-          <p className="text-[28px] font-semibold text-neutral-900 leading-none mb-2">—</p>
-          <div className="flex items-center gap-1 text-[12px] text-neutral-300">
+          <p className="text-[28px] font-semibold text-neutral-900 leading-none mb-2">
+            {loadingViews ? '—' : totalViews}
+          </p>
+          <div className="flex items-center gap-1 text-[12px] text-primary">
             <IconTrendingUp size={13} />
-            <span>Binnenkort beschikbaar</span>
+            <span>Totaal bezoeken</span>
           </div>
         </div>
 
@@ -232,6 +237,36 @@ export default function DashboardPage() {
             <span>van de {reviewCount} reviews</span>
           </div>
         </div>
+      </div>
+
+      {/* Bar chart */}
+      <div className="bg-white rounded-[9px] border border-neutral-100 p-5 mt-6">
+        <p className="text-[14px] font-medium text-neutral-900 mb-5">Profielweergaven afgelopen 7 dagen</p>
+        {loadingViews ? (
+          <div className="h-[120px] flex items-center justify-center">
+            <span className="text-[13px] text-neutral-300">Laden...</span>
+          </div>
+        ) : (
+          <div className="flex items-end gap-2 h-[120px]">
+            {weekViews.map((d) => (
+              <div key={d.day} className="flex-1 flex flex-col items-center justify-end gap-1">
+                {d.views > 0 && (
+                  <span className="text-[11px] text-neutral-500">{d.views}</span>
+                )}
+                <div
+                  className={cn(
+                    'w-full rounded-t-sm transition-all',
+                    d.isToday ? 'bg-primary' : 'bg-[#E4E4E4]'
+                  )}
+                  style={{ height: `${Math.round((d.views / maxViews) * 80)}px`, minHeight: d.views > 0 ? '4px' : '0' }}
+                />
+                <span className={cn('text-[11px]', d.isToday ? 'text-primary font-medium' : 'text-neutral-500')}>
+                  {d.day}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Profile completeness */}
