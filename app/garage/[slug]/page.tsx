@@ -15,6 +15,7 @@ import ReviewCard from '@/components/ui/ReviewCard'
 import { fetchGarageBySlug } from '@/lib/garages'
 import { getDayName, isGarageOpen, getTodayHours, getInitials } from '@/lib/utils'
 import type { Review } from '@/types'
+import ReviewButton from '@/components/ui/ReviewButton'
 
 interface PageProps {
   params: { slug: string }
@@ -285,9 +286,7 @@ export default async function GarageProfilePage({ params }: PageProps) {
               <h2 className="text-[20px] font-serif font-normal text-neutral-900">
                 Reviews ({garageReviews.length})
               </h2>
-              <button className="btn-primary text-[13px] py-[8px] px-4">
-                Review schrijven
-              </button>
+              <ReviewButton garageId={garage.id} garageName={garage.name} />
             </div>
             {garageReviews.length > 0 ? (
               <div className="space-y-4">

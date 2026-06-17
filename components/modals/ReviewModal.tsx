@@ -2,18 +2,14 @@
 import { useState } from 'react'
 import { IconX, IconStarFilled, IconStar } from '@tabler/icons-react'
 import { cn } from '@/lib/utils'
+import { useAuth } from '@/context/AuthContext'
+import { createClient } from '@/lib/supabase'
 
 interface ReviewModalProps {
+  garageId: string
   garageName: string
   onClose: () => void
-  onSubmit?: (data: ReviewFormData) => void
-}
-
-interface ReviewFormData {
-  rating: number
-  text: string
-  language: string
-  subRatings: Record<string, number>
+  onSubmit?: () => void
 }
 
 const CATEGORIES = [
@@ -48,18 +44,62 @@ function StarPicker({ value, onChange, size = 28 }: { value: number; onChange: (
   )
 }
 
-export default function ReviewModal({ garageName, onClose, onSubmit }: ReviewModalProps) {
+export default function ReviewModal({ garageId, garageName, onClose, onSubmit }: ReviewModalProps) {
+  const { user } = useAuth()
   const [rating, setRating] = useState(0)
   const [text, setText] = useState('')
   const [language, setLanguage] = useState('nl')
   const [subRatings, setSubRatings] = useState<Record<string, number>>({})
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
   const [submitted, setSubmitted] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (rating === 0) return
-    onSubmit?.({ rating, text, language, subRatings })
+    if (rating === 0 || !text.trim() || !user) return
+
+    setLoading(true)
+    setError('')
+
+    const supabase = createClient()
+
+    // 1. Review opslaan
+    const { data: review, error: reviewError } = await supabase
+      .from('reviews')
+      .insert({
+        garage_id: garageId,
+        user_id: user.id,
+        user_name: user.user_metadata?.name || user.email || 'Anoniem',
+        rating,
+        text: text.trim(),
+        language,
+        is_expat: language !== 'nl',
+        verified: false,
+      })
+      .select('id')
+      .single()
+
+    if (reviewError) {
+      setError('Er is een fout opgetreden. Probeer opnieuw.')
+      setLoading(false)
+      return
+    }
+
+    // 2. Deelcijfers opslaan
+    const subEntries = Object.entries(subRatings).filter(([, score]) => score > 0)
+    if (subEntries.length > 0) {
+      await supabase.from('review_ratings').insert(
+        subEntries.map(([category, score]) => ({
+          review_id: review.id,
+          category,
+          score,
+        }))
+      )
+    }
+
     setSubmitted(true)
+    setLoading(false)
+    onSubmit?.()
   }
 
   return (
@@ -79,10 +119,12 @@ export default function ReviewModal({ garageName, onClose, onSubmit }: ReviewMod
         {submitted ? (
           <div className="px-6 py-10 text-center">
             <div className="w-14 h-14 rounded-full bg-primary-light flex items-center justify-center mx-auto mb-4">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0F6E56" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0F6E56" strokeWidth="2.5">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
             </div>
             <h3 className="text-[18px] font-medium text-neutral-900 mb-2">Review verzonden!</h3>
-            <p className="text-[14px] text-neutral-500">Uw review is ontvangen en wordt na moderatie zichtbaar.</p>
+            <p className="text-[14px] text-neutral-500">Bedankt voor uw review. Hij is nu zichtbaar op het garageprofiel.</p>
             <button onClick={onClose} className="btn-primary mt-6">Sluiten</button>
           </div>
         ) : (
@@ -101,7 +143,9 @@ export default function ReviewModal({ garageName, onClose, onSubmit }: ReviewMod
 
             {/* Sub-ratings */}
             <div>
-              <label className="block text-[14px] font-medium text-neutral-900 mb-3">Deelcijfers</label>
+              <label className="block text-[14px] font-medium text-neutral-900 mb-3">
+                Deelcijfers <span className="text-neutral-300 font-normal">(optioneel)</span>
+              </label>
               <div className="space-y-2">
                 {CATEGORIES.map(cat => (
                   <div key={cat.key} className="flex items-center justify-between">
@@ -143,10 +187,22 @@ export default function ReviewModal({ garageName, onClose, onSubmit }: ReviewMod
               </select>
             </div>
 
+            {error && (
+              <p className="text-[13px] text-danger bg-danger/5 border border-danger/20 rounded-lg px-4 py-3">
+                {error}
+              </p>
+            )}
+
             <div className="flex gap-3 pt-2 border-t border-neutral-100">
-              <button type="button" onClick={onClose} className="btn-ghost flex-1">Annuleren</button>
-              <button type="submit" disabled={rating === 0} className={cn('btn-primary flex-1', rating === 0 && 'opacity-50 cursor-not-allowed')}>
-                Review verzenden
+              <button type="button" onClick={onClose} className="btn-ghost flex-1">
+                Annuleren
+              </button>
+              <button
+                type="submit"
+                disabled={rating === 0 || !text.trim() || loading}
+                className={cn('btn-primary flex-1', (rating === 0 || !text.trim() || loading) && 'opacity-50 cursor-not-allowed')}
+              >
+                {loading ? 'Verzenden...' : 'Review verzenden'}
               </button>
             </div>
           </form>
