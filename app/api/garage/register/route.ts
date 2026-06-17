@@ -14,23 +14,28 @@ export async function POST(req: Request) {
   const body = await req.json()
   const { email, password, garagenaam, adres, stad, telefoon, bedrijfsEmail, website, description, kvkNumber, kvkVerified, services, languages, hours } = body
 
+  // Anon client voor signUp — stuurt automatisch bevestigingsmail
+  const anonClient = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
+
+  const { data: signUpData, error: signUpError } = await anonClient.auth.signUp({ email, password })
+
+  if (signUpError) {
+    return NextResponse.json({ error: signUpError.message }, { status: 400 })
+  }
+
+  const userId = signUpData.user?.id
+  if (!userId) {
+    return NextResponse.json({ error: 'Account aanmaken mislukt.' }, { status: 400 })
+  }
+
+  // Service role client voor database inserts (bypast RLS, geen sessie nodig)
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
-
-  // 1. Maak auth account aan (service role = geen sessie nodig, bevestigingsmail wordt verstuurd)
-  const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-    email,
-    password,
-    email_confirm: false,
-  })
-
-  if (authError) {
-    return NextResponse.json({ error: authError.message }, { status: 400 })
-  }
-
-  const userId = authData.user.id
 
   // 2. Sla garage op
   const slug = `${slugify(garagenaam)}-${slugify(stad)}`
@@ -54,7 +59,11 @@ export async function POST(req: Request) {
     .single()
 
   if (garageError) {
-    await supabase.auth.admin.deleteUser(userId)
+    const adminClient = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+    await adminClient.auth.admin.deleteUser(userId)
     return NextResponse.json({ error: garageError.message }, { status: 400 })
   }
 
