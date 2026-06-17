@@ -1,9 +1,11 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import { SERVICES, LANGUAGES, DAY_NAMES } from '@/lib/mock-data'
+import { createClient } from '@/lib/supabase'
 import {
   IconCircleCheck,
   IconUpload,
@@ -20,11 +22,9 @@ interface HoursRow {
 }
 
 interface FormData {
-  // Step 1
   email: string
   password: string
   passwordConfirm: string
-  // Step 2
   garagenaam: string
   adres: string
   stad: string
@@ -33,17 +33,13 @@ interface FormData {
   website: string
   services: string[]
   languages: string[]
-  // Step 3
   kvkNumber: string
-  // Step 4
   description: string
-  // hours: indexed by day number (0=Sun … 6=Sat), Mon-Sun order rendered separately
   hours: Record<number, HoursRow>
 }
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
-// Mon=1 … Sun=0 displayed in Mon-Sun order
 const WEEKDAYS_ORDER = [1, 2, 3, 4, 5, 6, 0]
 
 const defaultHours: Record<number, HoursRow> = {
@@ -61,7 +57,10 @@ const STEP_LABELS = ['Account', 'Bedrijfsgegevens', 'KVK verificatie', 'Profiel'
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export default function GarageAanmeldenPage() {
+  const router = useRouter()
   const [step, setStep] = useState(1)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
   const [kvkVerifying, setKvkVerifying] = useState(false)
   const [kvkVerified, setKvkVerified] = useState(false)
   const [kvkBusinessName, setKvkBusinessName] = useState('')
@@ -102,11 +101,164 @@ export default function GarageAanmeldenPage() {
   function updateHours(day: number, patch: Partial<HoursRow>) {
     setFormData(prev => ({
       ...prev,
-      hours: {
-        ...prev.hours,
-        [day]: { ...prev.hours[day], ...patch },
-      },
+      hours: { ...prev.hours, [day]: { ...prev.hours[day], ...patch } },
     }))
+  }
+
+  function slugify(text: string): string {
+    return text
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '')
+  }
+
+  // ─── Navigation ────────────────────────────────────────────────────────────
+
+  function handleNext() {
+    setError('')
+
+    if (step === 1) {
+      if (!formData.email || !formData.password || !formData.passwordConfirm) {
+        setError('Vul alle verplichte velden in.')
+        return
+      }
+      if (formData.password.length < 8) {
+        setError('Wachtwoord moet minimaal 8 tekens zijn.')
+        return
+      }
+      if (formData.password !== formData.passwordConfirm) {
+        setError('Wachtwoorden komen niet overeen.')
+        return
+      }
+    }
+
+    if (step === 2) {
+      if (!formData.garagenaam || !formData.adres || !formData.stad || !formData.telefoon || !formData.bedrijfsEmail) {
+        setError('Vul alle verplichte velden in.')
+        return
+      }
+    }
+
+    setStep(s => s + 1)
+  }
+
+  // ─── Final submit ──────────────────────────────────────────────────────────
+
+  async function handleSubmit() {
+    setError('')
+    setLoading(true)
+
+    const supabase = createClient()
+
+    // 1. Maak auth account aan
+    let userId: string | null = null
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+      email: formData.email,
+      password: formData.password,
+    })
+
+    if (signUpError) {
+      if (signUpError.message.toLowerCase().includes('already')) {
+        // Account bestaat al — probeer in te loggen
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+          email: formData.email,
+          password: formData.password,
+        })
+        if (signInError) {
+          setError('Dit e-mailadres is al in gebruik. Ga naar de inlogpagina.')
+          setLoading(false)
+          return
+        }
+        userId = signInData.user?.id ?? null
+      } else {
+        setError(signUpError.message)
+        setLoading(false)
+        return
+      }
+    } else {
+      userId = signUpData.user?.id ?? null
+
+      // Als e-mailbevestiging vereist is: probeer direct in te loggen
+      if (!signUpData.session) {
+        const { data: signInData } = await supabase.auth.signInWithPassword({
+          email: formData.email,
+          password: formData.password,
+        })
+        if (!signInData.session) {
+          setError('Bevestig uw e-mailadres via de link in uw mailbox en probeer opnieuw.')
+          setLoading(false)
+          return
+        }
+      }
+    }
+
+    if (!userId) {
+      setError('Account aanmaken mislukt. Probeer het opnieuw.')
+      setLoading(false)
+      return
+    }
+
+    // 2. Genereer slug
+    const slug = `${slugify(formData.garagenaam)}-${slugify(formData.stad)}`
+
+    // 3. Maak garage aan
+    const { data: garage, error: garageError } = await supabase
+      .from('garages')
+      .insert({
+        user_id: userId,
+        name: formData.garagenaam,
+        slug,
+        address: formData.adres,
+        city: formData.stad,
+        phone: formData.telefoon,
+        email: formData.bedrijfsEmail,
+        website: formData.website || null,
+        description: formData.description,
+        kvk_number: formData.kvkNumber || null,
+        kvk_verified: kvkVerified,
+        plan: 'free',
+      })
+      .select('id')
+      .single()
+
+    if (garageError) {
+      setError(`Fout bij aanmaken garage: ${garageError.message}`)
+      setLoading(false)
+      return
+    }
+
+    const garageId = garage.id
+
+    // 4. Diensten opslaan
+    if (formData.services.length > 0) {
+      await supabase.from('garage_services').insert(
+        formData.services.map(s => ({ garage_id: garageId, service_name: s }))
+      )
+    }
+
+    // 5. Talen opslaan
+    if (formData.languages.length > 0) {
+      await supabase.from('garage_languages').insert(
+        formData.languages.map(l => ({ garage_id: garageId, language: l }))
+      )
+    }
+
+    // 6. Openingstijden opslaan
+    await supabase.from('garage_hours').insert(
+      Object.entries(formData.hours).map(([day, h]) => ({
+        garage_id: garageId,
+        day_of_week: parseInt(day),
+        open_time: h.closed ? null : h.open || null,
+        close_time: h.closed ? null : h.close || null,
+        is_closed: h.closed,
+      }))
+    )
+
+    // 7. Naar dashboard
+    router.push('/dashboard')
+    router.refresh()
   }
 
   function handleKvkVerify() {
@@ -128,11 +280,7 @@ export default function GarageAanmeldenPage() {
     return (
       <span
         className={`text-[11px] font-sans ${
-          isDone
-            ? 'text-neutral-900'
-            : isActive
-            ? 'text-primary font-bold'
-            : 'text-neutral-300'
+          isDone ? 'text-neutral-900' : isActive ? 'text-primary font-bold' : 'text-neutral-300'
         }`}
       >
         {STEP_LABELS[index]}
@@ -142,15 +290,7 @@ export default function GarageAanmeldenPage() {
 
   // ─── Chip ──────────────────────────────────────────────────────────────────
 
-  function Chip({
-    label,
-    selected,
-    onClick,
-  }: {
-    label: string
-    selected: boolean
-    onClick: () => void
-  }) {
+  function Chip({ label, selected, onClick }: { label: string; selected: boolean; onClick: () => void }) {
     return (
       <button
         type="button"
@@ -176,9 +316,7 @@ export default function GarageAanmeldenPage() {
         </h2>
         <div className="flex flex-col gap-4">
           <div>
-            <label className="block text-[13px] font-sans text-neutral-900 mb-1">
-              E-mailadres
-            </label>
+            <label className="block text-[13px] font-sans text-neutral-900 mb-1">E-mailadres</label>
             <input
               type="email"
               className="input-field"
@@ -188,9 +326,7 @@ export default function GarageAanmeldenPage() {
             />
           </div>
           <div>
-            <label className="block text-[13px] font-sans text-neutral-900 mb-1">
-              Wachtwoord
-            </label>
+            <label className="block text-[13px] font-sans text-neutral-900 mb-1">Wachtwoord</label>
             <input
               type="password"
               className="input-field"
@@ -200,9 +336,7 @@ export default function GarageAanmeldenPage() {
             />
           </div>
           <div>
-            <label className="block text-[13px] font-sans text-neutral-900 mb-1">
-              Wachtwoord bevestigen
-            </label>
+            <label className="block text-[13px] font-sans text-neutral-900 mb-1">Wachtwoord bevestigen</label>
             <input
               type="password"
               className="input-field"
@@ -224,9 +358,7 @@ export default function GarageAanmeldenPage() {
         </h2>
         <div className="flex flex-col gap-4">
           <div>
-            <label className="block text-[13px] font-sans text-neutral-900 mb-1">
-              Garagenaam
-            </label>
+            <label className="block text-[13px] font-sans text-neutral-900 mb-1">Garagenaam</label>
             <input
               type="text"
               className="input-field"
@@ -236,9 +368,7 @@ export default function GarageAanmeldenPage() {
             />
           </div>
           <div>
-            <label className="block text-[13px] font-sans text-neutral-900 mb-1">
-              Adres
-            </label>
+            <label className="block text-[13px] font-sans text-neutral-900 mb-1">Adres</label>
             <input
               type="text"
               className="input-field"
@@ -248,9 +378,7 @@ export default function GarageAanmeldenPage() {
             />
           </div>
           <div>
-            <label className="block text-[13px] font-sans text-neutral-900 mb-1">
-              Stad
-            </label>
+            <label className="block text-[13px] font-sans text-neutral-900 mb-1">Stad</label>
             <input
               type="text"
               className="input-field"
@@ -260,9 +388,7 @@ export default function GarageAanmeldenPage() {
             />
           </div>
           <div>
-            <label className="block text-[13px] font-sans text-neutral-900 mb-1">
-              Telefoonnummer
-            </label>
+            <label className="block text-[13px] font-sans text-neutral-900 mb-1">Telefoonnummer</label>
             <input
               type="tel"
               className="input-field"
@@ -272,9 +398,7 @@ export default function GarageAanmeldenPage() {
             />
           </div>
           <div>
-            <label className="block text-[13px] font-sans text-neutral-900 mb-1">
-              E-mailadres garage
-            </label>
+            <label className="block text-[13px] font-sans text-neutral-900 mb-1">E-mailadres garage</label>
             <input
               type="email"
               className="input-field"
@@ -285,8 +409,7 @@ export default function GarageAanmeldenPage() {
           </div>
           <div>
             <label className="block text-[13px] font-sans text-neutral-900 mb-1">
-              Website{' '}
-              <span className="text-neutral-300 font-normal">(optioneel)</span>
+              Website <span className="text-neutral-300 font-normal">(optioneel)</span>
             </label>
             <input
               type="url"
@@ -297,11 +420,8 @@ export default function GarageAanmeldenPage() {
             />
           </div>
 
-          {/* Diensten */}
           <div>
-            <label className="block text-[13px] font-sans text-neutral-900 mb-2">
-              Diensten
-            </label>
+            <label className="block text-[13px] font-sans text-neutral-900 mb-2">Diensten</label>
             <div className="flex flex-wrap gap-2">
               {SERVICES.map(service => (
                 <Chip
@@ -314,11 +434,8 @@ export default function GarageAanmeldenPage() {
             </div>
           </div>
 
-          {/* Talen */}
           <div>
-            <label className="block text-[13px] font-sans text-neutral-900 mb-2">
-              Talen
-            </label>
+            <label className="block text-[13px] font-sans text-neutral-900 mb-2">Talen</label>
             <div className="flex flex-wrap gap-2">
               {LANGUAGES.map(lang => (
                 <Chip
@@ -350,9 +467,7 @@ export default function GarageAanmeldenPage() {
 
         <div className="border-[1.5px] border-primary bg-[#F7FDF9] rounded-[9px] p-4 flex flex-col gap-4">
           <div>
-            <label className="block text-[13px] font-sans text-neutral-900 mb-1">
-              KVK-nummer
-            </label>
+            <label className="block text-[13px] font-sans text-neutral-900 mb-1">KVK-nummer</label>
             <input
               type="text"
               className="input-field font-mono tracking-widest"
@@ -393,11 +508,8 @@ export default function GarageAanmeldenPage() {
           Profiel afwerken
         </h2>
 
-        {/* Description */}
         <div>
-          <label className="block text-[13px] font-sans text-neutral-900 mb-1">
-            Beschrijving
-          </label>
+          <label className="block text-[13px] font-sans text-neutral-900 mb-1">Beschrijving</label>
           <textarea
             className="input-field min-h-[100px] resize-y"
             placeholder="Vertel klanten over uw garage, specialisaties en wat u onderscheidt…"
@@ -406,27 +518,17 @@ export default function GarageAanmeldenPage() {
           />
         </div>
 
-        {/* Photo upload */}
         <div>
-          <label className="block text-[13px] font-sans text-neutral-900 mb-2">
-            Foto&#39;s
-          </label>
+          <label className="block text-[13px] font-sans text-neutral-900 mb-2">Foto&#39;s</label>
           <div className="border-2 border-dashed border-neutral-100 rounded-xl p-8 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-primary hover:bg-[#F7FDF9] transition-colors duration-150">
             <IconUpload size={28} className="text-neutral-300" />
-            <span className="text-[13px] font-sans text-neutral-500">
-              Klik om foto&#39;s te uploaden
-            </span>
-            <span className="text-[11px] font-sans text-neutral-300">
-              PNG, JPG tot 5 MB
-            </span>
+            <span className="text-[13px] font-sans text-neutral-500">Klik om foto&#39;s te uploaden</span>
+            <span className="text-[11px] font-sans text-neutral-300">PNG, JPG tot 5 MB</span>
           </div>
         </div>
 
-        {/* Openingstijden */}
         <div>
-          <label className="block text-[13px] font-sans text-neutral-900 mb-3">
-            Openingstijden
-          </label>
+          <label className="block text-[13px] font-sans text-neutral-900 mb-3">Openingstijden</label>
           <div className="flex flex-col gap-2">
             {WEEKDAYS_ORDER.map(dayNum => {
               const row = formData.hours[dayNum]
@@ -436,12 +538,10 @@ export default function GarageAanmeldenPage() {
                   key={dayNum}
                   className="flex items-center gap-3 py-2 border-b border-neutral-100 last:border-0"
                 >
-                  {/* Day name */}
                   <span className="w-[88px] text-[13px] font-sans text-neutral-900 flex-shrink-0">
                     {dayLabel}
                   </span>
 
-                  {/* Gesloten toggle */}
                   <button
                     type="button"
                     onClick={() =>
@@ -460,7 +560,6 @@ export default function GarageAanmeldenPage() {
                     {row.closed ? 'Gesloten' : 'Open'}
                   </button>
 
-                  {/* Time inputs */}
                   <div className="flex items-center gap-2 flex-1">
                     <input
                       type="time"
@@ -490,15 +589,11 @@ export default function GarageAanmeldenPage() {
   // ─── Sidebar ───────────────────────────────────────────────────────────────
 
   function Sidebar() {
-    const steps = STEP_LABELS
     return (
       <aside className="hidden lg:flex flex-col gap-5 w-[300px] flex-shrink-0">
-        {/* Progress list */}
         <div className="card p-5 flex flex-col gap-3">
-          <p className="text-[13px] font-sans font-medium text-neutral-900 mb-1">
-            Voortgang
-          </p>
-          {steps.map((label, i) => {
+          <p className="text-[13px] font-sans font-medium text-neutral-900 mb-1">Voortgang</p>
+          {STEP_LABELS.map((label, i) => {
             const num = i + 1
             const isDone = step > num
             const isActive = step === num
@@ -521,11 +616,7 @@ export default function GarageAanmeldenPage() {
                 </div>
                 <span
                   className={`text-[13px] font-sans ${
-                    isDone
-                      ? 'text-neutral-900'
-                      : isActive
-                      ? 'text-primary font-medium'
-                      : 'text-neutral-300'
+                    isDone ? 'text-neutral-900' : isActive ? 'text-primary font-medium' : 'text-neutral-300'
                   }`}
                 >
                   {label}
@@ -535,13 +626,10 @@ export default function GarageAanmeldenPage() {
           })}
         </div>
 
-        {/* Plan preview */}
         <div className="card p-5 flex flex-col gap-4">
           <div className="flex items-center gap-2">
             <IconShieldCheck size={18} className="text-primary" />
-            <p className="text-[15px] font-sans font-medium text-neutral-900">
-              Gratis plan
-            </p>
+            <p className="text-[15px] font-sans font-medium text-neutral-900">Gratis plan</p>
           </div>
           <ul className="flex flex-col gap-2">
             {[
@@ -557,10 +645,7 @@ export default function GarageAanmeldenPage() {
               </li>
             ))}
           </ul>
-          <button
-            type="button"
-            className="btn-primary w-full text-[13px] mt-1"
-          >
+          <button type="button" className="btn-primary w-full text-[13px] mt-1">
             Upgrade naar Premium
           </button>
         </div>
@@ -577,7 +662,6 @@ export default function GarageAanmeldenPage() {
       {/* Progress bar */}
       <div className="bg-white border-b border-neutral-100">
         <div className="max-w-site mx-auto px-4 sm:px-6">
-          {/* Segment bar */}
           <div className="flex gap-[3px] pt-3">
             {[1, 2, 3, 4].map(n => (
               <div
@@ -588,7 +672,6 @@ export default function GarageAanmeldenPage() {
               />
             ))}
           </div>
-          {/* Step labels */}
           <div className="flex pb-3 pt-[6px]">
             {STEP_LABELS.map((label, i) => (
               <div key={label} className="flex-1">
@@ -602,7 +685,6 @@ export default function GarageAanmeldenPage() {
       {/* Main content */}
       <main className="flex-1 max-w-site mx-auto px-4 sm:px-6 py-8 w-full">
         <div className="flex gap-8 items-start">
-          {/* Form panel */}
           <div className="flex-1 min-w-0">
             <div className="bg-white border border-neutral-100 rounded-xl shadow-card p-6 sm:p-8">
               {step === 1 && <StepOne />}
@@ -610,13 +692,21 @@ export default function GarageAanmeldenPage() {
               {step === 3 && <StepThree />}
               {step === 4 && <StepFour />}
 
+              {/* Error message */}
+              {error && (
+                <p className="mt-4 text-[13px] text-danger bg-danger/5 border border-danger/20 rounded-lg px-4 py-3">
+                  {error}
+                </p>
+              )}
+
               {/* Navigation buttons */}
               <div className="border-t border-neutral-100 mt-6 pt-4 flex justify-between items-center">
                 {step > 1 ? (
                   <button
                     type="button"
-                    onClick={() => setStep(s => s - 1)}
-                    className="btn-ghost"
+                    onClick={() => { setError(''); setStep(s => s - 1) }}
+                    disabled={loading}
+                    className="btn-ghost disabled:opacity-50"
                   >
                     Terug
                   </button>
@@ -627,7 +717,7 @@ export default function GarageAanmeldenPage() {
                 {step < 4 ? (
                   <button
                     type="button"
-                    onClick={() => setStep(s => s + 1)}
+                    onClick={handleNext}
                     className="btn-primary"
                   >
                     Volgende
@@ -635,20 +725,17 @@ export default function GarageAanmeldenPage() {
                 ) : (
                   <button
                     type="button"
-                    onClick={() => {
-                      // Mock submit
-                      alert('Uw profiel is aangemaakt!')
-                    }}
-                    className="btn-primary"
+                    onClick={handleSubmit}
+                    disabled={loading}
+                    className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Profiel aanmaken
+                    {loading ? 'Bezig met aanmaken…' : 'Profiel aanmaken'}
                   </button>
                 )}
               </div>
             </div>
           </div>
 
-          {/* Sidebar: only on step 4 */}
           {step === 4 && <Sidebar />}
         </div>
       </main>
