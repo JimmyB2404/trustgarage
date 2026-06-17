@@ -80,7 +80,7 @@ export default function ReviewModal({ garageId, garageName, onClose, onSubmit }:
       .single()
 
     if (reviewError) {
-      setError('Er is een fout opgetreden. Probeer opnieuw.')
+      setError(reviewError.message)
       setLoading(false)
       return
     }
