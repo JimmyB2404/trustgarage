@@ -150,109 +150,38 @@ export default function GarageAanmeldenPage() {
     setError('')
     setLoading(true)
 
-    const supabase = createClient()
-
-    // 1. Maak auth account aan
-    let userId: string | null = null
-    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-      email: formData.email,
-      password: formData.password,
+    const res = await fetch('/api/garage/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: formData.email,
+        password: formData.password,
+        garagenaam: formData.garagenaam,
+        adres: formData.adres,
+        stad: formData.stad,
+        telefoon: formData.telefoon,
+        bedrijfsEmail: formData.bedrijfsEmail,
+        website: formData.website,
+        description: formData.description,
+        kvkNumber: formData.kvkNumber,
+        kvkVerified,
+        services: formData.services,
+        languages: formData.languages,
+        hours: formData.hours,
+      }),
     })
 
-    if (signUpError) {
-      if (signUpError.message.toLowerCase().includes('already')) {
-        // Account bestaat al — probeer in te loggen
-        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-          email: formData.email,
-          password: formData.password,
-        })
-        if (signInError) {
-          setError('Dit e-mailadres is al in gebruik. Ga naar de inlogpagina.')
-          setLoading(false)
-          return
-        }
-        userId = signInData.user?.id ?? null
-      } else {
-        setError(signUpError.message)
-        setLoading(false)
-        return
-      }
-    } else {
-      userId = signUpData.user?.id ?? null
+    const result = await res.json()
 
-      // Als e-mailbevestiging vereist is: toon bevestigingsstap
-      if (!signUpData.session) {
-        setLoading(false)
-        setStep(5)
-        return
-      }
-    }
-
-    if (!userId) {
-      setError('Account aanmaken mislukt. Probeer het opnieuw.')
+    if (!res.ok) {
+      setError(result.error ?? 'Er is een fout opgetreden. Probeer opnieuw.')
       setLoading(false)
       return
     }
 
-    // 2. Genereer slug
-    const slug = `${slugify(formData.garagenaam)}-${slugify(formData.stad)}`
-
-    // 3. Maak garage aan
-    const { data: garage, error: garageError } = await supabase
-      .from('garages')
-      .insert({
-        user_id: userId,
-        name: formData.garagenaam,
-        slug,
-        address: formData.adres,
-        city: formData.stad,
-        phone: formData.telefoon,
-        email: formData.bedrijfsEmail,
-        website: formData.website || null,
-        description: formData.description,
-        kvk_number: formData.kvkNumber || null,
-        kvk_verified: kvkVerified,
-        plan: 'free',
-      })
-      .select('id')
-      .single()
-
-    if (garageError) {
-      setError(`Fout bij aanmaken garage: ${garageError.message}`)
-      setLoading(false)
-      return
-    }
-
-    const garageId = garage.id
-
-    // 4. Diensten opslaan
-    if (formData.services.length > 0) {
-      await supabase.from('garage_services').insert(
-        formData.services.map(s => ({ garage_id: garageId, service_name: s }))
-      )
-    }
-
-    // 5. Talen opslaan
-    if (formData.languages.length > 0) {
-      await supabase.from('garage_languages').insert(
-        formData.languages.map(l => ({ garage_id: garageId, language: l }))
-      )
-    }
-
-    // 6. Openingstijden opslaan
-    await supabase.from('garage_hours').insert(
-      Object.entries(formData.hours).map(([day, h]) => ({
-        garage_id: garageId,
-        day_of_week: parseInt(day),
-        open_time: h.closed ? null : h.open || null,
-        close_time: h.closed ? null : h.close || null,
-        is_closed: h.closed,
-      }))
-    )
-
-    // 7. Naar dashboard
-    router.push('/dashboard')
-    router.refresh()
+    // Alles opgeslagen — toon bevestigingsscherm
+    setLoading(false)
+    setStep(5)
   }
 
   function handleKvkVerify() {
