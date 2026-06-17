@@ -22,11 +22,7 @@
 
 - [x] Next.js 14+ project initialiseren (App Router + TypeScript)
 - [x] Tailwind CSS 3.x installeren en configureren
-- [x] Design tokens toevoegen aan `tailwind.config.js`:
-  - Kleuren: primary (`#0F6E56`), neutral, surface, amber, danger, info
-  - Fonts: Georgia (serif), system-ui (sans), Courier New (mono)
-  - Border radius: sm (4px), md (7px), lg (10px), xl (20px)
-  - Max-width: site (1280px)
+- [x] Design tokens toevoegen aan `tailwind.config.js`
 - [x] Tabler Icons installeren (`@tabler/icons-react`)
 - [x] Supabase client instellen (`@supabase/supabase-js`) + credentials in `.env.local`
 - [x] Stripe SDK installeren
@@ -38,14 +34,12 @@
 
 ## 2. Database (Supabase)
 
-- [x] Alle tabellen aanmaken via `supabase/migration.sql`:
-  - `profiles`, `garages`, `garage_services`, `garage_languages`
-  - `garage_hours`, `garage_photos`, `reviews`, `review_ratings`
-  - `garage_replies`, `subscriptions`
-- [x] Row Level Security (RLS) policies instellen per tabel
-- [x] Supabase Auth inschakelen (e-mail + wachtwoord)
+- [x] Tabellen aangemaakt: `garages`, `garage_services`, `garage_languages`, `garage_hours`, `garage_photos`, `reviews`, `review_ratings`, `garage_replies`, `subscriptions`
+- [x] `page_views` tabel aangemaakt voor profielweergaven tracking
+- [x] Supabase Auth inschakelen (e-mail + wachtwoord, bevestigingsmail actief)
+- [x] GRANT permissions ingesteld voor anon/authenticated/service_role
 - [x] Storage bucket aanmaken voor garage foto's (`garage-photos`)
-- [ ] Seed data invoeren: 10–15 Maastricht garages (nu nog mock data)
+- [ ] Seed data invoeren: 10–15 Maastricht garages
 
 ---
 
@@ -54,8 +48,8 @@
 - [x] **Knoppen** — 4 varianten: Primary, Secondary, Ghost, Danger
 - [x] **Badges & tags** — KVK geverifieerd, Aanbevolen, Engels gesproken, Premium lid, Nu open, Expat, Service tag, Nieuw
 - [x] **Formuliervelden** — states: Default, Hover, Focus, Filled, Error, Disabled
-- [x] **Garage card (verticaal)** — voor homepage grid (3 kolommen)
-- [x] **Garage card (horizontaal)** — voor zoekresultaten (full-width)
+- [x] **Garage card (verticaal)** — voor homepage grid
+- [x] **Garage card (horizontaal)** — voor zoekresultaten
 - [x] **Review kaart** — avatar, naam, expat badge, sterren, tekst, garage reactie
 - [x] **Navigatie (Navbar)** — desktop + hamburger mobiel, sticky, backdrop blur
 - [x] **Footer** — logo, links, copyright
@@ -65,77 +59,59 @@
 ## 4. Publieke Pagina's — P0
 
 ### 4.1 Homepage (`/`)
-- [x] Navigatie: logo links, 3 links midden, Inloggen + Aanmelden rechts
-- [x] Hero sectie: eyebrow, H1 (Georgia), subtitel, zoekbalk, 5 filterknoppen
-- [x] Trustbar: 4 USP's met groene iconen (verborgen op mobiel < 768px)
-- [x] Garage cards: 3 featured cards in grid + "Alle garages" knop
-- [x] "Hoe het werkt": 3 stappen met groene genummerde cirkels
-- [x] CTA blok: donkergroen, wit tekst, 2 knoppen
-- [x] Footer
-- [x] Responsive: zoekbalk 2 rijen op mobiel, 1 kolom cards
+- [x] Hero, trustbar, garage cards (echte Supabase data), "Hoe het werkt", CTA, Footer
+- [x] Responsive
 
 ### 4.2 Zoekresultaten (`/zoeken`)
-- [x] Persistente zoekbalk bovenaan met lijst/kaart toggle + sorteren
-- [x] Filterbar: resultaattelling, actieve chips met ×, "Wis alles"
-- [x] Sidebar filters (sticky, 210px): dienst / taal / rating / afstand / verificatie
-- [x] Resultaatkaarten: horizontaal layout, featured = groene left border
-- [x] Kaartinhoud: badge, naam, locatie + afstand, tags, openingstijd
-- [x] Kaart footer: KVK badge, Bellen knop, Profiel knop
-- [x] Paginering: pijlen + nummers
-- [x] Responsive: sidebar verborgen → bottom sheet via filterknop op mobiel
+- [x] Filterbar, sidebar, resultaatkaarten (echte Supabase data)
+- [x] Responsive
 
 ### 4.3 Garageprofiel (`/garage/{slug}`)
-- [x] Breadcrumb: Home › Stad › Garage naam
-- [x] Hero: avatar, badges, naam, locatie, rating, open-status, CTA knoppen
-- [x] Foto strip: max 5 foto's, laatste = "+N foto's" knop, horizontaal scrollbaar
-- [x] Sticky bar: verschijnt na scrollen voorbij hero (naam + rating + CTA)
-- [x] "Over de garage": beschrijvingstekst
-- [x] Beoordelingen: totaalcijfer + 5 subcategoriebarren
-- [x] Diensten: 3-koloms grid met checkmark-iconen
-- [x] Openingstijden: 2-koloms grid, vandaag groen
-- [x] Reviews: filter tabs, reviewkaarten, "Meer laden" knop
-- [x] Aside (desktop, 280px sticky): contact card, CTA knoppen, kaart, vergelijkbare garages
-- [x] Mobiel: tabs (Info / Reviews / Contact) + sticky footer CTA
+- [x] Hero, foto strip, beschrijving, diensten, openingstijden
+- [x] Reviews — echte data uit Supabase
+- [x] Review schrijven knop — redirect naar login als niet ingelogd
+- [x] Profielweergaven bijgehouden via `ViewTracker` component
+- [x] Responsive
 
 ---
 
 ## 5. Auth Pagina's — P0
 
 ### 5.1 Inloggen (`/inloggen`)
-- [x] E-mail + wachtwoord formulier
-- [x] Supabase Auth gekoppeld — echte login actief
-- [x] Rol-gebaseerde redirect: garage-eigenaar → `/dashboard`, gebruiker → `/account/reviews`
+- [x] Supabase Auth gekoppeld, rol-gebaseerde redirect (garage-eigenaar → dashboard)
 
 ### 5.2 Registreren gebruiker (`/registreren`)
-- [x] Naam, e-mail, wachtwoord formulier
-- [x] Supabase Auth gekoppeld — registratie actief
-- [x] E-mailbevestiging via Supabase
+- [x] Supabase Auth gekoppeld, e-mailbevestiging actief
 
-### 5.3 Registreren garage — 4-staps wizard (`/garage/aanmelden`)
-- [x] Voortgangsbalk: 4 stappen
-- [x] Stap 1 — Account: e-mail + wachtwoord
-- [x] Stap 2 — Bedrijfsgegevens: naam, adres, diensten, talen
-- [x] Stap 3 — KVK verificatie: invoerveld + API-check (mock)
-- [x] Stap 4 — Profiel afwerken: foto's, beschrijving, openingstijden
-- [ ] **Supabase Auth koppelen — garage aanmelding nog niet actief**
+### 5.3 Registreren garage — wizard (`/garage/aanmelden`)
+- [x] 5-staps wizard (account, bedrijfsgegevens, KVK, profiel, bevestiging)
+- [x] Supabase Auth + database volledig gekoppeld via `/api/garage/register`
+- [x] E-mailbevestiging verstuurd na aanmelding
+- [ ] Foto upload in wizard (wacht op Storage bucket policy)
+- [ ] Echte KVK verificatie (wacht op API key)
 
 ### 5.4 Wachtwoord reset (`/wachtwoord-reset`)
-- [x] E-mailadres invoeren formulier
-- [x] Supabase gekoppeld — reset mail actief
+- [x] Supabase gekoppeld, reset mail actief
 
 ---
 
-## 6. API Routes — P0
+## 6. API Routes
 
-### 6.1 KVK verificatie
+### 6.1 Garage registratie & beheer
+- [x] `POST /api/garage/register` — account aanmaken + garage opslaan (service role)
+- [x] `PUT /api/garage/update` — garage profiel updaten (service role)
+- [x] `POST /api/garage/reply` — garage reactie opslaan (service role)
+- [x] `POST /api/garage/view` — profielweergave loggen (service role)
+- [x] `GET /api/dashboard/views` — views ophalen voor dashboard (service role)
+
+### 6.2 KVK verificatie
 - [x] `POST /api/kvk` — stub met mock data
 - [ ] Echte KVK API activeren zodra `KVK_API_KEY` beschikbaar is
 
-### 6.2 Stripe abonnement
+### 6.3 Stripe abonnement
 - [x] `POST /api/stripe/create-checkout` — stub
 - [x] `POST /api/stripe/webhook` — stub
-- [ ] **Stripe activeren zodra account beschikbaar is**
-- [ ] Database updaten na betaling (Supabase koppeling)
+- [ ] Stripe activeren zodra account beschikbaar is
 
 ---
 
@@ -143,37 +119,43 @@
 
 ### 7.1 Dashboard overzicht (`/dashboard`)
 - [x] Layout: sidebar + main content, responsive
-- [x] 4 metric cards, staafgrafiek, compleetheid balk, upgrade card (UI gereed, mock data)
+- [x] Echte metrics: aantal reviews, gemiddelde rating, onbeantwoord, reacties gegeven
+- [x] Profielweergaven: totaal + 7-daagse staafgrafiek (echte data)
+- [x] Profielvolledigheid berekend op basis van ingevulde velden
+- [x] Upgrade card
 - [x] Afgeschermd voor niet-ingelogde gebruikers (middleware)
-- [ ] Echte data ophalen uit Supabase
 
 ### 7.2 Profiel beheren (`/dashboard/profiel`)
-- [x] Alle formuliervelden (UI gereed, mock data)
-- [ ] **Opslaan naar Supabase (koppeling volgt)**
+- [x] Formulier laadt echte garage data via `useGarage` hook
+- [x] Opslaan naar Supabase via `/api/garage/update`
+- [x] Omschrijving, diensten, talen, openingstijden bewerkbaar
+- [ ] Foto upload (wacht op Storage bucket policy)
 
 ### 7.3 Reviews beheren (`/dashboard/reviews`)
-- [x] Reviewlijst + reageren (UI gereed, mock data)
-- [ ] **Echte reviews ophalen + reacties opslaan in Supabase**
+- [x] Echte reviews geladen via `useGarage` hook
+- [x] Reactie plaatsen opgeslagen via `/api/garage/reply`
+- [x] Badge in sidebar toont live aantal onbeantwoorde reviews
 
 ### 7.4 Abonnement (`/dashboard/abonnement`)
 - [x] Plan tonen + upgrade knop (UI gereed, stub)
-- [ ] **Stripe koppelen**
+- [ ] Stripe koppelen
 
 ---
 
 ## 8. Gebruikersaccount — P1
 
-- [x] Mijn reviews (`/account/reviews`) — UI gereed, mock data
+- [x] Mijn reviews (`/account/reviews`) — UI gereed
 - [x] Mijn profiel (`/account/profiel`) — UI gereed
 - [x] Favorieten (`/account/favorieten`) — UI gereed
-- [ ] **Supabase Auth + data koppelen voor alle accountpagina's**
+- [ ] Supabase data koppelen voor alle accountpagina's
 
 ---
 
 ## 9. Review schrijven (modal) — P0
 
-- [x] Modal UI: sterren, tekst, taal, subcategoriescores (gereed)
-- [ ] **Opslaan in Supabase reviews tabel**
+- [x] Modal UI: sterren, tekst, taal, subcategoriescores
+- [x] Opslaan in Supabase `reviews` + `review_ratings` tabellen
+- [x] Wordt direct zichtbaar op garageprofiel na opslaan
 - [ ] Bevestigingsmail naar gebruiker sturen
 
 ---
@@ -189,12 +171,10 @@
 
 - [x] Navbar hamburger menu
 - [x] Homepage hero zoekbalk mobiel
-- [x] Trustbar verborgen op mobiel
 - [x] Garage grid responsive
 - [x] Zoekresultaten sidebar → bottom sheet
 - [x] Garageprofiel aside → tabs
 - [x] Dashboard sidebar → overlay drawer
-- [x] Account sidebar → dropdown
 
 ---
 
@@ -212,12 +192,12 @@
 
 ## 13. Deployment & Productie
 
-- [x] Vercel project aanmaakt + GitHub gekoppeld (auto-deploy actief)
-- [x] Domeinen toegevoegd in Vercel: trustgarage.nl + trustgarage.be
-- [x] DNS ingesteld in TransIP voor .nl en .be
+- [x] Vercel project + GitHub gekoppeld (auto-deploy actief)
+- [x] Domeinen toegevoegd: trustgarage.nl + trustgarage.be
+- [x] DNS ingesteld in TransIP
 - [x] trustgarage.be live + redirect naar trustgarage.nl
-- [ ] trustgarage.nl live (DNS propagatie nog bezig)
-- [ ] Omgevingsvariabelen instellen in Vercel dashboard (Supabase URL/key, Stripe keys)
+- [x] trustgarage.nl live
+- [x] Omgevingsvariabelen ingesteld in Vercel (Supabase URL/key, service role key)
 - [ ] Stripe webhook endpoint registreren in Stripe dashboard
 - [ ] Smoke test: registreer garage → schrijf review → upgrade abonnement
 
@@ -225,18 +205,22 @@
 
 ## Prioriteiten voor volgende sessie
 
-1. **Garage aanmelden koppelen aan Supabase** — wizard slaat garage op in database
-2. **Seed data invoeren** — 10–15 Maastricht garages in Supabase
-3. **Stripe activeren** — zodra Stripe account beschikbaar is
-4. **SEO** — sitemap.xml, robots.txt, Open Graph
+1. **Foto upload** — Supabase Storage bucket policy + upload in wizard en dashboard profiel
+2. **SEO** — sitemap.xml, robots.txt, Open Graph tags, JSON-LD structured data
+3. **Google Analytics 4** — bezoekersdata bijhouden
+4. **Stripe activeren** — zodra Stripe account beschikbaar is
+5. **KVK API activeren** — zodra API key beschikbaar is
+6. **Accountpagina's** — mijn reviews, profiel en favorieten koppelen aan Supabase
 
 ---
 
 ## Later (post-lancering) — P2
 
-- [ ] Google Analytics 4 integreren (bezoekers, populaire pagina's, conversies)
-- [ ] Kaartweergave zoekresultaten (Google Maps)
-- [ ] Engelstalige versie van de website
-- [ ] E-mailnotificaties voor nieuwe reviews (Resend of Supabase email)
+- [ ] Google Maps embed op garageprofiel
+- [ ] Kaartweergave zoekresultaten
+- [ ] E-mailnotificaties voor nieuwe reviews (Resend aanbevolen)
+- [ ] Custom SMTP via Resend (vervangt Supabase free tier limiet van 4/uur)
 - [ ] Admin dashboard voor moderatie
+- [ ] Engelstalige versie van de website
 - [ ] Meer steden toevoegen buiten Maastricht
+- [ ] Afspraak maken functionaliteit
