@@ -22,11 +22,11 @@ import { useGarage, type GarageData } from '@/hooks/useGarage'
 const navItems = [
   { href: '/dashboard', label: 'Overzicht', icon: <IconChartBar size={16} /> },
   { href: '/dashboard/profiel', label: 'Profiel', icon: <IconShieldCheck size={16} /> },
-  { href: '/dashboard/reviews', label: 'Reviews', icon: <IconStar size={16} />, badge: 2 },
+  { href: '/dashboard/reviews', label: 'Reviews', icon: <IconStar size={16} /> },
   { href: '/dashboard/abonnement', label: 'Abonnement', icon: <IconCircleCheck size={16} /> },
 ]
 
-function DashboardSidebar({ onClose }: { onClose?: () => void }) {
+function DashboardSidebar({ onClose, reviewBadge }: { onClose?: () => void; reviewBadge?: number }) {
   const pathname = usePathname()
   const router = useRouter()
   const { signOut } = useAuth()
@@ -56,6 +56,7 @@ function DashboardSidebar({ onClose }: { onClose?: () => void }) {
       <nav className="flex flex-col gap-1 flex-1">
         {navItems.map((item) => {
           const isActive = pathname === item.href
+          const badge = item.href === '/dashboard/reviews' ? reviewBadge : undefined
           return (
             <Link
               key={item.href}
@@ -72,9 +73,9 @@ function DashboardSidebar({ onClose }: { onClose?: () => void }) {
                 {item.icon}
               </span>
               <span className="flex-1">{item.label}</span>
-              {item.badge && !isActive && (
+              {badge != null && badge > 0 && !isActive && (
                 <span className="inline-flex items-center justify-center w-[18px] h-[18px] rounded-full bg-danger text-white text-[10px] font-medium">
-                  {item.badge}
+                  {badge}
                 </span>
               )}
             </Link>
@@ -96,14 +97,14 @@ function DashboardSidebar({ onClose }: { onClose?: () => void }) {
   )
 }
 
-function DashboardLayout({ children }: { children: React.ReactNode }) {
+function DashboardLayout({ children, reviewBadge }: { children: React.ReactNode; reviewBadge?: number }) {
   const [mobileOpen, setMobileOpen] = useState(false)
 
   return (
     <div className="min-h-screen flex">
       {/* Desktop sidebar */}
       <aside className="hidden md:flex w-[200px] bg-white border-r border-neutral-100 flex-col sticky top-0 h-screen">
-        <DashboardSidebar />
+        <DashboardSidebar reviewBadge={reviewBadge} />
       </aside>
 
       {/* Mobile sidebar overlay */}
@@ -114,7 +115,7 @@ function DashboardLayout({ children }: { children: React.ReactNode }) {
             onClick={() => setMobileOpen(false)}
           />
           <aside className="relative w-[220px] bg-white h-full shadow-modal flex flex-col">
-            <DashboardSidebar onClose={() => setMobileOpen(false)} />
+            <DashboardSidebar onClose={() => setMobileOpen(false)} reviewBadge={reviewBadge} />
           </aside>
         </div>
       )}
@@ -158,20 +159,6 @@ function computeCompleteness(g: GarageData): number {
   return score
 }
 
-// ─── Mock week data ───────────────────────────────────────────────────────────
-
-const weekData = [
-  { day: 'Ma', views: 28 },
-  { day: 'Di', views: 35 },
-  { day: 'Wo', views: 42 },
-  { day: 'Do', views: 31 },
-  { day: 'Vr', views: 55 },
-  { day: 'Za', views: 38 },
-  { day: 'Zo', views: 18 },
-]
-const todayIndex = 4 // Vrijdag
-const maxViews = Math.max(...weekData.map((d) => d.views))
-
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
@@ -185,7 +172,7 @@ export default function DashboardPage() {
   const completeness = garage ? computeCompleteness(garage) : 0
 
   return (
-    <DashboardLayout>
+    <DashboardLayout reviewBadge={unanswered}>
       <h3 className="text-[22px] font-medium text-neutral-900 mb-6">Overzicht</h3>
 
       {/* Metric cards */}
@@ -244,28 +231,6 @@ export default function DashboardPage() {
             <IconCircleCheck size={13} />
             <span>van de {reviewCount} reviews</span>
           </div>
-        </div>
-      </div>
-
-      {/* Bar chart */}
-      <div className="bg-white rounded-[9px] border border-neutral-100 p-5 mt-6">
-        <p className="text-[14px] font-medium text-neutral-900 mb-5">Profielweergaven deze week</p>
-        <div className="flex items-end gap-2 h-[120px]">
-          {weekData.map((d, i) => (
-            <div key={d.day} className="flex-1 flex flex-col items-center justify-end gap-1">
-              <span className="text-[11px] text-neutral-500">{d.views}</span>
-              <div
-                className={cn(
-                  'w-full rounded-t-sm transition-all',
-                  i === todayIndex ? 'bg-primary' : 'bg-[#E4E4E4]'
-                )}
-                style={{ height: `${Math.round((d.views / maxViews) * 80)}px` }}
-              />
-              <span className={cn('text-[11px]', i === todayIndex ? 'text-primary font-medium' : 'text-neutral-500')}>
-                {d.day}
-              </span>
-            </div>
-          ))}
         </div>
       </div>
 
