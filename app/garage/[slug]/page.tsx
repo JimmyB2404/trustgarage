@@ -35,7 +35,35 @@ export default async function GarageProfilePage({ params }: PageProps) {
   const garage = await fetchGarageBySlug(params.slug)
   if (!garage) notFound()
 
-  const garageReviews: Review[] = []
+  const { createClient } = await import('@supabase/supabase-js')
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
+  const { data: rawReviews } = await supabase
+    .from('reviews')
+    .select('*, review_ratings(category, score), garage_replies(id, text, created_at)')
+    .eq('garage_id', garage.id)
+    .order('created_at', { ascending: false })
+
+  const garageReviews: Review[] = (rawReviews ?? []).map((r) => ({
+    id: r.id,
+    garage_id: r.garage_id,
+    user_id: r.user_id,
+    user_name: r.user_name,
+    user_country: r.user_country,
+    is_expat: r.is_expat,
+    rating: r.rating,
+    text: r.text,
+    language: r.language,
+    verified: r.verified,
+    created_at: r.created_at,
+    ratings: (r.review_ratings ?? []).map((rr: { category: string; score: number }) => ({
+      category: rr.category,
+      score: rr.score,
+    })),
+    reply: r.garage_replies?.[0] ?? undefined,
+  }))
   const open = isGarageOpen(garage.hours)
   const todayHours = getTodayHours(garage.hours)
   const initials = getInitials(garage.name)
