@@ -180,17 +180,11 @@ export default function GarageAanmeldenPage() {
     } else {
       userId = signUpData.user?.id ?? null
 
-      // Als e-mailbevestiging vereist is: probeer direct in te loggen
+      // Als e-mailbevestiging vereist is: toon bevestigingsstap
       if (!signUpData.session) {
-        const { data: signInData } = await supabase.auth.signInWithPassword({
-          email: formData.email,
-          password: formData.password,
-        })
-        if (!signInData.session) {
-          setError('Bevestig uw e-mailadres via de link in uw mailbox en probeer opnieuw.')
-          setLoading(false)
-          return
-        }
+        setLoading(false)
+        setStep(5)
+        return
       }
     }
 
@@ -586,6 +580,31 @@ export default function GarageAanmeldenPage() {
     )
   }
 
+  // ─── Step 5: Email bevestiging ─────────────────────────────────────────────
+
+  function StepConfirm() {
+    return (
+      <div className="flex flex-col items-center text-center gap-5 py-4">
+        <div className="w-14 h-14 rounded-full bg-primary-light flex items-center justify-center">
+          <IconCircleCheck size={28} className="text-primary" />
+        </div>
+        <h2 className="text-[22px] font-normal font-serif text-neutral-900">
+          Bevestig uw e-mailadres
+        </h2>
+        <p className="text-[14px] text-neutral-500 max-w-[340px] leading-relaxed">
+          We hebben een bevestigingsmail gestuurd naar <strong className="text-neutral-900">{formData.email}</strong>.
+          Klik op de link in de mail om uw account te activeren.
+        </p>
+        <p className="text-[13px] text-neutral-400">
+          Na bevestiging kunt u inloggen via de inlogpagina.
+        </p>
+        <a href="/inloggen" className="btn-primary mt-2">
+          Naar inloggen
+        </a>
+      </div>
+    )
+  }
+
   // ─── Sidebar ───────────────────────────────────────────────────────────────
 
   function Sidebar() {
@@ -691,6 +710,7 @@ export default function GarageAanmeldenPage() {
               {step === 2 && StepTwo()}
               {step === 3 && StepThree()}
               {step === 4 && StepFour()}
+              {step === 5 && StepConfirm()}
 
               {/* Error message */}
               {error && (
@@ -700,7 +720,7 @@ export default function GarageAanmeldenPage() {
               )}
 
               {/* Navigation buttons */}
-              <div className="border-t border-neutral-100 mt-6 pt-4 flex justify-between items-center">
+              {step < 5 && <div className="border-t border-neutral-100 mt-6 pt-4 flex justify-between items-center">
                 {step > 1 ? (
                   <button
                     type="button"
@@ -732,7 +752,7 @@ export default function GarageAanmeldenPage() {
                     {loading ? 'Bezig met aanmaken…' : 'Profiel aanmaken'}
                   </button>
                 )}
-              </div>
+              </div>}
             </div>
           </div>
 

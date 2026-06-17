@@ -37,8 +37,7 @@ export default function InloggenPage() {
       .single()
 
     setSuccess(true)
-    router.push(garage ? '/dashboard' : '/account/reviews')
-    router.refresh()
+    window.location.href = garage ? '/dashboard' : '/account/reviews'
   }
 
   return (
