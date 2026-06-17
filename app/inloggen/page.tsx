@@ -22,7 +22,7 @@ export default function InloggenPage() {
     setError(null)
 
     const supabase = createClient()
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    const { data: authData, error } = await supabase.auth.signInWithPassword({ email, password })
 
     if (error) {
       setError('E-mailadres of wachtwoord is onjuist.')
@@ -30,8 +30,14 @@ export default function InloggenPage() {
       return
     }
 
+    const { data: garage } = await supabase
+      .from('garages')
+      .select('id')
+      .eq('user_id', authData.user.id)
+      .single()
+
     setSuccess(true)
-    router.push('/dashboard')
+    router.push(garage ? '/dashboard' : '/account/reviews')
     router.refresh()
   }
 
