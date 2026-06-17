@@ -17,7 +17,6 @@ const CATEGORIES = [
   { key: 'prijs', label: 'Prijs/kwaliteit' },
   { key: 'snelheid', label: 'Snelheid' },
   { key: 'communicatie', label: 'Communicatie' },
-  { key: 'engels', label: 'Engelstalig' },
 ]
 
 function StarPicker({ value, onChange, size = 28 }: { value: number; onChange: (v: number) => void; size?: number }) {
