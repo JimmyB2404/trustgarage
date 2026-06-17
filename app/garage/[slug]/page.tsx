@@ -12,8 +12,9 @@ import Footer from '@/components/layout/Footer'
 import Badge from '@/components/ui/Badge'
 import StarRating from '@/components/ui/StarRating'
 import ReviewCard from '@/components/ui/ReviewCard'
-import { mockGarages, mockReviews } from '@/lib/mock-data'
+import { fetchGarageBySlug } from '@/lib/garages'
 import { getDayName, isGarageOpen, getTodayHours, getInitials } from '@/lib/utils'
+import type { Review } from '@/types'
 
 interface PageProps {
   params: { slug: string }
@@ -29,11 +30,11 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 const SUBCATEGORIES = ['eerlijkheid', 'prijs', 'snelheid', 'communicatie', 'engels'] as const
 
-export default function GarageProfilePage({ params }: PageProps) {
-  const garage = mockGarages.find(g => g.slug === params.slug)
+export default async function GarageProfilePage({ params }: PageProps) {
+  const garage = await fetchGarageBySlug(params.slug)
   if (!garage) notFound()
 
-  const garageReviews = mockReviews.filter(r => r.garage_id === garage.id)
+  const garageReviews: Review[] = []
   const open = isGarageOpen(garage.hours)
   const todayHours = getTodayHours(garage.hours)
   const initials = getInitials(garage.name)

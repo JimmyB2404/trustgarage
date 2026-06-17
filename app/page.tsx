@@ -9,7 +9,7 @@ import {
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import GarageCard from '@/components/ui/GarageCard'
-import { mockGarages } from '@/lib/mock-data'
+import { fetchGarages } from '@/lib/garages'
 
 const filterChips = ['APK', 'Onderhoud', 'Banden', 'Airco', 'Engelstalig']
 
@@ -38,8 +38,8 @@ const howItWorksSteps = [
   },
 ]
 
-export default function HomePage() {
-  const featuredGarages = mockGarages.slice(0, 3)
+export default async function HomePage() {
+  const featuredGarages = await fetchGarages(3)
 
   return (
     <>

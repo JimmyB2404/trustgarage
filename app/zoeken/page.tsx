@@ -1,11 +1,13 @@
 'use client'
 
-import { useState, useMemo, Suspense } from 'react'
+import { useState, useMemo, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import GarageCard from '@/components/ui/GarageCard'
-import { SERVICES, LANGUAGES, mockGarages } from '@/lib/mock-data'
+import { SERVICES, LANGUAGES } from '@/lib/mock-data'
+import { createClient } from '@/lib/supabase'
+import { transformGarage } from '@/lib/garages'
 import {
   IconSearch,
   IconFilter,
@@ -23,6 +25,7 @@ function ZoekenContent() {
   const searchParams = useSearchParams()
   const initialQuery = searchParams.get('q') ?? ''
 
+  const [allGarages, setAllGarages] = useState<Garage[]>([])
   const [query, setQuery] = useState(initialQuery)
   const [selectedServices, setSelectedServices] = useState<string[]>([])
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([])
@@ -32,9 +35,19 @@ function ZoekenContent() {
   const [showFilters, setShowFilters] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
 
+  useEffect(() => {
+    const supabase = createClient()
+    supabase
+      .from('garages')
+      .select('*, garage_services(service_name), garage_languages(language), garage_hours(day_of_week, open_time, close_time, is_closed), reviews(rating)')
+      .then(({ data }) => {
+        setAllGarages((data ?? []).map(transformGarage))
+      })
+  }, [])
+
   // --- filter logic ---
   const filteredGarages = useMemo<Garage[]>(() => {
-    let result = [...mockGarages]
+    let result = [...allGarages]
 
     if (query.trim()) {
       const q = query.trim().toLowerCase()
@@ -79,7 +92,7 @@ function ZoekenContent() {
     })
 
     return result
-  }, [query, selectedServices, selectedLanguages, minRating, kvkOnly, sortBy])
+  }, [allGarages, query, selectedServices, selectedLanguages, minRating, kvkOnly, sortBy])
 
   const totalPages = Math.max(1, Math.ceil(filteredGarages.length / RESULTS_PER_PAGE))
   const paginatedGarages = filteredGarages.slice(
