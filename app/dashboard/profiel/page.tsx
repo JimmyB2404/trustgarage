@@ -155,6 +155,9 @@ export default function ProfielPage() {
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState('')
+  const [photos, setPhotos] = useState<{ id: string; url: string }[]>([])
+  const [uploadingPhotos, setUploadingPhotos] = useState(false)
+  const [photoError, setPhotoError] = useState('')
 
   const unanswered = garage?.reviews.filter(r => r.garage_replies.length === 0).length ?? 0
 
@@ -169,6 +172,7 @@ export default function ProfielPage() {
     setOmschrijving(garage.description ?? '')
     setSelectedServices(garage.garage_services.map(s => s.service_name))
     setSelectedLanguages(garage.garage_languages.map(l => l.language))
+    setPhotos(garage.garage_photos ?? [])
     setHours(
       ORDERED_DAYS.map((dayNum) => {
         const h = garage.garage_hours.find(x => x.day_of_week === dayNum)
@@ -181,6 +185,38 @@ export default function ProfielPage() {
       })
     )
   }, [garage])
+
+  async function handlePhotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = e.target.files
+    if (!files || !garage) return
+    if (photos.length + files.length > 8) {
+      setPhotoError("Maximum 8 foto's toegestaan.")
+      return
+    }
+    setUploadingPhotos(true)
+    setPhotoError('')
+    const formData = new FormData()
+    formData.append('garageId', garage.id)
+    Array.from(files).forEach(f => formData.append('files', f))
+    const res = await fetch('/api/garage/photos', { method: 'POST', body: formData })
+    const result = await res.json()
+    setUploadingPhotos(false)
+    if (!res.ok) {
+      setPhotoError(result.error ?? 'Upload mislukt.')
+    } else {
+      setPhotos(prev => [...prev, ...result.photos])
+    }
+    e.target.value = ''
+  }
+
+  async function handlePhotoDelete(photoId: string) {
+    await fetch('/api/garage/photos', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ photoId }),
+    })
+    setPhotos(prev => prev.filter(p => p.id !== photoId))
+  }
 
   function toggleService(s: string) {
     setSelectedServices(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s])
@@ -388,13 +424,61 @@ export default function ProfielPage() {
         {/* Foto's */}
         <div className="bg-white border border-neutral-100 rounded-[9px] p-5">
           <p className="text-[14px] font-semibold text-neutral-900 mb-1">{"Foto's"}</p>
-          <p className="text-[12px] text-neutral-500 mb-4">{"Upload foto's van uw garage (max. 8)."}</p>
-          <label className="flex flex-col items-center justify-center gap-2 border-[1.5px] border-dashed border-neutral-100 rounded-[9px] p-8 cursor-pointer hover:border-primary hover:bg-primary-light/30 transition-colors duration-150">
-            <IconUpload size={24} className="text-neutral-300" />
-            <span className="text-[13px] text-neutral-500">{"Klik om foto's te uploaden"}</span>
-            <span className="text-[11px] text-neutral-300">JPG, PNG, WEBP — max. 5 MB per foto</span>
-            <input type="file" accept="image/*" multiple className="hidden" />
-          </label>
+          <p className="text-[12px] text-neutral-500 mb-4">{photos.length}/8 foto{"'"}s geüpload.</p>
+
+          {/* Bestaande foto's */}
+          {photos.length > 0 && (
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-4">
+              {photos.map(photo => (
+                <div key={photo.id} className="relative group">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={photo.url}
+                    alt="Garagefoto"
+                    className="w-full h-[80px] object-cover rounded-md border border-neutral-100"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handlePhotoDelete(photo.id)}
+                    className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    aria-label="Foto verwijderen"
+                  >
+                    <IconX size={11} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Upload zone */}
+          {photos.length < 8 && (
+            <label className={cn(
+              'flex flex-col items-center justify-center gap-2 border-[1.5px] border-dashed border-neutral-100 rounded-[9px] p-6 cursor-pointer hover:border-primary hover:bg-primary-light/30 transition-colors duration-150',
+              uploadingPhotos && 'opacity-50 cursor-not-allowed'
+            )}>
+              {uploadingPhotos ? (
+                <span className="text-[13px] text-neutral-500">Uploaden...</span>
+              ) : (
+                <>
+                  <IconUpload size={22} className="text-neutral-300" />
+                  <span className="text-[13px] text-neutral-500">{"Klik om foto's te uploaden"}</span>
+                  <span className="text-[11px] text-neutral-300">JPG, PNG, WEBP — max. 5 MB per foto</span>
+                </>
+              )}
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                multiple
+                className="hidden"
+                disabled={uploadingPhotos}
+                onChange={handlePhotoUpload}
+              />
+            </label>
+          )}
+
+          {photoError && (
+            <p className="text-[12px] text-danger mt-2">{photoError}</p>
+          )}
         </div>
 
         {error && (

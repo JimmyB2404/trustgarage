@@ -44,6 +44,7 @@ export type GarageData = {
   garage_services: { service_name: string }[]
   garage_languages: { language: string }[]
   garage_hours: GarageHour[]
+  garage_photos: { id: string; url: string }[]
   reviews: GarageReview[]
 }
 
@@ -62,6 +63,7 @@ export function useGarage() {
         garage_services(service_name),
         garage_languages(language),
         garage_hours(day_of_week, open_time, close_time, is_closed),
+        garage_photos(id, url),
         reviews(
           id, user_name, user_country, is_expat, rating, text, language, verified, created_at,
           review_ratings(category, score),

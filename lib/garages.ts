@@ -36,7 +36,7 @@ export function transformGarage(raw: any): Garage {
       close: h.close_time ?? '',
       closed: h.is_closed ?? false,
     })),
-    photos: [],
+    photos: (raw.garage_photos ?? []).map((p: { url: string }) => p.url),
     created_at: raw.created_at,
   }
 }
@@ -46,6 +46,7 @@ const GARAGE_SELECT = `
   garage_services(service_name),
   garage_languages(language),
   garage_hours(day_of_week, open_time, close_time, is_closed),
+  garage_photos(id, url),
   reviews(rating)
 `
 
