@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import {
   IconChartBar,
   IconHeart,
@@ -10,17 +10,22 @@ import {
   IconLogout,
   IconChevronDown,
   IconCheck,
+  IconAlertCircle,
 } from '@tabler/icons-react'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import { getInitials } from '@/lib/utils'
-
-const USER_NAME = 'James Wilson'
-const USER_EMAIL = 'james.wilson@email.com'
+import { useAuth } from '@/context/AuthContext'
+import { createClient } from '@/lib/supabase'
 
 function AccountSidebar() {
   const pathname = usePathname()
+  const router = useRouter()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const { user, signOut } = useAuth()
+
+  const displayName = user?.user_metadata?.name || user?.email || ''
+  const displayEmail = user?.email || ''
 
   const navItems = [
     { href: '/account/reviews', label: 'Mijn reviews', icon: IconChartBar },
@@ -29,6 +34,12 @@ function AccountSidebar() {
   ]
 
   const activeItem = navItems.find(item => pathname === item.href) ?? navItems[1]
+
+  async function handleSignOut() {
+    await signOut()
+    router.push('/')
+    router.refresh()
+  }
 
   return (
     <>
@@ -40,7 +51,7 @@ function AccountSidebar() {
         >
           <div className="flex items-center gap-2">
             <div className="w-[34px] h-[34px] rounded-full bg-primary text-white flex items-center justify-center text-[13px] font-medium flex-shrink-0">
-              {getInitials(USER_NAME)}
+              {getInitials(displayName)}
             </div>
             <span className="text-[14px] font-medium text-neutral-900">{activeItem.label}</span>
           </div>
@@ -65,7 +76,10 @@ function AccountSidebar() {
               )
             })}
             <div className="border-t border-neutral-100">
-              <button className="w-full flex items-center gap-2.5 px-4 py-3 text-[14px] text-danger hover:bg-red-50 transition-colors">
+              <button
+                onClick={handleSignOut}
+                className="w-full flex items-center gap-2.5 px-4 py-3 text-[14px] text-danger hover:bg-red-50 transition-colors"
+              >
                 <IconLogout size={16} />
                 Uitloggen
               </button>
@@ -81,11 +95,11 @@ function AccountSidebar() {
           <div className="px-4 py-4 border-b border-neutral-100">
             <div className="flex items-center gap-2.5">
               <div className="w-[42px] h-[42px] rounded-full bg-primary text-white flex items-center justify-center text-[15px] font-medium flex-shrink-0">
-                {getInitials(USER_NAME)}
+                {getInitials(displayName)}
               </div>
               <div className="min-w-0">
-                <div className="text-[14px] font-medium text-neutral-900 truncate">{USER_NAME}</div>
-                <div className="text-[12px] text-neutral-500 truncate">{USER_EMAIL}</div>
+                <div className="text-[14px] font-medium text-neutral-900 truncate">{displayName}</div>
+                <div className="text-[12px] text-neutral-500 truncate">{displayEmail}</div>
               </div>
             </div>
           </div>
@@ -110,7 +124,10 @@ function AccountSidebar() {
 
           {/* Logout */}
           <div className="border-t border-neutral-100 py-1">
-            <button className="w-full flex items-center gap-2.5 px-4 py-[10px] text-[13px] text-danger hover:bg-red-50 transition-colors duration-100">
+            <button
+              onClick={handleSignOut}
+              className="w-full flex items-center gap-2.5 px-4 py-[10px] text-[13px] text-danger hover:bg-red-50 transition-colors duration-100"
+            >
               <IconLogout size={15} />
               Uitloggen
             </button>
@@ -122,25 +139,60 @@ function AccountSidebar() {
 }
 
 export default function ProfielPage() {
-  const [naam, setNaam] = useState('James Wilson')
-  const [email, setEmail] = useState('james.wilson@email.com')
+  const { user } = useAuth()
+  const [naam, setNaam] = useState('')
+  const [email, setEmail] = useState('')
   const [profileSaved, setProfileSaved] = useState(false)
+  const [profileError, setProfileError] = useState<string | null>(null)
 
-  const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [passwordSaved, setPasswordSaved] = useState(false)
+  const [passwordError, setPasswordError] = useState<string | null>(null)
 
-  const handleSaveProfile = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (user) {
+      setNaam(user.user_metadata?.name || '')
+      setEmail(user.email || '')
+    }
+  }, [user])
+
+  async function handleSaveProfile(e: React.FormEvent) {
     e.preventDefault()
+    setProfileError(null)
+    const supabase = createClient()
+    const { error } = await supabase.auth.updateUser({
+      email,
+      data: { name: naam },
+    })
+    if (error) {
+      setProfileError('Opslaan mislukt. Probeer het opnieuw.')
+      return
+    }
     setProfileSaved(true)
     setTimeout(() => setProfileSaved(false), 2500)
   }
 
-  const handleSavePassword = (e: React.FormEvent) => {
+  async function handleSavePassword(e: React.FormEvent) {
     e.preventDefault()
+    setPasswordError(null)
+
+    if (newPassword.length < 8) {
+      setPasswordError('Wachtwoord moet minimaal 8 tekens bevatten.')
+      return
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordError('Wachtwoorden komen niet overeen.')
+      return
+    }
+
+    const supabase = createClient()
+    const { error } = await supabase.auth.updateUser({ password: newPassword })
+    if (error) {
+      setPasswordError('Wachtwoord wijzigen mislukt. Probeer het opnieuw.')
+      return
+    }
     setPasswordSaved(true)
-    setCurrentPassword('')
     setNewPassword('')
     setConfirmPassword('')
     setTimeout(() => setPasswordSaved(false), 2500)
@@ -165,6 +217,13 @@ export default function ProfielPage() {
               <h2 className="text-[22px] sm:text-[26px] font-normal font-serif text-neutral-900 mb-5">
                 Persoonlijke gegevens
               </h2>
+
+              {profileError && (
+                <div className="flex items-center gap-2 bg-red-50 text-danger text-[13px] px-4 py-3 rounded-lg mb-4">
+                  <IconAlertCircle size={15} />
+                  {profileError}
+                </div>
+              )}
 
               <form onSubmit={handleSaveProfile} className="flex flex-col gap-4">
                 <div>
@@ -215,22 +274,14 @@ export default function ProfielPage() {
                 Wachtwoord wijzigen
               </h2>
 
-              <form onSubmit={handleSavePassword} className="flex flex-col gap-4">
-                <div>
-                  <label htmlFor="current-password" className="block text-[13px] font-medium text-neutral-900 mb-1.5">
-                    Huidig wachtwoord
-                  </label>
-                  <input
-                    id="current-password"
-                    type="password"
-                    value={currentPassword}
-                    onChange={e => setCurrentPassword(e.target.value)}
-                    className="input-field"
-                    placeholder="Uw huidige wachtwoord"
-                    autoComplete="current-password"
-                  />
+              {passwordError && (
+                <div className="flex items-center gap-2 bg-red-50 text-danger text-[13px] px-4 py-3 rounded-lg mb-4">
+                  <IconAlertCircle size={15} />
+                  {passwordError}
                 </div>
+              )}
 
+              <form onSubmit={handleSavePassword} className="flex flex-col gap-4">
                 <div>
                   <label htmlFor="new-password" className="block text-[13px] font-medium text-neutral-900 mb-1.5">
                     Nieuw wachtwoord

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import {
   IconChartBar,
   IconStar,
@@ -18,15 +18,24 @@ import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import { mockReviews, mockGarages } from '@/lib/mock-data'
 import { getInitials } from '@/lib/utils'
-
-const USER_NAME = 'James Wilson'
-const USER_EMAIL = 'james.wilson@email.com'
+import { useAuth } from '@/context/AuthContext'
 
 type FilterTab = 'Alle' | 'Actief' | 'Bewerkt'
 
 function AccountSidebar() {
   const pathname = usePathname()
+  const router = useRouter()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const { user, signOut } = useAuth()
+
+  const displayName = user?.user_metadata?.name || user?.email || ''
+  const displayEmail = user?.email || ''
+
+  async function handleSignOut() {
+    await signOut()
+    router.push('/')
+    router.refresh()
+  }
 
   const navItems = [
     { href: '/account/reviews', label: 'Mijn reviews', icon: IconChartBar },
@@ -46,7 +55,7 @@ function AccountSidebar() {
         >
           <div className="flex items-center gap-2">
             <div className="w-[34px] h-[34px] rounded-full bg-primary text-white flex items-center justify-center text-[13px] font-medium flex-shrink-0">
-              {getInitials(USER_NAME)}
+              {getInitials(displayName)}
             </div>
             <span className="text-[14px] font-medium text-neutral-900">{activeItem.label}</span>
           </div>
@@ -71,7 +80,7 @@ function AccountSidebar() {
               )
             })}
             <div className="border-t border-neutral-100">
-              <button className="w-full flex items-center gap-2.5 px-4 py-3 text-[14px] text-danger hover:bg-red-50 transition-colors">
+              <button onClick={handleSignOut} className="w-full flex items-center gap-2.5 px-4 py-3 text-[14px] text-danger hover:bg-red-50 transition-colors">
                 <IconLogout size={16} />
                 Uitloggen
               </button>
@@ -87,11 +96,11 @@ function AccountSidebar() {
           <div className="px-4 py-4 border-b border-neutral-100">
             <div className="flex items-center gap-2.5">
               <div className="w-[42px] h-[42px] rounded-full bg-primary text-white flex items-center justify-center text-[15px] font-medium flex-shrink-0">
-                {getInitials(USER_NAME)}
+                {getInitials(displayName)}
               </div>
               <div className="min-w-0">
-                <div className="text-[14px] font-medium text-neutral-900 truncate">{USER_NAME}</div>
-                <div className="text-[12px] text-neutral-500 truncate">{USER_EMAIL}</div>
+                <div className="text-[14px] font-medium text-neutral-900 truncate">{displayName}</div>
+                <div className="text-[12px] text-neutral-500 truncate">{displayEmail}</div>
               </div>
             </div>
           </div>
@@ -116,7 +125,7 @@ function AccountSidebar() {
 
           {/* Logout */}
           <div className="border-t border-neutral-100 py-1">
-            <button className="w-full flex items-center gap-2.5 px-4 py-[10px] text-[13px] text-danger hover:bg-red-50 transition-colors duration-100">
+            <button onClick={handleSignOut} className="w-full flex items-center gap-2.5 px-4 py-[10px] text-[13px] text-danger hover:bg-red-50 transition-colors duration-100">
               <IconLogout size={15} />
               Uitloggen
             </button>
