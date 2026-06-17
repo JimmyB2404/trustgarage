@@ -10,7 +10,7 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const pathname = usePathname()
   const router = useRouter()
-  const { user, loading, signOut } = useAuth()
+  const { user, loading, isGarageOwner, signOut } = useAuth()
 
   const navLinks = [
     { href: '/zoeken', label: 'Zoek een garage' },
@@ -52,11 +52,11 @@ export default function Navbar() {
             {!loading && user ? (
               <>
                 <Link
-                  href="/dashboard"
+                  href={isGarageOwner ? '/dashboard' : '/account/reviews'}
                   className="flex items-center gap-1.5 text-[13px] text-neutral-500 hover:text-neutral-900 transition-colors px-3 py-[7px]"
                 >
                   <IconUser size={15} />
-                  Dashboard
+                  {isGarageOwner ? 'Dashboard' : 'Mijn account'}
                 </Link>
                 <button
                   onClick={handleSignOut}
@@ -114,11 +114,11 @@ export default function Navbar() {
               {!loading && user ? (
                 <>
                   <Link
-                    href="/dashboard"
+                    href={isGarageOwner ? '/dashboard' : '/account/reviews'}
                     onClick={() => setMobileOpen(false)}
                     className="btn-ghost text-center w-full"
                   >
-                    Dashboard
+                    {isGarageOwner ? 'Dashboard' : 'Mijn account'}
                   </Link>
                   <button onClick={handleSignOut} className="btn-danger text-center w-full">
                     Uitloggen
