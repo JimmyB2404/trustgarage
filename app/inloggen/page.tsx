@@ -30,14 +30,13 @@ export default function InloggenPage() {
       return
     }
 
-    const { data: garage } = await supabase
-      .from('garages')
-      .select('id')
-      .eq('user_id', authData.user.id)
-      .single()
+    const [{ data: garage }, adminCheck] = await Promise.all([
+      supabase.from('garages').select('id').eq('user_id', authData.user.id).maybeSingle(),
+      fetch('/api/admin/check').then(r => r.json()).catch(() => ({ isAdmin: false })),
+    ])
 
     setSuccess(true)
-    window.location.href = garage ? '/dashboard' : '/account/reviews'
+    window.location.href = adminCheck.isAdmin ? '/admin' : garage ? '/dashboard' : '/account/reviews'
   }
 
   return (
