@@ -43,7 +43,7 @@ const plans = [
     featured: false,
     cta: 'Gratis aanmelden',
     ctaVariant: 'primary' as const,
-    href: '/registreren',
+    href: '/garage/aanmelden',
     features: [
       'Vermelding in zoekresultaten',
       'Basisprofiel met contactgegevens',
@@ -65,7 +65,7 @@ const plans = [
     featured: true,
     cta: 'Premium kiezen',
     ctaVariant: 'primary' as const,
-    href: '/registreren?plan=premium',
+    href: '/garage/aanmelden',
     features: [
       'Alles in Gratis',
       'Reageren op reviews',
@@ -87,7 +87,7 @@ const plans = [
     featured: false,
     cta: 'Business kiezen',
     ctaVariant: 'secondary' as const,
-    href: '/registreren?plan=business',
+    href: '/garage/aanmelden',
     features: [
       'Alles in Premium',
       'Onbeperkt foto\'s',
@@ -146,7 +146,7 @@ export default function VoorGaragesPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
             <Link
-              href="/registreren"
+              href="/garage/aanmelden"
               className="inline-flex items-center justify-center rounded-md px-6 py-[11px] text-[14px] font-medium transition-colors duration-150 bg-white text-primary hover:bg-primary-light"
             >
               Gratis aanmelden
@@ -283,7 +283,7 @@ export default function VoorGaragesPage() {
             Meld uw garage vandaag nog gratis aan en word gevonden door nieuwe klanten.
           </p>
           <Link
-            href="/registreren"
+            href="/garage/aanmelden"
             className="inline-flex items-center justify-center rounded-md px-6 py-[11px] text-[14px] font-medium transition-colors duration-150 bg-white text-primary hover:bg-primary-light"
           >
             Gratis aanmelden

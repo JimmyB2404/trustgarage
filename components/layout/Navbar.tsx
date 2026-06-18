@@ -17,6 +17,7 @@ export default function Navbar() {
   const navLinks = [
     { href: '/zoeken', label: 'Zoek een garage' },
     { href: '/voor-garages', label: 'Voor garages' },
+    { href: '/tarieven', label: 'Tarieven' },
     { href: '/over-ons', label: 'Over ons' },
   ]
 

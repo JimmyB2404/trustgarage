@@ -24,6 +24,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: BASE_URL, changeFrequency: 'daily', priority: 1 },
     { url: `${BASE_URL}/zoeken`, changeFrequency: 'daily', priority: 0.9 },
     { url: `${BASE_URL}/voor-garages`, changeFrequency: 'monthly', priority: 0.6 },
+    { url: `${BASE_URL}/tarieven`, changeFrequency: 'monthly', priority: 0.6 },
     { url: `${BASE_URL}/over-ons`, changeFrequency: 'monthly', priority: 0.4 },
     { url: `${BASE_URL}/garage/aanmelden`, changeFrequency: 'monthly', priority: 0.7 },
     { url: `${BASE_URL}/inloggen`, changeFrequency: 'yearly', priority: 0.3 },
