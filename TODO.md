@@ -156,10 +156,9 @@
 
 ## 8. Gebruikersaccount — P1
 
-- [x] Mijn reviews (`/account/reviews`) — UI gereed
-- [x] Mijn profiel (`/account/profiel`) — UI gereed
-- [x] Favorieten (`/account/favorieten`) — UI gereed
-- [x] Favorieten (`/account/favorieten`) — gekoppeld aan Supabase via `/api/favorites`
+- [x] Mijn reviews (`/account/reviews`) — UI gereed, nog mock data
+- [x] Mijn profiel (`/account/profiel`) — UI gereed, nog mock data
+- [x] Favorieten (`/account/favorieten`) — UI + Supabase data gekoppeld via `/api/favorites`
 - [ ] Supabase data koppelen voor mijn reviews en mijn profiel accountpagina's
 
 ---
@@ -219,28 +218,24 @@
 
 ## Prioriteiten voor lancering
 
-1. **Seed data** — 10–15 Maastricht garages invoeren in Supabase
-2. **Google Analytics 4** — bezoekersdata bijhouden
-3. **Smoke test** — registreer garage → schrijf review → check dashboard
-4. **Stripe activeren** — zodra Stripe account beschikbaar is
-5. **KVK API activeren** — zodra API key beschikbaar is
-
-## Nice to have (post-lancering)
-
-- Bevestigingsmail naar klant na review schrijven (Resend)
-- Accountpagina's koppelen aan Supabase (mijn reviews, favorieten, profiel)
-- Meer steden toevoegen buiten Maastricht
-- Lazy loading foto strips + `next/image` optimaliseren met `sizes`
+1. **Seed data** — 10–15 Maastricht garages invoeren in Supabase (wacht op materiaal van opdrachtgever)
+2. **Smoke test** — registreer garage → schrijf review → check dashboard, op productie
+3. **Google Analytics 4** — bezoekersdata bijhouden
+4. **Stripe activeren** — zodra Stripe account beschikbaar is (opdrachtgever)
+5. **KVK API activeren** — zodra API key beschikbaar is (opdrachtgever)
+6. **Google Maps API key** — zodra key beschikbaar is (opdrachtgever)
 
 ---
 
 ## Later (post-lancering) — P2
 
-- [ ] Google Maps embed op garageprofiel
-- [ ] Kaartweergave zoekresultaten
-- [ ] E-mailnotificaties voor nieuwe reviews (Resend aanbevolen)
-- [ ] Custom SMTP via Resend (vervangt Supabase free tier limiet van 4/uur)
+- [ ] Mijn reviews + mijn profiel accountpagina's koppelen aan Supabase (favorieten al gedaan)
+- [ ] Bevestigingsmail naar klant na review schrijven (Resend)
+- [ ] E-mailnotificaties voor garage-eigenaar bij nieuwe review (Resend)
+- [ ] Custom SMTP via Resend (vervangt Supabase free tier limiet van 4 mails/uur)
+- [ ] `next/image` optimaliseren met `sizes` attribuut + lazy loading foto strips
+- [ ] Google Maps embed op garageprofiel + kaartweergave zoekresultaten
+- [ ] Afspraak maken functionaliteit
 - [ ] Admin dashboard voor moderatie
 - [ ] Engelstalige versie van de website
 - [ ] Meer steden toevoegen buiten Maastricht
-- [ ] Afspraak maken functionaliteit
