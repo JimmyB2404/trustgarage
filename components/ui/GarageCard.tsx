@@ -5,6 +5,7 @@ import { IconMapPin, IconCircleCheck, IconPhone, IconClock } from '@tabler/icons
 import type { Garage } from '@/types'
 import Badge from './Badge'
 import StarRating from './StarRating'
+import FavoriteButton from './FavoriteButton'
 import { getTodayHours, isGarageOpen } from '@/lib/utils'
 
 interface GarageCardProps {
@@ -141,6 +142,12 @@ export default function GarageCard({ garage, variant = 'vertical', featured = fa
             <IconClock size={12} />
             {todayHours}
           </span>
+          <FavoriteButton
+            garageId={garage.id}
+            initialCount={garage.favorites_count ?? 0}
+            showCount={true}
+            size={15}
+          />
         </div>
         <div className="flex items-center gap-2">
           <a

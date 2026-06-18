@@ -38,6 +38,7 @@ export function transformGarage(raw: any): Garage {
     })),
     photos: (raw.garage_photos ?? []).map((p: { url: string }) => p.url),
     logo_url: raw.logo_url ?? null,
+    favorites_count: raw.favorites_count ?? 0,
     created_at: raw.created_at,
   }
 }

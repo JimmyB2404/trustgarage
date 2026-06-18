@@ -27,6 +27,7 @@ export interface Garage {
   hours: GarageHours[]
   photos: string[]
   logo_url?: string | null
+  favorites_count?: number
   created_at: string
   distance?: number
   is_open?: boolean

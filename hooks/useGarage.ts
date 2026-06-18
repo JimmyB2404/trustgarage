@@ -46,6 +46,7 @@ export type GarageData = {
   garage_hours: GarageHour[]
   garage_photos: { id: string; url: string }[]
   logo_url: string | null
+  favorites_count: number
   reviews: GarageReview[]
 }
 

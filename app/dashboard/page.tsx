@@ -12,6 +12,7 @@ import {
   IconMenu2,
   IconX,
   IconLogout,
+  IconHeartFilled,
 } from '@tabler/icons-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/context/AuthContext'
@@ -179,7 +180,7 @@ export default function DashboardPage() {
       <h3 className="text-[22px] font-medium text-neutral-900 mb-6">Overzicht</h3>
 
       {/* Metric cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
         {/* Profielweergaven */}
         <div className="bg-white border border-neutral-100 rounded-[9px] p-4">
           <p className="text-[12px] text-neutral-500 mb-1">Profielweergaven</p>
@@ -235,6 +236,18 @@ export default function DashboardPage() {
           <div className="flex items-center gap-1 text-[12px] text-primary">
             <IconCircleCheck size={13} />
             <span>van de {reviewCount} reviews</span>
+          </div>
+        </div>
+
+        {/* Favorieten */}
+        <div className="bg-white border border-neutral-100 rounded-[9px] p-4">
+          <p className="text-[12px] text-neutral-500 mb-1">Favorieten</p>
+          <p className="text-[28px] font-semibold text-neutral-900 leading-none mb-2">
+            {loading ? '—' : (garage?.favorites_count ?? 0)}
+          </p>
+          <div className="flex items-center gap-1 text-[12px] text-danger">
+            <IconHeartFilled size={13} />
+            <span>gebruikers</span>
           </div>
         </div>
       </div>

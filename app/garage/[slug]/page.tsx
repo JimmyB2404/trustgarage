@@ -17,6 +17,7 @@ import { getDayName, isGarageOpen, getTodayHours, getInitials } from '@/lib/util
 import type { Review } from '@/types'
 import ReviewButton from '@/components/ui/ReviewButton'
 import ViewTracker from '@/components/ui/ViewTracker'
+import FavoriteButton from '@/components/ui/FavoriteButton'
 
 interface PageProps {
   params: { slug: string }
@@ -170,9 +171,15 @@ export default async function GarageProfilePage({ params }: PageProps) {
                 <IconCalendar size={16} />
                 Afspraak maken
               </button>
-              <button className="btn-ghost text-[13px] py-[7px] px-4 rounded-md flex items-center justify-center gap-2">
-                Delen
-              </button>
+              <div className="flex items-center justify-center gap-2 py-[7px]">
+                <FavoriteButton
+                  garageId={garage.id}
+                  initialCount={garage.favorites_count ?? 0}
+                  showCount={true}
+                  size={16}
+                />
+                <span className="text-[13px] text-neutral-500">Favoriet</span>
+              </div>
             </div>
           </div>
         </div>
@@ -416,6 +423,12 @@ export default async function GarageProfilePage({ params }: PageProps) {
           <IconCalendar size={16} />
           Afspraak maken
         </button>
+        <FavoriteButton
+          garageId={garage.id}
+          initialCount={garage.favorites_count ?? 0}
+          showCount={false}
+          size={18}
+        />
       </div>
 
       {/* Extra bottom padding on mobile for sticky footer */}
