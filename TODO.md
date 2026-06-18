@@ -212,6 +212,9 @@ klaar voor productie, mist alleen nog een echt Resend-account voor verzending.
 ## 10. Overige Publieke Pagina's
 
 - [x] Voor garages (`/voor-garages`) — uitleg, prijsplannen, CTA
+- [x] Bug gefixt: alle aanmeldknoppen op `/voor-garages` linkten naar `/registreren` (particulieren)
+      i.p.v. `/garage/aanmelden` (garage-wizard)
+- [x] Tarieven (`/tarieven`) — losse pagina met de 3 prijsplannen, toegevoegd aan Navbar + sitemap
 - [x] Over ons (`/over-ons`) — verhaal, missie, team
 
 ---
