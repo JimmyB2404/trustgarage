@@ -3,6 +3,7 @@ import './globals.css'
 import { AuthProvider } from '@/context/AuthContext'
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://trustgarage.nl'),
   title: {
     template: '%s | TrustGarage.nl',
     default: 'TrustGarage.nl — Vind een betrouwbare garage',
@@ -14,6 +15,12 @@ export const metadata: Metadata = {
     description: 'Lees eerlijke reviews en vind de beste garage bij jou in de buurt.',
     type: 'website',
     locale: 'nl_NL',
+    siteName: 'TrustGarage.nl',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'TrustGarage.nl — Vind een betrouwbare garage',
+    description: 'Lees eerlijke reviews en vind de beste garage bij jou in de buurt.',
   },
 }
 

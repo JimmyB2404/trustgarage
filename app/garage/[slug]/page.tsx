@@ -1,4 +1,6 @@
+import { cache } from 'react'
 import { notFound } from 'next/navigation'
+import type { Metadata } from 'next'
 import {
   IconPhone,
   IconMail,
@@ -33,8 +35,44 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 const SUBCATEGORIES = ['eerlijkheid', 'prijs', 'snelheid', 'communicatie', 'engels'] as const
 
+// Dedupeert de Supabase call tussen generateMetadata en de page render
+const getGarage = cache(fetchGarageBySlug)
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const garage = await getGarage(params.slug)
+  if (!garage) return {}
+
+  const title = `${garage.name} — ${garage.city}`
+  const description = garage.description
+    ? garage.description.slice(0, 155)
+    : `${garage.name} in ${garage.city}. ${garage.review_count} reviews met ${garage.rating.toFixed(1)} sterren. Bekijk diensten, openingstijden en contactgegevens.`
+  const hasPhoto = garage.logo_url || garage.photos[0]
+  const image = hasPhoto
+    ? { url: hasPhoto, width: 800, height: 600 }
+    : { url: '/opengraph-image', width: 1200, height: 630 }
+  const url = `/garage/${garage.slug}`
+
+  return {
+    title,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      title: `${garage.name} | TrustGarage.nl`,
+      description,
+      url,
+      images: [image],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${garage.name} | TrustGarage.nl`,
+      description,
+      images: [image.url],
+    },
+  }
+}
+
 export default async function GarageProfilePage({ params }: PageProps) {
-  const garage = await fetchGarageBySlug(params.slug)
+  const garage = await getGarage(params.slug)
   if (!garage) notFound()
 
   const { createClient } = await import('@supabase/supabase-js')
@@ -83,8 +121,44 @@ export default async function GarageProfilePage({ params }: PageProps) {
 
   const speaksEnglish = garage.languages.includes('Engels')
 
+  const SCHEMA_DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'AutoRepair',
+    name: garage.name,
+    image: garage.logo_url || garage.photos[0] || undefined,
+    url: `https://trustgarage.nl/garage/${garage.slug}`,
+    telephone: garage.phone || undefined,
+    email: garage.email || undefined,
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: garage.address,
+      addressLocality: garage.city,
+      addressCountry: 'NL',
+    },
+    ...(garage.review_count > 0 && {
+      aggregateRating: {
+        '@type': 'AggregateRating',
+        ratingValue: garage.rating,
+        reviewCount: garage.review_count,
+      },
+    }),
+    openingHoursSpecification: garage.hours
+      .filter(h => !h.closed)
+      .map(h => ({
+        '@type': 'OpeningHoursSpecification',
+        dayOfWeek: SCHEMA_DAYS[h.day],
+        opens: h.open,
+        closes: h.close,
+      })),
+  }
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <ViewTracker garageId={garage.id} />
       <Navbar />
 

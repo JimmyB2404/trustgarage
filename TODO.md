@@ -194,10 +194,11 @@
 ## 12. SEO & Performance
 
 - [x] Meta titles en descriptions per pagina
-- [ ] `sitemap.xml` genereren
-- [ ] `robots.txt` aanmaken
-- [ ] Open Graph tags per pagina (preview bij delen op WhatsApp/social)
-- [ ] Structured data / JSON-LD voor garages (LocalBusiness schema)
+- [x] `sitemap.xml` genereren (`app/sitemap.ts`) — statische pagina's + alle garage slugs uit Supabase
+- [x] `robots.txt` aanmaken (`app/robots.ts`) — disallow dashboard/account/api, verwijst naar sitemap
+- [x] Open Graph + Twitter Card tags per garagepagina, met eigen logo/foto als afbeelding
+- [x] Standaard OG-afbeelding (`app/opengraph-image.tsx`) — gegenereerd met huisstijl, fallback voor garages zonder foto
+- [x] Structured data / JSON-LD voor garages (AutoRepair schema met aggregateRating + openingstijden)
 - [ ] `next/image` optimaliseren met `sizes` attribuut
 - [ ] Lazy loading voor foto strips
 
@@ -219,11 +220,10 @@
 ## Prioriteiten voor lancering
 
 1. **Seed data** — 10–15 Maastricht garages invoeren in Supabase
-2. **SEO** — sitemap.xml, robots.txt, Open Graph tags, JSON-LD structured data
-3. **Google Analytics 4** — bezoekersdata bijhouden
-4. **Smoke test** — registreer garage → schrijf review → check dashboard
-5. **Stripe activeren** — zodra Stripe account beschikbaar is
-6. **KVK API activeren** — zodra API key beschikbaar is
+2. **Google Analytics 4** — bezoekersdata bijhouden
+3. **Smoke test** — registreer garage → schrijf review → check dashboard
+4. **Stripe activeren** — zodra Stripe account beschikbaar is
+5. **KVK API activeren** — zodra API key beschikbaar is
 
 ## Nice to have (post-lancering)
 
