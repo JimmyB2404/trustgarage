@@ -10,7 +10,9 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const pathname = usePathname()
   const router = useRouter()
-  const { user, loading, isGarageOwner, signOut } = useAuth()
+  const { user, loading, isGarageOwner, isAdmin, signOut } = useAuth()
+  const dashboardHref = isAdmin ? '/admin' : isGarageOwner ? '/dashboard' : '/account/reviews'
+  const dashboardLabel = isAdmin || isGarageOwner ? 'Dashboard' : 'Mijn account'
 
   const navLinks = [
     { href: '/zoeken', label: 'Zoek een garage' },
@@ -52,11 +54,11 @@ export default function Navbar() {
             {!loading && user ? (
               <>
                 <Link
-                  href={isGarageOwner ? '/dashboard' : '/account/reviews'}
+                  href={dashboardHref}
                   className="flex items-center gap-1.5 text-[13px] text-neutral-500 hover:text-neutral-900 transition-colors px-3 py-[7px]"
                 >
                   <IconUser size={15} />
-                  {isGarageOwner ? 'Dashboard' : 'Mijn account'}
+                  {dashboardLabel}
                 </Link>
                 <button
                   onClick={handleSignOut}
@@ -114,11 +116,11 @@ export default function Navbar() {
               {!loading && user ? (
                 <>
                   <Link
-                    href={isGarageOwner ? '/dashboard' : '/account/reviews'}
+                    href={dashboardHref}
                     onClick={() => setMobileOpen(false)}
                     className="btn-ghost text-center w-full"
                   >
-                    {isGarageOwner ? 'Dashboard' : 'Mijn account'}
+                    {dashboardLabel}
                   </Link>
                   <button onClick={handleSignOut} className="btn-danger text-center w-full">
                     Uitloggen

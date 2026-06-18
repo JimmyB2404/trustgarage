@@ -36,7 +36,7 @@ export default function InloggenPage() {
     ])
 
     setSuccess(true)
-    window.location.href = adminCheck.isAdmin ? '/admin' : garage ? '/dashboard' : '/account/reviews'
+    window.location.href = adminCheck.isAdmin ? '/' : garage ? '/dashboard' : '/account/reviews'
   }
 
   return (

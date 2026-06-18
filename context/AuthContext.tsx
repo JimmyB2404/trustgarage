@@ -9,6 +9,7 @@ type AuthContextType = {
   session: Session | null
   loading: boolean
   isGarageOwner: boolean
+  isAdmin: boolean
   signOut: () => Promise<void>
 }
 
@@ -17,6 +18,7 @@ const AuthContext = createContext<AuthContextType>({
   session: null,
   loading: true,
   isGarageOwner: false,
+  isAdmin: false,
   signOut: async () => {},
 })
 
@@ -25,6 +27,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
   const [isGarageOwner, setIsGarageOwner] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
 
   async function checkGarageOwner(userId: string) {
     const supabase = createClient()
@@ -36,13 +39,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsGarageOwner(!!data)
   }
 
+  async function checkIsAdmin() {
+    const { isAdmin } = await fetch('/api/admin/check').then(r => r.json()).catch(() => ({ isAdmin: false }))
+    setIsAdmin(isAdmin)
+  }
+
   useEffect(() => {
     const supabase = createClient()
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
       setUser(session?.user ?? null)
-      if (session?.user) checkGarageOwner(session.user.id)
+      if (session?.user) {
+        checkGarageOwner(session.user.id)
+        checkIsAdmin()
+      }
       setLoading(false)
     })
 
@@ -51,8 +62,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(session?.user ?? null)
       if (session?.user) {
         checkGarageOwner(session.user.id)
+        checkIsAdmin()
       } else {
         setIsGarageOwner(false)
+        setIsAdmin(false)
       }
     })
 
@@ -65,7 +78,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, isGarageOwner, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, isGarageOwner, isAdmin, signOut }}>
       {children}
     </AuthContext.Provider>
   )
