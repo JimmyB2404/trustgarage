@@ -45,6 +45,7 @@ export default function ReviewButton({ garageId, garageName }: ReviewButtonProps
           garageId={garageId}
           garageName={garageName}
           onClose={() => setOpen(false)}
+          onSubmit={() => router.refresh()}
         />
       )}
     </>
