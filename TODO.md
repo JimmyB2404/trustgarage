@@ -37,6 +37,8 @@
 - [x] Tabellen aangemaakt: `garages`, `garage_services`, `garage_languages`, `garage_hours`, `garage_photos`, `reviews`, `review_ratings`, `garage_replies`, `subscriptions`
 - [x] `page_views` tabel aangemaakt voor profielweergaven tracking
 - [x] `logo_url` kolom toegevoegd aan `garages` tabel
+- [x] `favorites_count` kolom toegevoegd aan `garages` tabel
+- [x] `favorites` tabel aangemaakt met RLS (public read, authenticated write)
 - [x] Supabase Auth inschakelen (e-mail + wachtwoord, bevestigingsmail actief)
 - [x] GRANT permissions ingesteld voor anon/authenticated/service_role
 - [x] Storage bucket aanmaken voor garage foto's (`garage-photos`)
@@ -109,6 +111,9 @@
 - [x] `DELETE /api/garage/photos` — foto verwijderen uit Storage + database
 - [x] `POST /api/garage/logo` — logo uploaden naar Storage + `garages.logo_url` bijwerken
 - [x] `DELETE /api/garage/logo` — logo verwijderen uit Storage + `garages.logo_url` leegmaken
+- [x] `GET /api/favorites` — check of favoriet / haal alle favorieten op (service role)
+- [x] `POST /api/favorites` — favoriet toevoegen + `garages.favorites_count` syncen
+- [x] `DELETE /api/favorites` — favoriet verwijderen + `garages.favorites_count` syncen
 
 ### 6.2 KVK verificatie
 - [x] `POST /api/kvk` — stub met mock data
@@ -154,7 +159,8 @@
 - [x] Mijn reviews (`/account/reviews`) — UI gereed
 - [x] Mijn profiel (`/account/profiel`) — UI gereed
 - [x] Favorieten (`/account/favorieten`) — UI gereed
-- [ ] Supabase data koppelen voor alle accountpagina's
+- [x] Favorieten (`/account/favorieten`) — gekoppeld aan Supabase via `/api/favorites`
+- [ ] Supabase data koppelen voor mijn reviews en mijn profiel accountpagina's
 
 ---
 
