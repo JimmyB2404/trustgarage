@@ -169,7 +169,9 @@
 
 - [x] Modal UI: sterren, tekst, taal, subcategoriescores
 - [x] Opslaan in Supabase `reviews` + `review_ratings` tabellen
-- [x] Wordt direct zichtbaar op garageprofiel na opslaan
+- [x] Bug gefixt: nieuwe review verscheen niet direct op het garageprofiel (geen refresh na
+      opslaan — `ReviewButton` riep de bestaande `onSubmit`-callback van de modal nooit aan), nu
+      via `router.refresh()`
 - [ ] Bevestigingsmail naar gebruiker sturen
 
 ---
