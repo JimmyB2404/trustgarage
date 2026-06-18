@@ -150,19 +150,18 @@
 
 ### 7.4 Abonnement (`/dashboard/abonnement`)
 - [x] Plan tonen + upgrade knop (UI gereed, stub)
+- [x] Bug gefixt: "Uitloggen"-knop werkt nu (echte `signOut`) en sidebar-badge toont het live
+      aantal onbeantwoorde reviews i.p.v. een hardcoded `2` — consistent met de andere 4
+      dashboardpagina's
 - [ ] Stripe koppelen
-- [ ] **Bug**: "Uitloggen"-knop doet niets (geen `onClick`/`signOut`) en sidebar-badge is nog
-      hardcoded op `2` i.p.v. live onbeantwoorde-reviews-count — andere 4 dashboardpagina's zijn
-      al gefixt, deze is achtergebleven
 
 ---
 
 ## 8. Gebruikersaccount — P1
 
-- [x] Mijn reviews (`/account/reviews`) — UI gereed, nog mock data
-- [x] Mijn profiel (`/account/profiel`) — UI gereed, nog mock data
+- [x] Mijn reviews (`/account/reviews`) — echte data, bewerken/verwijderen via Supabase
+- [x] Mijn profiel (`/account/profiel`) — echte gebruikersdata, naam/e-mail/wachtwoord wijzigen
 - [x] Favorieten (`/account/favorieten`) — UI + Supabase data gekoppeld via `/api/favorites`
-- [ ] Supabase data koppelen voor mijn reviews en mijn profiel accountpagina's
 
 ---
 
@@ -267,7 +266,6 @@ klaar voor productie, mist alleen nog een echt Resend-account voor verzending.
 
 ## Later (post-lancering) — P2
 
-- [ ] Mijn reviews + mijn profiel accountpagina's koppelen aan Supabase (favorieten al gedaan)
 - [ ] Bevestigingsmail naar klant na review schrijven (Resend)
 - [ ] E-mailnotificaties voor garage-eigenaar bij nieuwe review (Resend)
 - [ ] Custom SMTP via Resend (vervangt Supabase free tier limiet van 4 mails/uur)

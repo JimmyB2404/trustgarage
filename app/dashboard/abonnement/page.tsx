@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import {
   IconChartBar,
   IconStar,
@@ -15,19 +15,30 @@ import {
   IconCheck,
 } from '@tabler/icons-react'
 import { cn } from '@/lib/utils'
+import { useAuth } from '@/context/AuthContext'
+import { useGarage } from '@/hooks/useGarage'
 
 // ─── Shared Dashboard Layout ──────────────────────────────────────────────────
 
 const navItems = [
   { href: '/dashboard', label: 'Overzicht', icon: <IconChartBar size={16} /> },
   { href: '/dashboard/profiel', label: 'Profiel', icon: <IconShieldCheck size={16} /> },
-  { href: '/dashboard/reviews', label: 'Reviews', icon: <IconStar size={16} />, badge: 2 },
+  { href: '/dashboard/reviews', label: 'Reviews', icon: <IconStar size={16} /> },
   { href: '/dashboard/uitnodigingen', label: 'Uitnodigingen', icon: <IconMailForward size={16} /> },
   { href: '/dashboard/abonnement', label: 'Abonnement', icon: <IconCircleCheck size={16} /> },
 ]
 
-function DashboardSidebar({ onClose }: { onClose?: () => void }) {
+function DashboardSidebar({ onClose, reviewBadge }: { onClose?: () => void; reviewBadge?: number }) {
   const pathname = usePathname()
+  const router = useRouter()
+  const { signOut } = useAuth()
+
+  async function handleSignOut() {
+    await signOut()
+    router.push('/')
+    router.refresh()
+    onClose?.()
+  }
 
   return (
     <div className="flex flex-col h-full py-4 px-3">
@@ -45,6 +56,7 @@ function DashboardSidebar({ onClose }: { onClose?: () => void }) {
       <nav className="flex flex-col gap-1 flex-1">
         {navItems.map((item) => {
           const isActive = pathname === item.href
+          const badge = item.href === '/dashboard/reviews' ? reviewBadge : undefined
           return (
             <Link
               key={item.href}
@@ -61,9 +73,9 @@ function DashboardSidebar({ onClose }: { onClose?: () => void }) {
                 {item.icon}
               </span>
               <span className="flex-1">{item.label}</span>
-              {item.badge && !isActive && (
+              {badge != null && badge > 0 && !isActive && (
                 <span className="inline-flex items-center justify-center w-[18px] h-[18px] rounded-full bg-danger text-white text-[10px] font-medium">
-                  {item.badge}
+                  {badge}
                 </span>
               )}
             </Link>
@@ -72,7 +84,10 @@ function DashboardSidebar({ onClose }: { onClose?: () => void }) {
       </nav>
 
       <div className="mt-auto border-t border-neutral-100 pt-3">
-        <button className="flex items-center gap-2 px-3 py-2 rounded-md text-[14px] text-danger hover:bg-red-50 w-full transition-colors duration-150">
+        <button
+          onClick={handleSignOut}
+          className="flex items-center gap-2 px-3 py-2 rounded-md text-[14px] text-danger hover:bg-red-50 w-full transition-colors duration-150"
+        >
           <IconLogout size={16} />
           Uitloggen
         </button>
@@ -81,20 +96,20 @@ function DashboardSidebar({ onClose }: { onClose?: () => void }) {
   )
 }
 
-function DashboardLayout({ children }: { children: React.ReactNode }) {
+function DashboardLayout({ children, reviewBadge }: { children: React.ReactNode; reviewBadge?: number }) {
   const [mobileOpen, setMobileOpen] = useState(false)
 
   return (
     <div className="min-h-screen flex">
       <aside className="hidden md:flex w-[200px] bg-white border-r border-neutral-100 flex-col sticky top-0 h-screen">
-        <DashboardSidebar />
+        <DashboardSidebar reviewBadge={reviewBadge} />
       </aside>
 
       {mobileOpen && (
         <div className="fixed inset-0 z-50 flex md:hidden">
           <div className="absolute inset-0 bg-black/30" onClick={() => setMobileOpen(false)} />
           <aside className="relative w-[220px] bg-white h-full shadow-modal flex flex-col">
-            <DashboardSidebar onClose={() => setMobileOpen(false)} />
+            <DashboardSidebar onClose={() => setMobileOpen(false)} reviewBadge={reviewBadge} />
           </aside>
         </div>
       )}
@@ -215,8 +230,11 @@ function FeatureCell({ value }: { value: boolean | string }) {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function AbonnementPage() {
+  const { garage } = useGarage()
+  const unanswered = garage?.reviews.filter(r => r.garage_replies.length === 0).length ?? 0
+
   return (
-    <DashboardLayout>
+    <DashboardLayout reviewBadge={unanswered}>
       <div className="max-w-[860px]">
         <div className="flex items-center gap-3 mb-6">
           <h3 className="text-[22px] font-medium text-neutral-900">Abonnement</h3>
