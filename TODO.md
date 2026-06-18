@@ -178,7 +178,8 @@
 ## 9b. Reviewverificatie ("Geverifieerd bezoek") — P0
 
 Tweede vertrouwenslaag naast KVK: bewijst dat een specifieke review van een bevestigd bezoek komt.
-Code volledig gebouwd, **wacht op handmatige test op een echte database** voordat dit live mag.
+**Volledig gebouwd en end-to-end getest** (Playwright, Pad A + Pad B + privacy + admin-poort) —
+klaar voor productie, mist alleen nog een echt Resend-account voor verzending.
 
 - [x] Database: `review_invitations` tabel + `receipt_number`/`verification_path`/
       `verification_status` op `reviews` (`supabase/migration_review_verification.sql`)
@@ -192,11 +193,15 @@ Code volledig gebouwd, **wacht op handmatige test op een echte database** voorda
       in admin-wachtrij voor laatste handmatige bevestiging
 - [x] Badge op reviews ("Geverifieerd bezoek") + aggregaatcijfer op garageprofiel ("X van Y
       geverifieerd") + korte uitleg op homepage en zoekresultaten
-- [ ] **SQL migratie nog uitvoeren** in Supabase voordat dit getest kan worden
+- [x] End-to-end getest met Playwright — 4 bugs gevonden en gefixt onderweg (zie commit), inclusief
+      een belangrijke fix: garageprofiel cachete Supabase-data oneindig (gold voor alle reviews/
+      ratings/favorieten, niet alleen verificatie) — opgelost met `export const dynamic =
+      'force-dynamic'`
 - [ ] Resend account + geverifieerd verzenddomein (SPF/DKIM via TransIP) — zonder dit wordt de
       uitnodigingsmail niet echt verstuurd (uitnodiging wordt wel aangemaakt, token leesbaar in
-      Supabase om handmatig te testen)
-- [ ] Volledige end-to-end test (Pad A + Pad B + privacy-check) voordat dit naar productie gaat
+      Supabase om handmatig te verzenden)
+- [ ] `ADMIN_EMAIL`/`RESEND_API_KEY`/`NEXT_PUBLIC_SITE_URL` toevoegen aan Vercel environment
+      variables — staan nu alleen lokaal in `.env.local`
 
 ---
 
