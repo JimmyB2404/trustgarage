@@ -11,6 +11,7 @@ import {
   IconUpload,
   IconCheck,
   IconShieldCheck,
+  IconX,
 } from '@tabler/icons-react'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -65,6 +66,11 @@ export default function GarageAanmeldenPage() {
   const [kvkVerified, setKvkVerified] = useState(false)
   const [kvkBusinessName, setKvkBusinessName] = useState('')
 
+  const [logoFile, setLogoFile] = useState<File | null>(null)
+  const [logoPreview, setLogoPreview] = useState<string | null>(null)
+  const [wizardPhotos, setWizardPhotos] = useState<File[]>([])
+  const [wizardPhotoPreviews, setWizardPhotoPreviews] = useState<string[]>([])
+
   const [formData, setFormData] = useState<FormData>({
     email: '',
     password: '',
@@ -112,6 +118,36 @@ export default function GarageAanmeldenPage() {
       .replace(/[̀-ͯ]/g, '')
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-|-$/g, '')
+  }
+
+  // ─── Media handlers ────────────────────────────────────────────────────────
+
+  function handleLogoSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setLogoFile(file)
+    setLogoPreview(URL.createObjectURL(file))
+    e.target.value = ''
+  }
+
+  function handleLogoRemove() {
+    setLogoFile(null)
+    setLogoPreview(null)
+  }
+
+  function handlePhotoSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? [])
+    if (!files.length) return
+    const remaining = 8 - wizardPhotos.length
+    const toAdd = files.slice(0, remaining)
+    setWizardPhotos(prev => [...prev, ...toAdd])
+    setWizardPhotoPreviews(prev => [...prev, ...toAdd.map(f => URL.createObjectURL(f))])
+    e.target.value = ''
+  }
+
+  function removeWizardPhoto(index: number) {
+    setWizardPhotos(prev => prev.filter((_, i) => i !== index))
+    setWizardPhotoPreviews(prev => prev.filter((_, i) => i !== index))
   }
 
   // ─── Navigation ────────────────────────────────────────────────────────────
@@ -179,7 +215,24 @@ export default function GarageAanmeldenPage() {
       return
     }
 
-    // Alles opgeslagen — toon bevestigingsscherm
+    const garageId = result.garageId
+
+    // Logo uploaden
+    if (logoFile && garageId) {
+      const logoFormData = new globalThis.FormData()
+      logoFormData.append('garageId', garageId)
+      logoFormData.append('file', logoFile)
+      await fetch('/api/garage/logo', { method: 'POST', body: logoFormData })
+    }
+
+    // Foto's uploaden
+    if (wizardPhotos.length > 0 && garageId) {
+      const photosFormData = new globalThis.FormData()
+      photosFormData.append('garageId', garageId)
+      wizardPhotos.forEach(f => photosFormData.append('files', f))
+      await fetch('/api/garage/photos', { method: 'POST', body: photosFormData })
+    }
+
     setLoading(false)
     setStep(5)
   }
@@ -441,13 +494,79 @@ export default function GarageAanmeldenPage() {
           />
         </div>
 
+        {/* Logo */}
         <div>
-          <label className="block text-[13px] font-sans text-neutral-900 mb-2">Foto&#39;s</label>
-          <div className="border-2 border-dashed border-neutral-100 rounded-xl p-8 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-primary hover:bg-[#F7FDF9] transition-colors duration-150">
-            <IconUpload size={28} className="text-neutral-300" />
-            <span className="text-[13px] font-sans text-neutral-500">Klik om foto&#39;s te uploaden</span>
-            <span className="text-[11px] font-sans text-neutral-300">PNG, JPG tot 5 MB</span>
+          <label className="block text-[13px] font-sans text-neutral-900 mb-1">Logo</label>
+          <p className="text-[12px] text-neutral-400 mb-3">Zichtbaar in zoekresultaten en op uw profiel.</p>
+          <div className="flex items-center gap-4">
+            <div className="w-[64px] h-[64px] rounded-xl overflow-hidden bg-primary-light flex-shrink-0 flex items-center justify-center">
+              {logoPreview ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={logoPreview} alt="Logo preview" className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-primary font-serif text-2xl select-none">
+                  {formData.garagenaam.charAt(0) || '?'}
+                </span>
+              )}
+            </div>
+            <div className="flex flex-col gap-2">
+              <label className="btn-secondary text-[13px] cursor-pointer inline-flex items-center gap-2">
+                <IconUpload size={14} />
+                {logoPreview ? 'Ander logo kiezen' : 'Logo uploaden'}
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  className="hidden"
+                  onChange={handleLogoSelect}
+                />
+              </label>
+              {logoPreview && (
+                <button type="button" onClick={handleLogoRemove} className="text-[12px] text-danger hover:underline text-left">
+                  Verwijderen
+                </button>
+              )}
+              <span className="text-[11px] text-neutral-300">JPG, PNG, WEBP — max. 5 MB</span>
+            </div>
           </div>
+        </div>
+
+        {/* Foto's */}
+        <div>
+          <label className="block text-[13px] font-sans text-neutral-900 mb-1">{"Foto's"}</label>
+          <p className="text-[12px] text-neutral-400 mb-3">{wizardPhotos.length}/8 — zichtbaar op uw profielpagina.</p>
+
+          {wizardPhotoPreviews.length > 0 && (
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-3">
+              {wizardPhotoPreviews.map((src, i) => (
+                <div key={i} className="relative group">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={src} alt={`Foto ${i + 1}`} className="w-full h-[72px] object-cover rounded-md border border-neutral-100" />
+                  <button
+                    type="button"
+                    onClick={() => removeWizardPhoto(i)}
+                    className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <IconX size={11} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {wizardPhotos.length < 8 && (
+            <label className="border-2 border-dashed border-neutral-100 rounded-xl p-6 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-primary hover:bg-[#F7FDF9] transition-colors duration-150">
+              <IconUpload size={24} className="text-neutral-300" />
+              <span className="text-[13px] font-sans text-neutral-500">{"Klik om foto's te uploaden"}</span>
+              <span className="text-[11px] font-sans text-neutral-300">JPG, PNG, WEBP — max. 5 MB per foto</span>
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                multiple
+                className="hidden"
+                onChange={handlePhotoSelect}
+              />
+            </label>
+          )}
         </div>
 
         <div>
