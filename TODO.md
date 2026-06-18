@@ -36,6 +36,7 @@
 
 - [x] Tabellen aangemaakt: `garages`, `garage_services`, `garage_languages`, `garage_hours`, `garage_photos`, `reviews`, `review_ratings`, `garage_replies`, `subscriptions`
 - [x] `page_views` tabel aangemaakt voor profielweergaven tracking
+- [x] `logo_url` kolom toegevoegd aan `garages` tabel
 - [x] Supabase Auth inschakelen (e-mail + wachtwoord, bevestigingsmail actief)
 - [x] GRANT permissions ingesteld voor anon/authenticated/service_role
 - [x] Storage bucket aanmaken voor garage foto's (`garage-photos`)
@@ -87,7 +88,8 @@
 - [x] 5-staps wizard (account, bedrijfsgegevens, KVK, profiel, bevestiging)
 - [x] Supabase Auth + database volledig gekoppeld via `/api/garage/register`
 - [x] E-mailbevestiging verstuurd na aanmelding
-- [ ] Foto upload in wizard (wacht op Storage bucket policy)
+- [x] Logo upload in wizard (stap 4) — preview + upload na registratie
+- [x] Foto upload in wizard (stap 4) — preview + upload na registratie
 - [ ] Echte KVK verificatie (wacht op API key)
 
 ### 5.4 Wachtwoord reset (`/wachtwoord-reset`)
@@ -98,11 +100,15 @@
 ## 6. API Routes
 
 ### 6.1 Garage registratie & beheer
-- [x] `POST /api/garage/register` — account aanmaken + garage opslaan (service role)
+- [x] `POST /api/garage/register` — account aanmaken + garage opslaan (service role), geeft `garageId` terug
 - [x] `PUT /api/garage/update` — garage profiel updaten (service role)
 - [x] `POST /api/garage/reply` — garage reactie opslaan (service role)
 - [x] `POST /api/garage/view` — profielweergave loggen (service role)
 - [x] `GET /api/dashboard/views` — views ophalen voor dashboard (service role)
+- [x] `POST /api/garage/photos` — foto's uploaden naar Storage + opslaan in `garage_photos`
+- [x] `DELETE /api/garage/photos` — foto verwijderen uit Storage + database
+- [x] `POST /api/garage/logo` — logo uploaden naar Storage + `garages.logo_url` bijwerken
+- [x] `DELETE /api/garage/logo` — logo verwijderen uit Storage + `garages.logo_url` leegmaken
 
 ### 6.2 KVK verificatie
 - [x] `POST /api/kvk` — stub met mock data
@@ -129,7 +135,8 @@
 - [x] Formulier laadt echte garage data via `useGarage` hook
 - [x] Opslaan naar Supabase via `/api/garage/update`
 - [x] Omschrijving, diensten, talen, openingstijden bewerkbaar
-- [ ] Foto upload (wacht op Storage bucket policy)
+- [x] Logo uploaden, previewer en verwijderen via `/api/garage/logo`
+- [x] Foto's uploaden (max. 8) en verwijderen via `/api/garage/photos`
 
 ### 7.3 Reviews beheren (`/dashboard/reviews`)
 - [x] Echte reviews geladen via `useGarage` hook
@@ -203,14 +210,21 @@
 
 ---
 
-## Prioriteiten voor volgende sessie
+## Prioriteiten voor lancering
 
-1. **Foto upload** — Supabase Storage bucket policy + upload in wizard en dashboard profiel
+1. **Seed data** — 10–15 Maastricht garages invoeren in Supabase
 2. **SEO** — sitemap.xml, robots.txt, Open Graph tags, JSON-LD structured data
 3. **Google Analytics 4** — bezoekersdata bijhouden
-4. **Stripe activeren** — zodra Stripe account beschikbaar is
-5. **KVK API activeren** — zodra API key beschikbaar is
-6. **Accountpagina's** — mijn reviews, profiel en favorieten koppelen aan Supabase
+4. **Smoke test** — registreer garage → schrijf review → check dashboard
+5. **Stripe activeren** — zodra Stripe account beschikbaar is
+6. **KVK API activeren** — zodra API key beschikbaar is
+
+## Nice to have (post-lancering)
+
+- Bevestigingsmail naar klant na review schrijven (Resend)
+- Accountpagina's koppelen aan Supabase (mijn reviews, favorieten, profiel)
+- Meer steden toevoegen buiten Maastricht
+- Lazy loading foto strips + `next/image` optimaliseren met `sizes`
 
 ---
 
