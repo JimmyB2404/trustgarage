@@ -104,8 +104,15 @@ export default async function GarageProfilePage({ params }: PageProps) {
             {/* Left: avatar + info */}
             <div className="flex items-start gap-4 flex-1">
               {/* Avatar */}
-              <div className="flex-shrink-0 w-[80px] h-[80px] rounded-xl bg-primary-light flex items-center justify-center text-primary font-serif text-3xl select-none">
-                {initials}
+              <div className="flex-shrink-0 w-[80px] h-[80px] rounded-xl overflow-hidden">
+                {garage.logo_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={garage.logo_url} alt={garage.name} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full bg-primary-light flex items-center justify-center text-primary font-serif text-3xl select-none">
+                    {initials}
+                  </div>
+                )}
               </div>
 
               {/* Info */}

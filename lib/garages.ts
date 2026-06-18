@@ -37,6 +37,7 @@ export function transformGarage(raw: any): Garage {
       closed: h.is_closed ?? false,
     })),
     photos: (raw.garage_photos ?? []).map((p: { url: string }) => p.url),
+    logo_url: raw.logo_url ?? null,
     created_at: raw.created_at,
   }
 }

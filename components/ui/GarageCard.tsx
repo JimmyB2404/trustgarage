@@ -24,10 +24,15 @@ export default function GarageCard({ garage, variant = 'vertical', featured = fa
     return (
       <Link href={href} className="block group">
         <div className={`bg-white border rounded-xl shadow-card transition-all duration-150 hover:shadow-card-hover hover:border-neutral-300 overflow-hidden ${featured ? 'border-t-[3px] border-t-primary border-neutral-100' : 'border-neutral-100'}`}>
-          <div className="h-[140px] bg-surface flex items-center justify-center">
-            <div className="w-12 h-12 rounded-full bg-primary-light flex items-center justify-center text-primary font-serif text-lg">
-              {garage.name.charAt(0)}
-            </div>
+          <div className="h-[140px] bg-surface overflow-hidden flex items-center justify-center">
+            {garage.photos[0] ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={garage.photos[0]} alt={garage.name} className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-12 h-12 rounded-full bg-primary-light flex items-center justify-center text-primary font-serif text-lg">
+                {garage.name.charAt(0)}
+              </div>
+            )}
           </div>
 
           <div className="p-[14px]">
@@ -79,8 +84,13 @@ export default function GarageCard({ garage, variant = 'vertical', featured = fa
       role="article"
     >
       <div className="flex gap-4 p-[14px]">
-        <div className="flex-shrink-0 w-[60px] h-[60px] rounded-lg bg-surface flex items-center justify-center text-primary font-serif text-xl border border-neutral-100">
-          {garage.name.charAt(0)}
+        <div className="flex-shrink-0 w-[60px] h-[60px] rounded-lg overflow-hidden bg-surface border border-neutral-100 flex items-center justify-center">
+          {garage.logo_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={garage.logo_url} alt={garage.name} className="w-full h-full object-cover" />
+          ) : (
+            <span className="text-primary font-serif text-xl">{garage.name.charAt(0)}</span>
+          )}
         </div>
 
         <div className="flex-1 min-w-0">

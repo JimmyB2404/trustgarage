@@ -158,6 +158,9 @@ export default function ProfielPage() {
   const [photos, setPhotos] = useState<{ id: string; url: string }[]>([])
   const [uploadingPhotos, setUploadingPhotos] = useState(false)
   const [photoError, setPhotoError] = useState('')
+  const [logoUrl, setLogoUrl] = useState<string | null>(null)
+  const [uploadingLogo, setUploadingLogo] = useState(false)
+  const [logoError, setLogoError] = useState('')
 
   const unanswered = garage?.reviews.filter(r => r.garage_replies.length === 0).length ?? 0
 
@@ -173,6 +176,7 @@ export default function ProfielPage() {
     setSelectedServices(garage.garage_services.map(s => s.service_name))
     setSelectedLanguages(garage.garage_languages.map(l => l.language))
     setPhotos(garage.garage_photos ?? [])
+    setLogoUrl(garage.logo_url ?? null)
     setHours(
       ORDERED_DAYS.map((dayNum) => {
         const h = garage.garage_hours.find(x => x.day_of_week === dayNum)
@@ -216,6 +220,36 @@ export default function ProfielPage() {
       body: JSON.stringify({ photoId }),
     })
     setPhotos(prev => prev.filter(p => p.id !== photoId))
+  }
+
+  async function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file || !garage) return
+    setUploadingLogo(true)
+    setLogoError('')
+    const formData = new FormData()
+    formData.append('garageId', garage.id)
+    formData.append('file', file)
+    const res = await fetch('/api/garage/logo', { method: 'POST', body: formData })
+    const result = await res.json()
+    setUploadingLogo(false)
+    if (!res.ok) {
+      setLogoError(result.error ?? 'Upload mislukt.')
+    } else {
+      setLogoUrl(result.logo_url)
+    }
+    e.target.value = ''
+  }
+
+  async function handleLogoDelete() {
+    if (!garage) return
+    setLogoError('')
+    await fetch('/api/garage/logo', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ garageId: garage.id }),
+    })
+    setLogoUrl(null)
   }
 
   function toggleService(s: string) {
@@ -283,6 +317,49 @@ export default function ProfielPage() {
       <h3 className="text-[22px] font-medium text-neutral-900 mb-6">Profiel bewerken</h3>
 
       <form onSubmit={handleSave} className="flex flex-col gap-5 max-w-[720px]">
+
+        {/* Logo */}
+        <div className="bg-white border border-neutral-100 rounded-[9px] p-5">
+          <p className="text-[14px] font-semibold text-neutral-900 mb-1">Logo</p>
+          <p className="text-[12px] text-neutral-500 mb-4">Zichtbaar in zoekresultaten en op uw profielpagina.</p>
+          <div className="flex items-center gap-5">
+            <div className="w-[72px] h-[72px] rounded-xl overflow-hidden bg-primary-light flex-shrink-0 flex items-center justify-center">
+              {logoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={logoUrl} alt="Logo" className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-primary font-serif text-3xl select-none">{naam.charAt(0) || '?'}</span>
+              )}
+            </div>
+            <div className="flex flex-col gap-2">
+              <label className={cn(
+                'btn-secondary text-[13px] cursor-pointer inline-flex items-center gap-2',
+                uploadingLogo && 'opacity-50 cursor-not-allowed'
+              )}>
+                <IconUpload size={14} />
+                {uploadingLogo ? 'Uploaden...' : 'Logo uploaden'}
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  className="hidden"
+                  disabled={uploadingLogo}
+                  onChange={handleLogoUpload}
+                />
+              </label>
+              {logoUrl && (
+                <button
+                  type="button"
+                  onClick={handleLogoDelete}
+                  className="text-[12px] text-danger hover:underline text-left"
+                >
+                  Logo verwijderen
+                </button>
+              )}
+              <span className="text-[11px] text-neutral-300">JPG, PNG, WEBP — max. 5 MB</span>
+            </div>
+          </div>
+          {logoError && <p className="text-[12px] text-danger mt-3">{logoError}</p>}
+        </div>
 
         {/* Basisgegevens */}
         <div className="bg-white border border-neutral-100 rounded-[9px] p-5">
