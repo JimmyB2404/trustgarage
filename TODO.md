@@ -193,15 +193,20 @@ klaar voor productie, mist alleen nog een echt Resend-account voor verzending.
       in admin-wachtrij voor laatste handmatige bevestiging
 - [x] Badge op reviews ("Geverifieerd bezoek") + aggregaatcijfer op garageprofiel ("X van Y
       geverifieerd") + korte uitleg op homepage en zoekresultaten
-- [x] End-to-end getest met Playwright — 4 bugs gevonden en gefixt onderweg (zie commit), inclusief
-      een belangrijke fix: garageprofiel cachete Supabase-data oneindig (gold voor alle reviews/
+- [x] End-to-end getest met Playwright — 4 bugs gevonden en gefixt onderweg, inclusief een
+      belangrijke fix: garageprofiel cachete Supabase-data oneindig (gold voor alle reviews/
       ratings/favorieten, niet alleen verificatie) — opgelost met `export const dynamic =
       'force-dynamic'`
+- [x] `ADMIN_EMAIL`/`NEXT_PUBLIC_SITE_URL` toegevoegd aan Vercel environment variables + geredeployed
+- [x] Productie-buildfout gefixt: Resend-client werd op module-niveau aangemaakt en crashte de build
+      zolang `RESEND_API_KEY` ontbrak — nu pas aangemaakt op het moment dat een mail verstuurd wordt
+- [x] `ADMIN_EMAIL` ondersteunt nu een kommagescheiden lijst — meerdere adminaccounts mogelijk
+- [x] Admin landt na inloggen op de homepage en krijgt, net als garage-eigenaren, een
+      "Dashboard"-knop in de Navbar die naar `/admin` linkt
 - [ ] Resend account + geverifieerd verzenddomein (SPF/DKIM via TransIP) — zonder dit wordt de
       uitnodigingsmail niet echt verstuurd (uitnodiging wordt wel aangemaakt, token leesbaar in
-      Supabase om handmatig te verzenden)
-- [ ] `ADMIN_EMAIL`/`RESEND_API_KEY`/`NEXT_PUBLIC_SITE_URL` toevoegen aan Vercel environment
-      variables — staan nu alleen lokaal in `.env.local`
+      Supabase om handmatig te verzenden); `RESEND_API_KEY` nog toevoegen aan Vercel zodra dit klaar is
+- [ ] Optioneel: los, toegewijd admin-account aanmaken (i.p.v. het huidige persoonlijke account)
 
 ---
 
@@ -269,6 +274,7 @@ klaar voor productie, mist alleen nog een echt Resend-account voor verzending.
 - [ ] `next/image` optimaliseren met `sizes` attribuut + lazy loading foto strips
 - [ ] Google Maps embed op garageprofiel + kaartweergave zoekresultaten
 - [ ] Afspraak maken functionaliteit
-- [ ] Admin dashboard voor moderatie
+- [ ] Volwaardig moderatie-dashboard (garages/gebruikers beheren, content verwijderen) — er bestaat
+      nu alleen een admin-panel specifiek voor reviewverificatie (`/admin`)
 - [ ] Engelstalige versie van de website
 - [ ] Meer steden toevoegen buiten Maastricht
