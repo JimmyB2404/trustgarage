@@ -1,13 +1,14 @@
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 export async function sendInvitationEmail(opts: {
   to: string
   garageName: string
   inviteUrl: string
 }): Promise<{ sent: boolean; error?: string }> {
   try {
+    // Pas hier aanmaken, niet op module-niveau — anders crasht elk bestand dat dit importeert
+    // zodra RESEND_API_KEY ontbreekt (bv. tijdens een Vercel build zonder die env var).
+    const resend = new Resend(process.env.RESEND_API_KEY)
     await resend.emails.send({
       from: 'TrustGarage.nl <noreply@trustgarage.nl>',
       to: opts.to,
