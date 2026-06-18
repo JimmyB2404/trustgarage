@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import ReviewModal from '@/components/modals/ReviewModal'
 
@@ -11,9 +11,21 @@ interface ReviewButtonProps {
 }
 
 export default function ReviewButton({ garageId, garageName }: ReviewButtonProps) {
-  const { user } = useAuth()
+  const { user, loading } = useAuth()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [open, setOpen] = useState(false)
+
+  const inviteToken = searchParams.get('invite')
+
+  useEffect(() => {
+    if (!inviteToken || loading) return
+    if (!user) {
+      router.push('/inloggen')
+      return
+    }
+    setOpen(true)
+  }, [inviteToken, user, loading, router])
 
   function handleClick() {
     if (!user) {

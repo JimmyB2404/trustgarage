@@ -16,6 +16,7 @@ import {
   IconAdjustmentsHorizontal,
   IconChevronLeft,
   IconChevronRight,
+  IconShieldCheck,
 } from '@tabler/icons-react'
 import type { Garage } from '@/types'
 
@@ -399,6 +400,11 @@ function ZoekenContent() {
 
           {/* Main content */}
           <main className="flex-1 min-w-0">
+            <p className="text-[12px] text-neutral-500 mb-3 flex items-center gap-1.5">
+              <IconShieldCheck size={14} className="text-primary flex-shrink-0" />
+              Reviews met een &quot;Geverifieerd bezoek&quot;-badge zijn gekoppeld aan een bevestigd
+              bezoek — iets wat Google Reviews niet biedt.
+            </p>
             {/* Results header */}
             <div className="flex items-center justify-between mb-4">
               <p className="text-[13px] text-neutral-500">

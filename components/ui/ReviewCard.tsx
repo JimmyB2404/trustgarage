@@ -80,7 +80,7 @@ export default function ReviewCard({ review }: ReviewCardProps) {
       {review.verified && (
         <div className="mt-2 flex items-center gap-1 text-[11px] text-primary">
           <IconCircleCheck size={12} />
-          Geverifieerde review
+          Geverifieerd bezoek
         </div>
       )}
     </div>

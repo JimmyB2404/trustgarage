@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { IconX, IconStarFilled, IconStar } from '@tabler/icons-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/context/AuthContext'
@@ -45,10 +46,15 @@ function StarPicker({ value, onChange, size = 28 }: { value: number; onChange: (
 
 export default function ReviewModal({ garageId, garageName, onClose, onSubmit }: ReviewModalProps) {
   const { user } = useAuth()
+  const searchParams = useSearchParams()
+  const inviteToken = searchParams.get('invite')
+  const isInviteMode = !!inviteToken
+
   const [rating, setRating] = useState(0)
   const [text, setText] = useState('')
   const [language, setLanguage] = useState('nl')
   const [subRatings, setSubRatings] = useState<Record<string, number>>({})
+  const [bonnummer, setBonnummer] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [submitted, setSubmitted] = useState(false)
@@ -56,13 +62,16 @@ export default function ReviewModal({ garageId, garageName, onClose, onSubmit }:
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (rating === 0 || !text.trim() || !user) return
+    if (isInviteMode && !bonnummer.trim()) return
 
     setLoading(true)
     setError('')
 
     const supabase = createClient()
+    const trimmedBonnummer = bonnummer.trim()
 
-    // 1. Review opslaan
+    // 1. Review opslaan — in uitnodigingsmodus laten we de verificatievelden op hun
+    // standaardwaarde staan; de match-check (stap 3) bepaalt pas wat ze worden.
     const { data: review, error: reviewError } = await supabase
       .from('reviews')
       .insert({
@@ -74,6 +83,9 @@ export default function ReviewModal({ garageId, garageName, onClose, onSubmit }:
         language,
         is_expat: language !== 'nl',
         verified: false,
+        receipt_number: isInviteMode ? null : (trimmedBonnummer || null),
+        verification_path: isInviteMode ? null : (trimmedBonnummer ? 'organic' : null),
+        verification_status: isInviteMode ? 'none' : (trimmedBonnummer ? 'pending_garage' : 'none'),
       })
       .select('id')
       .single()
@@ -94,6 +106,17 @@ export default function ReviewModal({ garageId, garageName, onClose, onSubmit }:
           score,
         }))
       )
+    }
+
+    // 3. Bij uitnodiging: nummer laten matchen door het platform, niet door de garage.
+    // Geen onderscheid in UI-feedback tussen match/mismatch — dat zou verklappen dat er
+    // iets niet klopte.
+    if (isInviteMode && inviteToken) {
+      await fetch('/api/reviews/verify-invitation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: inviteToken, reviewId: review.id, customerInvoiceNumber: trimmedBonnummer }),
+      }).catch(() => {})
     }
 
     setSubmitted(true)
@@ -171,6 +194,30 @@ export default function ReviewModal({ garageId, garageName, onClose, onSubmit }:
               />
             </div>
 
+            {/* Bonnummer */}
+            <div>
+              <label className="block text-[14px] font-medium text-neutral-900 mb-1">
+                {isInviteMode ? (
+                  'Factuurnummer'
+                ) : (
+                  <>Bonnummer / factuurnummer <span className="text-neutral-300 font-normal">(optioneel)</span></>
+                )}
+              </label>
+              <p className="text-[12px] text-neutral-500 mb-2">
+                {isInviteMode
+                  ? 'Vul uw factuurnummer in om uw bezoek te verifiëren.'
+                  : 'Vul dit in en krijg een "Geverifieerd bezoek"-badge bij uw review.'}
+              </p>
+              <input
+                type="text"
+                value={bonnummer}
+                onChange={e => setBonnummer(e.target.value)}
+                placeholder="Bijv. 2024-00123"
+                className="input-field"
+                required={isInviteMode}
+              />
+            </div>
+
             {/* Language */}
             <div>
               <label className="block text-[14px] font-medium text-neutral-900 mb-2">Taal van review</label>
@@ -198,8 +245,8 @@ export default function ReviewModal({ garageId, garageName, onClose, onSubmit }:
               </button>
               <button
                 type="submit"
-                disabled={rating === 0 || !text.trim() || loading}
-                className={cn('btn-primary flex-1', (rating === 0 || !text.trim() || loading) && 'opacity-50 cursor-not-allowed')}
+                disabled={rating === 0 || !text.trim() || loading || (isInviteMode && !bonnummer.trim())}
+                className={cn('btn-primary flex-1', (rating === 0 || !text.trim() || loading || (isInviteMode && !bonnummer.trim())) && 'opacity-50 cursor-not-allowed')}
               >
                 {loading ? 'Verzenden...' : 'Review verzenden'}
               </button>

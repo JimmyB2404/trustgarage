@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import {
@@ -9,6 +9,7 @@ import {
   IconStarFilled,
   IconCircleCheck,
   IconShieldCheck,
+  IconMailForward,
   IconMenu2,
   IconX,
   IconLogout,
@@ -23,6 +24,7 @@ const navItems = [
   { href: '/dashboard', label: 'Overzicht', icon: <IconChartBar size={16} /> },
   { href: '/dashboard/profiel', label: 'Profiel', icon: <IconShieldCheck size={16} /> },
   { href: '/dashboard/reviews', label: 'Reviews', icon: <IconStar size={16} /> },
+  { href: '/dashboard/uitnodigingen', label: 'Uitnodigingen', icon: <IconMailForward size={16} /> },
   { href: '/dashboard/abonnement', label: 'Abonnement', icon: <IconCircleCheck size={16} /> },
 ]
 
@@ -282,13 +284,67 @@ function ReviewRow({
   )
 }
 
+// ─── Bon-verificatie (Pad B — blind, alleen nummer + datum) ──────────────────
+
+type BlindVerificationItem = { id: string; receipt_number: string; created_at: string }
+
+function BlindVerificationRow({
+  item,
+  onAction,
+}: {
+  item: BlindVerificationItem
+  onAction: (id: string, action: 'confirm' | 'reject') => Promise<void>
+}) {
+  const [busy, setBusy] = useState(false)
+
+  async function handle(action: 'confirm' | 'reject') {
+    setBusy(true)
+    await onAction(item.id, action)
+  }
+
+  return (
+    <div className="bg-white border border-neutral-100 rounded-[9px] p-4 flex items-center justify-between gap-3 flex-wrap">
+      <div>
+        <p className="text-[13px] font-medium text-neutral-900">Bonnummer: {item.receipt_number}</p>
+        <p className="text-[11px] text-neutral-300">
+          {new Date(item.created_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })}
+        </p>
+      </div>
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => handle('confirm')}
+          disabled={busy}
+          className={cn('btn-primary text-[12px] py-[6px] px-3', busy && 'opacity-50 cursor-not-allowed')}
+        >
+          Bevestigen
+        </button>
+        <button
+          onClick={() => handle('reject')}
+          disabled={busy}
+          className={cn('btn-ghost text-[12px] py-[6px] px-3', busy && 'opacity-50 cursor-not-allowed')}
+        >
+          Afwijzen
+        </button>
+      </div>
+    </div>
+  )
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function ReviewsPage() {
   const { garage, loading, refetch } = useGarage()
+  const [blindQueue, setBlindQueue] = useState<BlindVerificationItem[]>([])
 
   const reviews = garage?.reviews ?? []
   const unanswered = reviews.filter(r => r.garage_replies.length === 0).length
+
+  useEffect(() => {
+    fetch('/api/garage/blind-verifications')
+      .then(r => r.json())
+      .then(({ items }) => setBlindQueue(items ?? []))
+      .catch(() => {})
+  }, [])
 
   async function handleReplySubmit(reviewId: string, text: string) {
     const res = await fetch('/api/garage/reply', {
@@ -301,6 +357,15 @@ export default function ReviewsPage() {
       throw new Error(error || 'Fout bij opslaan.')
     }
     await refetch()
+  }
+
+  async function handleBlindAction(reviewId: string, action: 'confirm' | 'reject') {
+    await fetch('/api/garage/blind-verifications', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ reviewId, action }),
+    })
+    setBlindQueue(prev => prev.filter(item => item.id !== reviewId))
   }
 
   if (loading) {
@@ -326,6 +391,21 @@ export default function ReviewsPage() {
           )}
         </div>
       </div>
+
+      {blindQueue.length > 0 && (
+        <div className="max-w-[720px] mb-6">
+          <h4 className="text-[14px] font-semibold text-neutral-900 mb-1">Bon-verificatie</h4>
+          <p className="text-[12px] text-neutral-500 mb-3">
+            Een klant heeft een bonnummer opgegeven bij een review. Bevestig alleen of dit nummer
+            in uw administratie voorkomt — de bijbehorende review wordt hier bewust niet getoond.
+          </p>
+          <div className="flex flex-col gap-2">
+            {blindQueue.map(item => (
+              <BlindVerificationRow key={item.id} item={item} onAction={handleBlindAction} />
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="flex flex-col gap-3 max-w-[720px]">
         {reviews.length > 0 ? (

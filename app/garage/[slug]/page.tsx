@@ -21,6 +21,11 @@ import ReviewButton from '@/components/ui/ReviewButton'
 import ViewTracker from '@/components/ui/ViewTracker'
 import FavoriteButton from '@/components/ui/FavoriteButton'
 
+// Zonder dit cachet Next.js de interne fetch()-calls van de Supabase client (rating, reviews,
+// verificatiestatus, favorieten...) over requests heen, ook al is dit al een dynamische route.
+// Resultaat: bezoekers zien verstopte/oude data totdat de cache toevallig verloopt.
+export const dynamic = 'force-dynamic'
+
 interface PageProps {
   params: { slug: string }
 }
@@ -82,11 +87,18 @@ export default async function GarageProfilePage({ params }: PageProps) {
   )
   const { data: rawReviews } = await supabase
     .from('reviews')
-    .select('*, review_ratings(category, score), garage_replies(id, text, created_at)')
+    .select(`
+      id, garage_id, user_id, user_name, user_country, is_expat, rating, text, language, verified, created_at,
+      review_ratings(category, score),
+      garage_replies(id, text, created_at)
+    `)
     .eq('garage_id', garage.id)
     .order('created_at', { ascending: false })
+  // Expliciete kolommen, geen '*' — sluit bewust receipt_number/verification_status/
+  // verification_path/invitation_id uit zodat die nooit publiek lekken.
 
-  const garageReviews: Review[] = (rawReviews ?? []).map((r) => ({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const garageReviews: Review[] = (rawReviews ?? []).map((r: any) => ({
     id: r.id,
     garage_id: r.garage_id,
     user_id: r.user_id,
@@ -118,6 +130,8 @@ export default async function GarageProfilePage({ params }: PageProps) {
     const avg = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : 0
     return { cat, avg }
   })
+
+  const verifiedCount = garageReviews.filter(r => r.verified).length
 
   const speaksEnglish = garage.languages.includes('Engels')
 
@@ -400,9 +414,14 @@ export default async function GarageProfilePage({ params }: PageProps) {
 
           {/* Reviews */}
           <section>
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
               <h2 className="text-[20px] font-serif font-normal text-neutral-900">
                 Reviews ({garageReviews.length})
+                {verifiedCount > 0 && (
+                  <span className="text-[13px] font-sans text-primary ml-2">
+                    · {verifiedCount} van {garageReviews.length} geverifieerd
+                  </span>
+                )}
               </h2>
               <ReviewButton garageId={garage.id} garageName={garage.name} />
             </div>

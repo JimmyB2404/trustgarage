@@ -151,6 +151,9 @@
 ### 7.4 Abonnement (`/dashboard/abonnement`)
 - [x] Plan tonen + upgrade knop (UI gereed, stub)
 - [ ] Stripe koppelen
+- [ ] **Bug**: "Uitloggen"-knop doet niets (geen `onClick`/`signOut`) en sidebar-badge is nog
+      hardcoded op `2` i.p.v. live onbeantwoorde-reviews-count — andere 4 dashboardpagina's zijn
+      al gefixt, deze is achtergebleven
 
 ---
 
@@ -169,6 +172,31 @@
 - [x] Opslaan in Supabase `reviews` + `review_ratings` tabellen
 - [x] Wordt direct zichtbaar op garageprofiel na opslaan
 - [ ] Bevestigingsmail naar gebruiker sturen
+
+---
+
+## 9b. Reviewverificatie ("Geverifieerd bezoek") — P0
+
+Tweede vertrouwenslaag naast KVK: bewijst dat een specifieke review van een bevestigd bezoek komt.
+Code volledig gebouwd, **wacht op handmatige test op een echte database** voordat dit live mag.
+
+- [x] Database: `review_invitations` tabel + `receipt_number`/`verification_path`/
+      `verification_status` op `reviews` (`supabase/migration_review_verification.sql`)
+- [x] Privacyfix: garageprofiel selecteert expliciete kolommen i.p.v. `*` (bonnummer lekt anders)
+- [x] Platform-adminrol via `ADMIN_EMAIL` env var (`lib/session.ts`, `lib/admin.ts`) — `/admin` en
+      `/admin/verificaties`, alleen zichtbaar voor dat ene account, 404 voor iedereen anders
+- [x] Pad B (spontaan): optioneel bonnummerveld in reviewformulier → blinde wachtrij in
+      `/dashboard/reviews` (garage ziet alleen nummer + datum, nooit de review zelf)
+- [x] Pad A (uitnodiging): nieuwe dashboardpagina `/dashboard/uitnodigingen` — garage stuurt
+      factuurnummer vooraf naar klant via e-mail (Resend), platform vergelijkt nummers, match komt
+      in admin-wachtrij voor laatste handmatige bevestiging
+- [x] Badge op reviews ("Geverifieerd bezoek") + aggregaatcijfer op garageprofiel ("X van Y
+      geverifieerd") + korte uitleg op homepage en zoekresultaten
+- [ ] **SQL migratie nog uitvoeren** in Supabase voordat dit getest kan worden
+- [ ] Resend account + geverifieerd verzenddomein (SPF/DKIM via TransIP) — zonder dit wordt de
+      uitnodigingsmail niet echt verstuurd (uitnodiging wordt wel aangemaakt, token leesbaar in
+      Supabase om handmatig te testen)
+- [ ] Volledige end-to-end test (Pad A + Pad B + privacy-check) voordat dit naar productie gaat
 
 ---
 

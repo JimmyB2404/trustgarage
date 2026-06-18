@@ -32,7 +32,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .from('garages')
       .select('id')
       .eq('user_id', userId)
-      .single()
+      .maybeSingle()
     setIsGarageOwner(!!data)
   }
 

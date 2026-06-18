@@ -179,6 +179,14 @@ export default async function HomePage() {
               </div>
             ))}
           </div>
+
+          <div className="flex items-center justify-center gap-2 mt-10 text-[13px] text-neutral-500">
+            <IconShieldCheck size={15} className="text-primary flex-shrink-0" />
+            <span>
+              Let op de <span className="text-primary font-medium">&quot;Geverifieerd bezoek&quot;</span>-badge —
+              die review komt gegarandeerd van een echt bezoek aan de garage.
+            </span>
+          </div>
         </div>
       </section>
 

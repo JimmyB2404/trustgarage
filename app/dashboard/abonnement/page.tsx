@@ -8,6 +8,7 @@ import {
   IconStar,
   IconCircleCheck,
   IconShieldCheck,
+  IconMailForward,
   IconMenu2,
   IconX,
   IconLogout,
@@ -21,6 +22,7 @@ const navItems = [
   { href: '/dashboard', label: 'Overzicht', icon: <IconChartBar size={16} /> },
   { href: '/dashboard/profiel', label: 'Profiel', icon: <IconShieldCheck size={16} /> },
   { href: '/dashboard/reviews', label: 'Reviews', icon: <IconStar size={16} />, badge: 2 },
+  { href: '/dashboard/uitnodigingen', label: 'Uitnodigingen', icon: <IconMailForward size={16} /> },
   { href: '/dashboard/abonnement', label: 'Abonnement', icon: <IconCircleCheck size={16} /> },
 ]
 
