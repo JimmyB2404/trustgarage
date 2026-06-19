@@ -246,37 +246,47 @@ function AbonnementContent() {
     if (!garage) return
     setCheckoutError('')
     setCheckingOut(planKey)
-    const res = await fetch('/api/stripe/create-checkout', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ garageId: garage.id, plan: planKey }),
-    })
-    const result = await res.json()
-    if (!res.ok || !result.url) {
-      setCheckoutError(result.error ?? 'Kon geen betaalpagina openen.')
+    try {
+      const res = await fetch('/api/stripe/create-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ garageId: garage.id, plan: planKey }),
+      })
+      const result = await res.json()
+      if (!res.ok || !result.url) {
+        setCheckoutError(result.error ?? 'Kon geen betaalpagina openen.')
+        setCheckingOut(null)
+        return
+      }
+      router.push(result.url)
+    } catch {
+      setCheckoutError('Kon geen betaalpagina openen. Probeer het opnieuw.')
       setCheckingOut(null)
-      return
     }
-    router.push(result.url)
   }
 
   async function handleDowngrade() {
     if (!garage) return
     setCheckoutError('')
     setDowngrading(true)
-    const res = await fetch('/api/stripe/cancel-subscription', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ garageId: garage.id }),
-    })
-    const result = await res.json()
-    setDowngrading(false)
-    setConfirmingDowngrade(false)
-    if (!res.ok) {
-      setCheckoutError(result.error ?? 'Kon abonnement niet opzeggen.')
-      return
+    try {
+      const res = await fetch('/api/stripe/cancel-subscription', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ garageId: garage.id }),
+      })
+      const result = await res.json()
+      setConfirmingDowngrade(false)
+      if (!res.ok) {
+        setCheckoutError(result.error ?? 'Kon abonnement niet opzeggen.')
+        return
+      }
+      await refetch()
+    } catch {
+      setCheckoutError('Kon abonnement niet opzeggen. Probeer het opnieuw.')
+    } finally {
+      setDowngrading(false)
     }
-    await refetch()
   }
 
   return (

@@ -57,27 +57,35 @@ export async function POST(req: Request) {
 
   let customerId = existingSub?.stripe_customer_id as string | undefined
 
-  if (!customerId) {
-    const customer = await stripe.customers.create({
-      email: garage.email || user.email,
-      name: garage.name,
-      metadata: { garageId },
+  try {
+    if (!customerId) {
+      const customer = await stripe.customers.create({
+        email: garage.email || user.email,
+        name: garage.name,
+        metadata: { garageId },
+      })
+      customerId = customer.id
+    }
+
+    const session = await stripe.checkout.sessions.create({
+      mode: 'subscription',
+      customer: customerId,
+      line_items: [{ price: priceId, quantity: 1 }],
+      success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard/abonnement?success=true`,
+      cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard/abonnement?canceled=true`,
+      metadata: { garageId, plan },
+      subscription_data: { metadata: { garageId, plan } },
+      // Zonder dit rekent Checkout nooit BTW uit, los van wat er in het Stripe-dashboard is
+      // ingesteld bij de prijs/het tarief — automatische belasting moet per sessie aangezet worden.
+      automatic_tax: { enabled: true },
     })
-    customerId = customer.id
+
+    return NextResponse.json({ url: session.url })
+  } catch (err) {
+    console.error('Stripe checkout error:', err)
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : 'Kon geen betaalpagina openen.' },
+      { status: 400 }
+    )
   }
-
-  const session = await stripe.checkout.sessions.create({
-    mode: 'subscription',
-    customer: customerId,
-    line_items: [{ price: priceId, quantity: 1 }],
-    success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard/abonnement?success=true`,
-    cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard/abonnement?canceled=true`,
-    metadata: { garageId, plan },
-    subscription_data: { metadata: { garageId, plan } },
-    // Zonder dit rekent Checkout nooit BTW uit, los van wat er in het Stripe-dashboard is
-    // ingesteld bij de prijs/het tarief — automatische belasting moet per sessie aangezet worden.
-    automatic_tax: { enabled: true },
-  })
-
-  return NextResponse.json({ url: session.url })
 }
