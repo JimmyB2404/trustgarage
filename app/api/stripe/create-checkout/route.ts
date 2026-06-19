@@ -45,9 +45,15 @@ export async function POST(req: Request) {
 
   const { data: existingSub } = await supabase
     .from('subscriptions')
-    .select('stripe_customer_id')
+    .select('stripe_customer_id, stripe_subscription_id, plan, status')
     .eq('garage_id', garageId)
     .maybeSingle()
+
+  // Wisselen van plan (bv. Premium -> Business) zonder het oude abonnement te annuleren zou
+  // tot dubbele facturatie leiden — eerst opruimen voordat we een nieuwe Checkout Session maken.
+  if (existingSub?.stripe_subscription_id && existingSub.status === 'active' && existingSub.plan !== plan) {
+    await stripe.subscriptions.cancel(existingSub.stripe_subscription_id).catch(() => {})
+  }
 
   let customerId = existingSub?.stripe_customer_id as string | undefined
 

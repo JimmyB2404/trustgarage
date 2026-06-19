@@ -300,26 +300,28 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      {/* Upgrade card */}
-      <div className="border-[1.5px] border-primary bg-[#F7FDF9] rounded-[9px] p-5 mt-4">
-        <p className="text-[16px] font-semibold text-neutral-900 mb-1">Upgrade naar Premium</p>
-        <p className="text-[13px] text-neutral-500 mb-4">Bereik meer klanten en bouw vertrouwen op.</p>
-        <ul className="flex flex-col gap-2 mb-5">
-          {[
-            'Uitgelicht in zoekresultaten',
-            'Onbeperkt foto\'s uploaden',
-            'Prioriteit klantenservice',
-          ].map((benefit) => (
-            <li key={benefit} className="flex items-center gap-2 text-[13px] text-neutral-900">
-              <IconCircleCheck size={15} className="text-primary shrink-0" />
-              {benefit}
-            </li>
-          ))}
-        </ul>
-        <Link href="/dashboard/abonnement" className="btn-primary text-[13px] py-[9px] px-5 rounded-md inline-flex items-center gap-2">
-          Upgrade nu
-        </Link>
-      </div>
+      {/* Upgrade card — alleen voor garages die nog geen betaald plan hebben */}
+      {(!garage || garage.plan === 'free') && (
+        <div className="border-[1.5px] border-primary bg-[#F7FDF9] rounded-[9px] p-5 mt-4">
+          <p className="text-[16px] font-semibold text-neutral-900 mb-1">Upgrade naar Premium</p>
+          <p className="text-[13px] text-neutral-500 mb-4">Bereik meer klanten en bouw vertrouwen op.</p>
+          <ul className="flex flex-col gap-2 mb-5">
+            {[
+              'Uitgelicht in zoekresultaten',
+              'Onbeperkt foto\'s uploaden',
+              'Prioriteit klantenservice',
+            ].map((benefit) => (
+              <li key={benefit} className="flex items-center gap-2 text-[13px] text-neutral-900">
+                <IconCircleCheck size={15} className="text-primary shrink-0" />
+                {benefit}
+              </li>
+            ))}
+          </ul>
+          <Link href="/dashboard/abonnement" className="btn-primary text-[13px] py-[9px] px-5 rounded-md inline-flex items-center gap-2">
+            Upgrade nu
+          </Link>
+        </div>
+      )}
     </DashboardLayout>
   )
 }

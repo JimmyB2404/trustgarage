@@ -145,8 +145,6 @@ interface PlanDef {
   badge: string
   badgeClass: string
   features: string[]
-  cta: string
-  ctaVariant: 'disabled' | 'primary' | 'secondary'
 }
 
 const PLANS: PlanDef[] = [
@@ -164,8 +162,6 @@ const PLANS: PlanDef[] = [
       'Standaard zoekplaatsing',
       'KVK-verificatie badge',
     ],
-    cta: 'Huidig plan',
-    ctaVariant: 'disabled',
   },
   {
     key: 'premium',
@@ -183,8 +179,6 @@ const PLANS: PlanDef[] = [
       'Statistieken & inzichten',
       'Prioriteit klantenservice',
     ],
-    cta: 'Upgrade naar Premium',
-    ctaVariant: 'primary',
   },
   {
     key: 'business',
@@ -202,8 +196,6 @@ const PLANS: PlanDef[] = [
       'Aangepaste rapportages',
       'Vroeg toegang tot nieuwe functies',
     ],
-    cta: 'Contact opnemen',
-    ctaVariant: 'secondary',
   },
 ]
 
@@ -237,11 +229,13 @@ export default function AbonnementPage() {
 }
 
 function AbonnementContent() {
-  const { garage } = useGarage()
+  const { garage, refetch } = useGarage()
   const router = useRouter()
   const searchParams = useSearchParams()
   const [checkingOut, setCheckingOut] = useState<PlanKey | null>(null)
   const [checkoutError, setCheckoutError] = useState('')
+  const [confirmingDowngrade, setConfirmingDowngrade] = useState(false)
+  const [downgrading, setDowngrading] = useState(false)
 
   const unanswered = garage?.reviews.filter(r => r.garage_replies.length === 0).length ?? 0
   const currentPlan: PlanKey = (garage?.plan as PlanKey) ?? 'free'
@@ -264,6 +258,25 @@ function AbonnementContent() {
       return
     }
     router.push(result.url)
+  }
+
+  async function handleDowngrade() {
+    if (!garage) return
+    setCheckoutError('')
+    setDowngrading(true)
+    const res = await fetch('/api/stripe/cancel-subscription', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ garageId: garage.id }),
+    })
+    const result = await res.json()
+    setDowngrading(false)
+    setConfirmingDowngrade(false)
+    if (!res.ok) {
+      setCheckoutError(result.error ?? 'Kon abonnement niet opzeggen.')
+      return
+    }
+    await refetch()
   }
 
   return (
@@ -344,24 +357,44 @@ function AbonnementContent() {
                   >
                     Huidig plan
                   </button>
-                ) : plan.ctaVariant === 'disabled' ? (
-                  <button
-                    disabled
-                    className="btn-ghost text-[13px] py-[8px] w-full opacity-60 cursor-not-allowed"
-                  >
-                    {plan.cta}
-                  </button>
-                ) : plan.ctaVariant === 'primary' ? (
+                ) : plan.key === 'free' ? (
+                  confirmingDowngrade ? (
+                    <div className="flex flex-col gap-2">
+                      <p className="text-[11px] text-danger text-center">
+                        Uw betaalde abonnement wordt direct opgezegd.
+                      </p>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={handleDowngrade}
+                          disabled={downgrading}
+                          className={cn('btn-danger text-[13px] py-[8px] flex-1', downgrading && 'opacity-50 cursor-not-allowed')}
+                        >
+                          {downgrading ? 'Bezig...' : 'Ja, downgraden'}
+                        </button>
+                        <button
+                          onClick={() => setConfirmingDowngrade(false)}
+                          disabled={downgrading}
+                          className="btn-ghost text-[13px] py-[8px] flex-1"
+                        >
+                          Annuleren
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setConfirmingDowngrade(true)}
+                      className="btn-ghost text-[13px] py-[8px] w-full"
+                    >
+                      Downgrade naar Gratis
+                    </button>
+                  )
+                ) : (
                   <button
                     onClick={() => handleUpgrade(plan.key as 'premium' | 'business')}
                     disabled={checkingOut !== null}
                     className={cn('btn-primary text-[13px] py-[8px] w-full', checkingOut !== null && 'opacity-50 cursor-not-allowed')}
                   >
-                    {checkingOut === plan.key ? 'Bezig...' : plan.cta}
-                  </button>
-                ) : (
-                  <button className="btn-secondary text-[13px] py-[8px] w-full">
-                    {plan.cta}
+                    {checkingOut === plan.key ? 'Bezig...' : `Upgrade naar ${plan.name}`}
                   </button>
                 )}
               </div>
