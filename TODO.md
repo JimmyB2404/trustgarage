@@ -11,8 +11,8 @@
 - [x] Domeinnaam TrustGarage.nl + .be registreren (via TransIP)
 - [x] Supabase account aanmaken
 - [x] Vercel account aanmaken + GitHub repository koppelen
-- [ ] Stripe account aanmaken (NL bedrijf)
-- [ ] KVK API toegang aanvragen via developer.kvk.nl
+- [x] Stripe account aanmaken (NL bedrijf), bedrijfsgegevens geverifieerd
+- [ ] KVK API toegang aanvragen via developer.kvk.nl — aangevraagd 2026-06-19, ~2 werkdagen
 - [ ] Google Maps API key aanvragen (voor kaart embed op garageprofiel)
 - [ ] Initieel garagemateriaal verzamelen (10–15 garages in Maastricht als seed data)
 
@@ -120,9 +120,18 @@
 - [ ] Echte KVK API activeren zodra `KVK_API_KEY` beschikbaar is
 
 ### 6.3 Stripe abonnement
-- [x] `POST /api/stripe/create-checkout` — stub
-- [x] `POST /api/stripe/webhook` — stub
-- [ ] Stripe activeren zodra account beschikbaar is
+- [x] `lib/plans.ts` — gedeelde bron voor prijzen + Stripe Price ID's (Premium €39, Business €89)
+- [x] `POST /api/stripe/create-checkout` — echte implementatie: ownership-check, Stripe customer
+      aanmaken/herbruiken, Checkout Session voor het gekozen plan
+- [x] `POST /api/stripe/webhook` — echte implementatie: `checkout.session.completed` (upgrade),
+      `customer.subscription.updated` (status/periode sync), `customer.subscription.deleted`
+      (terug naar gratis)
+- [x] `supabase/migration_stripe.sql` — `stripe_customer_id` kolom + unique constraint op
+      `subscriptions.garage_id` + service_role GRANT
+- [ ] `STRIPE_SECRET_KEY` invullen in `.env.local` (test-key) + later ook in Vercel
+- [ ] `STRIPE_WEBHOOK_SECRET` ophalen na webhook-endpoint aanmaken in Stripe Dashboard
+      (`https://trustgarage.nl/api/stripe/webhook`) + invullen in `.env.local`/Vercel
+- [ ] Echte test-betaling doorlopen zodra de keys ingevuld zijn
 
 ---
 
@@ -149,11 +158,14 @@
 - [x] Badge in sidebar toont live aantal onbeantwoorde reviews
 
 ### 7.4 Abonnement (`/dashboard/abonnement`)
-- [x] Plan tonen + upgrade knop (UI gereed, stub)
+- [x] Plan tonen + upgrade knop
 - [x] Bug gefixt: "Uitloggen"-knop werkt nu (echte `signOut`) en sidebar-badge toont het live
       aantal onbeantwoorde reviews i.p.v. een hardcoded `2` — consistent met de andere 4
       dashboardpagina's
-- [ ] Stripe koppelen
+- [x] Huidig plan + "Huidig plan"-knopstatus leest nu echte `garage.plan` i.p.v. hardcoded `'free'`
+- [x] "Upgrade naar Premium" gekoppeld aan `/api/stripe/create-checkout`, met laadstatus en
+      succes/geannuleerd-banner na terugkomst van Stripe
+- [ ] Stripe keys invullen om de echte flow te testen (zie 6.3)
 
 ---
 
@@ -263,8 +275,9 @@ klaar voor productie, mist alleen nog een echt Resend-account voor verzending.
 1. **Seed data** — 10–15 Maastricht garages invoeren in Supabase (wacht op materiaal van opdrachtgever)
 2. **Smoke test** — registreer garage → schrijf review → check dashboard, op productie
 3. **Google Analytics 4** — bezoekersdata bijhouden
-4. **Stripe activeren** — zodra Stripe account beschikbaar is (opdrachtgever)
-5. **KVK API activeren** — zodra API key beschikbaar is (opdrachtgever)
+4. **Stripe testen** — `STRIPE_SECRET_KEY` + webhook + `STRIPE_WEBHOOK_SECRET` invullen, één
+   testbetaling doorlopen (opdrachtgever heeft account + producten al aangemaakt)
+5. **KVK API activeren** — zodra API key beschikbaar is (aangevraagd 2026-06-19, opdrachtgever)
 6. **Google Maps API key** — zodra key beschikbaar is (opdrachtgever)
 
 ---
