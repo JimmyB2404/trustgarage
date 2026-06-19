@@ -119,7 +119,7 @@
 - [x] `POST /api/kvk` — stub met mock data
 - [ ] Echte KVK API activeren zodra `KVK_API_KEY` beschikbaar is
 
-### 6.3 Stripe abonnement — **volledig werkend, bevestigd met een echte test-betaling**
+### 6.3 Stripe abonnement — **live en volledig werkend, inclusief BTW**
 - [x] `lib/plans.ts` — gedeelde bron voor weergaveprijzen (Premium €39, Business €89); Price ID's
       zitten bewust niet hier maar server-side in env vars (test/live hebben andere ID's)
 - [x] `POST /api/stripe/create-checkout` — ownership-check, Stripe customer aanmaken/herbruiken,
@@ -147,8 +147,15 @@
       (voorkomt dubbele facturatie)
 - [x] Dashboard-overzicht: "Upgrade naar Premium"-kaart verborgen zodra de garage al een betaald
       plan heeft — getest en bevestigd op productie (inclusief downgrade-flow)
-- [ ] Overstap naar live mode: nieuwe live-webhook aanmaken + live Price ID's/secret key invullen
-      zodra er echte garages gaan betalen (live Price ID's al bekend: zie commit-historie)
+- [x] **Live mode geactiveerd** — live secret key, live webhook (`www.trustgarage.nl`, geleerd van
+      de test-mode-bug) en live Price ID's ingevuld in Vercel
+- [x] Bug gefixt: `automatic_tax` stond niet aan bij het aanmaken van de checkout-sessie, waardoor
+      het in het Stripe-dashboard ingestelde BTW-tarief nooit werd toegepast
+- [x] Bug gefixt: automatische belasting heeft een factuuradres op de klant nodig — Checkout vraagt
+      dit nu op en slaat het automatisch op (`customer_update.address: 'auto'`)
+- [x] Bug gefixt: upgrade-knop bleef oneindig laden bij een Stripe-fout i.p.v. een melding te tonen
+      (ontbrekende try/catch in zowel de API-route als de frontend)
+- [x] BTW (21% NL/BE) bevestigd correct werkend op de live checkout-pagina
 
 ---
 
@@ -291,10 +298,8 @@ klaar voor productie, mist alleen nog een echt Resend-account voor verzending.
 1. **Seed data** — 10–15 Maastricht garages invoeren in Supabase (wacht op materiaal van opdrachtgever)
 2. **Smoke test** — registreer garage → schrijf review → check dashboard, op productie
 3. **Google Analytics 4** — bezoekersdata bijhouden
-4. **Stripe naar live mode** — zodra er echte garages gaan betalen (test mode is volledig werkend
-   en bevestigd; zie 6.3)
-5. **KVK API activeren** — zodra API key beschikbaar is (aangevraagd 2026-06-19, opdrachtgever)
-6. **Google Maps API key** — zodra key beschikbaar is (opdrachtgever)
+4. **KVK API activeren** — zodra API key beschikbaar is (aangevraagd 2026-06-19, opdrachtgever)
+5. **Google Maps API key** — zodra key beschikbaar is (opdrachtgever)
 
 ---
 
