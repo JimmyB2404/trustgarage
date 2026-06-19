@@ -74,6 +74,9 @@ export async function POST(req: Request) {
     cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard/abonnement?canceled=true`,
     metadata: { garageId, plan },
     subscription_data: { metadata: { garageId, plan } },
+    // Zonder dit rekent Checkout nooit BTW uit, los van wat er in het Stripe-dashboard is
+    // ingesteld bij de prijs/het tarief — automatische belasting moet per sessie aangezet worden.
+    automatic_tax: { enabled: true },
   })
 
   return NextResponse.json({ url: session.url })
