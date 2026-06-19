@@ -2,14 +2,22 @@ import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 import { getStripe } from '@/lib/stripe'
 import { getSessionUser } from '@/lib/session'
-import { PLAN_PRICING, type PaidPlan } from '@/lib/plans'
+import { PLAN_PRICING } from '@/lib/plans'
+
+// Server-only — test/live hebben andere Price ID's, dit zo houden voorkomt dat we ze ooit per
+// ongeluk in client-bundelde code (lib/plans.ts) zetten.
+const STRIPE_PRICE_IDS: Record<string, string | undefined> = {
+  premium: process.env.STRIPE_PRICE_PREMIUM,
+  business: process.env.STRIPE_PRICE_BUSINESS,
+}
 
 export async function POST(req: Request) {
   const user = await getSessionUser()
   if (!user) return NextResponse.json({ error: 'Niet ingelogd.' }, { status: 401 })
 
   const { garageId, plan } = await req.json()
-  if (!garageId || !(plan in PLAN_PRICING)) {
+  const priceId = STRIPE_PRICE_IDS[plan]
+  if (!garageId || !(plan in PLAN_PRICING) || !priceId) {
     return NextResponse.json({ error: 'Ongeldige invoer.' }, { status: 400 })
   }
 
@@ -55,7 +63,7 @@ export async function POST(req: Request) {
   const session = await stripe.checkout.sessions.create({
     mode: 'subscription',
     customer: customerId,
-    line_items: [{ price: PLAN_PRICING[plan as PaidPlan].stripePriceId, quantity: 1 }],
+    line_items: [{ price: priceId, quantity: 1 }],
     success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard/abonnement?success=true`,
     cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard/abonnement?canceled=true`,
     metadata: { garageId, plan },
