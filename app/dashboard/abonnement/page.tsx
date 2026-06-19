@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import {
   IconChartBar,
   IconStar,
@@ -17,6 +17,7 @@ import {
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/context/AuthContext'
 import { useGarage } from '@/hooks/useGarage'
+import { PLAN_PRICING } from '@/lib/plans'
 
 // ─── Shared Dashboard Layout ──────────────────────────────────────────────────
 
@@ -135,8 +136,6 @@ function DashboardLayout({ children, reviewBadge }: { children: React.ReactNode;
 
 type PlanKey = 'free' | 'premium' | 'business'
 
-const CURRENT_PLAN: PlanKey = 'free'
-
 interface PlanDef {
   key: PlanKey
   name: string
@@ -171,7 +170,7 @@ const PLANS: PlanDef[] = [
   {
     key: 'premium',
     name: 'Premium',
-    price: '€29',
+    price: `€${PLAN_PRICING.premium.amount}`,
     sub: 'per maand',
     color: 'border-primary',
     badge: 'Populair',
@@ -190,7 +189,7 @@ const PLANS: PlanDef[] = [
   {
     key: 'business',
     name: 'Business',
-    price: '€79',
+    price: `€${PLAN_PRICING.business.amount}`,
     sub: 'per maand',
     color: 'border-neutral-100',
     badge: 'Business',
@@ -230,8 +229,42 @@ function FeatureCell({ value }: { value: boolean | string }) {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function AbonnementPage() {
+  return (
+    <Suspense fallback={null}>
+      <AbonnementContent />
+    </Suspense>
+  )
+}
+
+function AbonnementContent() {
   const { garage } = useGarage()
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const [checkingOut, setCheckingOut] = useState<PlanKey | null>(null)
+  const [checkoutError, setCheckoutError] = useState('')
+
   const unanswered = garage?.reviews.filter(r => r.garage_replies.length === 0).length ?? 0
+  const currentPlan: PlanKey = (garage?.plan as PlanKey) ?? 'free'
+  const justSucceeded = searchParams.get('success') === 'true'
+  const justCanceled = searchParams.get('canceled') === 'true'
+
+  async function handleUpgrade(planKey: 'premium' | 'business') {
+    if (!garage) return
+    setCheckoutError('')
+    setCheckingOut(planKey)
+    const res = await fetch('/api/stripe/create-checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ garageId: garage.id, plan: planKey }),
+    })
+    const result = await res.json()
+    if (!res.ok || !result.url) {
+      setCheckoutError(result.error ?? 'Kon geen betaalpagina openen.')
+      setCheckingOut(null)
+      return
+    }
+    router.push(result.url)
+  }
 
   return (
     <DashboardLayout reviewBadge={unanswered}>
@@ -240,20 +273,36 @@ export default function AbonnementPage() {
           <h3 className="text-[22px] font-medium text-neutral-900">Abonnement</h3>
           <span className={cn(
             'inline-flex items-center px-2 py-[3px] rounded-sm text-[11px] font-medium',
-            CURRENT_PLAN === 'free' && 'bg-[#F5F5F5] text-neutral-500',
-            CURRENT_PLAN === 'premium' && 'bg-primary text-white',
-            CURRENT_PLAN === 'business' && 'bg-[#FAEEDA] text-[#633806]',
+            currentPlan === 'free' && 'bg-[#F5F5F5] text-neutral-500',
+            currentPlan === 'premium' && 'bg-primary text-white',
+            currentPlan === 'business' && 'bg-[#FAEEDA] text-[#633806]',
           )}>
-            {CURRENT_PLAN === 'free' && 'Gratis plan'}
-            {CURRENT_PLAN === 'premium' && 'Premium plan'}
-            {CURRENT_PLAN === 'business' && 'Business plan'}
+            {currentPlan === 'free' && 'Gratis plan'}
+            {currentPlan === 'premium' && 'Premium plan'}
+            {currentPlan === 'business' && 'Business plan'}
           </span>
         </div>
+
+        {justSucceeded && (
+          <p className="text-[13px] text-primary bg-primary-light border border-primary/20 rounded-lg px-4 py-3 mb-5">
+            Bedankt! Uw upgrade is verwerkt — dit kan een paar seconden duren voordat het plan hierboven bijwerkt.
+          </p>
+        )}
+        {justCanceled && (
+          <p className="text-[13px] text-neutral-500 bg-surface border border-neutral-100 rounded-lg px-4 py-3 mb-5">
+            Betaling geannuleerd. Er is niets in rekening gebracht.
+          </p>
+        )}
+        {checkoutError && (
+          <p className="text-[13px] text-danger bg-danger/5 border border-danger/20 rounded-lg px-4 py-3 mb-5">
+            {checkoutError}
+          </p>
+        )}
 
         {/* Plan cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
           {PLANS.map((plan) => {
-            const isCurrent = plan.key === CURRENT_PLAN
+            const isCurrent = plan.key === currentPlan
             return (
               <div
                 key={plan.key}
@@ -288,20 +337,29 @@ export default function AbonnementPage() {
                 </ul>
 
                 {/* CTA */}
-                {plan.ctaVariant === 'disabled' && (
+                {isCurrent ? (
+                  <button
+                    disabled
+                    className="btn-ghost text-[13px] py-[8px] w-full opacity-60 cursor-not-allowed"
+                  >
+                    Huidig plan
+                  </button>
+                ) : plan.ctaVariant === 'disabled' ? (
                   <button
                     disabled
                     className="btn-ghost text-[13px] py-[8px] w-full opacity-60 cursor-not-allowed"
                   >
                     {plan.cta}
                   </button>
-                )}
-                {plan.ctaVariant === 'primary' && (
-                  <button className="btn-primary text-[13px] py-[8px] w-full">
-                    {plan.cta}
+                ) : plan.ctaVariant === 'primary' ? (
+                  <button
+                    onClick={() => handleUpgrade(plan.key as 'premium' | 'business')}
+                    disabled={checkingOut !== null}
+                    className={cn('btn-primary text-[13px] py-[8px] w-full', checkingOut !== null && 'opacity-50 cursor-not-allowed')}
+                  >
+                    {checkingOut === plan.key ? 'Bezig...' : plan.cta}
                   </button>
-                )}
-                {plan.ctaVariant === 'secondary' && (
+                ) : (
                   <button className="btn-secondary text-[13px] py-[8px] w-full">
                     {plan.cta}
                   </button>

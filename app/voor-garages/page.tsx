@@ -8,6 +8,7 @@ import {
   IconLanguage,
   IconCheck,
 } from '@tabler/icons-react'
+import { PLAN_PRICING } from '@/lib/plans'
 
 export const metadata: Metadata = {
   title: 'Voor Garagebedrijven',
@@ -60,7 +61,7 @@ const plans = [
   },
   {
     name: 'Premium',
-    price: '29',
+    price: String(PLAN_PRICING.premium.amount),
     period: 'mnd',
     featured: true,
     cta: 'Premium kiezen',
@@ -82,7 +83,7 @@ const plans = [
   },
   {
     name: 'Business',
-    price: '79',
+    price: String(PLAN_PRICING.business.amount),
     period: 'mnd',
     featured: false,
     cta: 'Business kiezen',
