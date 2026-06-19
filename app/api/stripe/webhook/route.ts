@@ -32,14 +32,18 @@ export async function POST(req: Request) {
       const plan = session.metadata?.plan
 
       if (garageId && plan) {
+        const stripe = getStripe()
+        const subscription = await stripe.subscriptions.retrieve(session.subscription as string)
+
         await supabase.from('garages').update({ plan }).eq('id', garageId)
         await supabase.from('subscriptions').upsert(
           {
             garage_id: garageId,
             plan,
-            stripe_subscription_id: session.subscription as string,
+            stripe_subscription_id: subscription.id,
             stripe_customer_id: session.customer as string,
-            status: 'active',
+            status: subscription.status,
+            current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
           },
           { onConflict: 'garage_id' }
         )
