@@ -136,6 +136,17 @@
       aangepast naar de www-versie
 - [x] Echte test-betaling doorlopen (Stripe testkaart) — `garages.plan` en `subscriptions`
       bevestigd correct bijgewerkt in productie
+- [x] Bug gefixt: Gratis-kaart toonde altijd "Huidig plan" (hardcoded), ook als de garage al op
+      Premium/Business zat — CTA per kaart nu afgeleid van het echte `garage.plan`
+- [x] Gratis-kaart is nu klikbaar als "Downgrade naar Gratis" wanneer niet het huidige plan, met
+      inline bevestigingsstap, annuleert het echte Stripe-abonnement via nieuwe
+      `POST /api/stripe/cancel-subscription`
+- [x] Business is nu een echte, altijd-bestelbare Stripe-checkoutknop ("Upgrade naar Business")
+      i.p.v. een niet-functionele "Contact opnemen"-placeholder
+- [x] Veiligheidsfix: wisselen tussen Premium/Business annuleert eerst het oude abonnement
+      (voorkomt dubbele facturatie)
+- [x] Dashboard-overzicht: "Upgrade naar Premium"-kaart verborgen zodra de garage al een betaald
+      plan heeft — getest en bevestigd op productie (inclusief downgrade-flow)
 - [ ] Overstap naar live mode: nieuwe live-webhook aanmaken + live Price ID's/secret key invullen
       zodra er echte garages gaan betalen (live Price ID's al bekend: zie commit-historie)
 
