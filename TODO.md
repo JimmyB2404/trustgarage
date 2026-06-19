@@ -119,19 +119,25 @@
 - [x] `POST /api/kvk` — stub met mock data
 - [ ] Echte KVK API activeren zodra `KVK_API_KEY` beschikbaar is
 
-### 6.3 Stripe abonnement
-- [x] `lib/plans.ts` — gedeelde bron voor prijzen + Stripe Price ID's (Premium €39, Business €89)
-- [x] `POST /api/stripe/create-checkout` — echte implementatie: ownership-check, Stripe customer
-      aanmaken/herbruiken, Checkout Session voor het gekozen plan
-- [x] `POST /api/stripe/webhook` — echte implementatie: `checkout.session.completed` (upgrade),
-      `customer.subscription.updated` (status/periode sync), `customer.subscription.deleted`
+### 6.3 Stripe abonnement — **volledig werkend, bevestigd met een echte test-betaling**
+- [x] `lib/plans.ts` — gedeelde bron voor weergaveprijzen (Premium €39, Business €89); Price ID's
+      zitten bewust niet hier maar server-side in env vars (test/live hebben andere ID's)
+- [x] `POST /api/stripe/create-checkout` — ownership-check, Stripe customer aanmaken/herbruiken,
+      Checkout Session voor het gekozen plan, Price ID's via `STRIPE_PRICE_PREMIUM`/`STRIPE_PRICE_BUSINESS`
+- [x] `POST /api/stripe/webhook` — `checkout.session.completed` (upgrade + meteen `current_period_end`
+      ingevuld), `customer.subscription.updated` (status/periode sync), `customer.subscription.deleted`
       (terug naar gratis)
 - [x] `supabase/migration_stripe.sql` — `stripe_customer_id` kolom + unique constraint op
-      `subscriptions.garage_id` + service_role GRANT
-- [ ] `STRIPE_SECRET_KEY` invullen in `.env.local` (test-key) + later ook in Vercel
-- [ ] `STRIPE_WEBHOOK_SECRET` ophalen na webhook-endpoint aanmaken in Stripe Dashboard
-      (`https://trustgarage.nl/api/stripe/webhook`) + invullen in `.env.local`/Vercel
-- [ ] Echte test-betaling doorlopen zodra de keys ingevuld zijn
+      `subscriptions.garage_id` + service_role GRANT — uitgevoerd
+- [x] `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_PREMIUM`, `STRIPE_PRICE_BUSINESS`
+      ingevuld in `.env.local` én Vercel (test mode), gedeployed
+- [x] Bug gevonden en gefixt: webhook-endpoint stond op `trustgarage.nl` (zonder www), wat
+      308-redirect naar `www.trustgarage.nl` en de aflevering liet mislukken — endpoint-URL
+      aangepast naar de www-versie
+- [x] Echte test-betaling doorlopen (Stripe testkaart) — `garages.plan` en `subscriptions`
+      bevestigd correct bijgewerkt in productie
+- [ ] Overstap naar live mode: nieuwe live-webhook aanmaken + live Price ID's/secret key invullen
+      zodra er echte garages gaan betalen (live Price ID's al bekend: zie commit-historie)
 
 ---
 
@@ -164,8 +170,7 @@
       dashboardpagina's
 - [x] Huidig plan + "Huidig plan"-knopstatus leest nu echte `garage.plan` i.p.v. hardcoded `'free'`
 - [x] "Upgrade naar Premium" gekoppeld aan `/api/stripe/create-checkout`, met laadstatus en
-      succes/geannuleerd-banner na terugkomst van Stripe
-- [ ] Stripe keys invullen om de echte flow te testen (zie 6.3)
+      succes/geannuleerd-banner na terugkomst van Stripe — getest en werkend in productie
 
 ---
 
@@ -275,8 +280,8 @@ klaar voor productie, mist alleen nog een echt Resend-account voor verzending.
 1. **Seed data** — 10–15 Maastricht garages invoeren in Supabase (wacht op materiaal van opdrachtgever)
 2. **Smoke test** — registreer garage → schrijf review → check dashboard, op productie
 3. **Google Analytics 4** — bezoekersdata bijhouden
-4. **Stripe testen** — `STRIPE_SECRET_KEY` + webhook + `STRIPE_WEBHOOK_SECRET` invullen, één
-   testbetaling doorlopen (opdrachtgever heeft account + producten al aangemaakt)
+4. **Stripe naar live mode** — zodra er echte garages gaan betalen (test mode is volledig werkend
+   en bevestigd; zie 6.3)
 5. **KVK API activeren** — zodra API key beschikbaar is (aangevraagd 2026-06-19, opdrachtgever)
 6. **Google Maps API key** — zodra key beschikbaar is (opdrachtgever)
 
