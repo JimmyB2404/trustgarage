@@ -78,6 +78,10 @@ export async function POST(req: Request) {
       // Zonder dit rekent Checkout nooit BTW uit, los van wat er in het Stripe-dashboard is
       // ingesteld bij de prijs/het tarief — automatische belasting moet per sessie aangezet worden.
       automatic_tax: { enabled: true },
+      // automatic_tax heeft een adres op de Customer nodig om de juiste BTW te bepalen — laat
+      // Checkout het adres opvragen en automatisch opslaan op de Customer.
+      billing_address_collection: 'required',
+      customer_update: { address: 'auto' },
     })
 
     return NextResponse.json({ url: session.url })
