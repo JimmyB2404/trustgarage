@@ -16,8 +16,8 @@ export default async function AdminVerificationsPage() {
       </nav>
       <h1 className="text-[22px] font-medium text-neutral-900 mb-1">Verificaties</h1>
       <p className="text-[13px] text-neutral-500 mb-6">
-        Reviews waarvan het door de klant ingevulde factuurnummer overeenkomt met het nummer dat
-        de garage bij de uitnodiging opgaf. Laatste controle ligt bij jou.
+        Reviews die wachten op jouw laatste controle — via uitnodiging (nummer van garage en klant
+        komen overeen) of spontaan (de garage heeft het bonnummer al blind bevestigd).
       </p>
       <AdminVerificationsQueue />
     </div>
