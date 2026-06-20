@@ -100,9 +100,14 @@ export default function OverOnsPage() {
               </div>
             </div>
 
-            {/* Image placeholder */}
-            <div className="bg-surface rounded-xl h-[250px] flex items-center justify-center border border-neutral-100">
-              <span className="text-[13px] text-neutral-300">Afbeelding volgt</span>
+            {/* Foto oprichters */}
+            <div className="rounded-xl overflow-hidden border border-neutral-100">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/jimmyalexandra_nieuw.png"
+                alt="Jimmy en Alexandra, oprichters van TrustGarage.nl"
+                className="w-full h-[250px] object-cover"
+              />
             </div>
           </div>
         </div>
