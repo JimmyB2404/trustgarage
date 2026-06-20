@@ -253,7 +253,7 @@ klaar voor productie, mist alleen nog een echt Resend-account voor verzending.
 - [x] Bug gefixt: alle aanmeldknoppen op `/voor-garages` linkten naar `/registreren` (particulieren)
       i.p.v. `/garage/aanmelden` (garage-wizard)
 - [x] Tarieven (`/tarieven`) — losse pagina met de 3 prijsplannen, toegevoegd aan Navbar + sitemap
-- [x] Over ons (`/over-ons`) — verhaal, missie, team
+- [x] Over ons (`/over-ons`) — verhaal, missie, team, oprichtersfoto toegevoegd
 
 ---
 
