@@ -215,8 +215,8 @@
 ## 9b. Reviewverificatie ("Geverifieerd bezoek") — P0
 
 Tweede vertrouwenslaag naast KVK: bewijst dat een specifieke review van een bevestigd bezoek komt.
-**Volledig gebouwd en end-to-end getest** (Playwright, Pad A + Pad B + privacy + admin-poort) —
-klaar voor productie, mist alleen nog een echt Resend-account voor verzending.
+**Volledig gebouwd, getest en live** (Playwright, Pad A + Pad B + privacy + admin-poort +
+uitnodigingsmail via Resend) — geen openstaande punten meer.
 
 - [x] Database: `review_invitations` tabel + `receipt_number`/`verification_path`/
       `verification_status` op `reviews` (`supabase/migration_review_verification.sql`)
@@ -240,9 +240,9 @@ klaar voor productie, mist alleen nog een echt Resend-account voor verzending.
 - [x] `ADMIN_EMAIL` ondersteunt nu een kommagescheiden lijst — meerdere adminaccounts mogelijk
 - [x] Admin landt na inloggen op de homepage en krijgt, net als garage-eigenaren, een
       "Dashboard"-knop in de Navbar die naar `/admin` linkt
-- [ ] Resend account + geverifieerd verzenddomein (SPF/DKIM via TransIP) — zonder dit wordt de
-      uitnodigingsmail niet echt verstuurd (uitnodiging wordt wel aangemaakt, token leesbaar in
-      Supabase om handmatig te verzenden); `RESEND_API_KEY` nog toevoegen aan Vercel zodra dit klaar is
+- [x] Resend account + geverifieerd verzenddomein (SPF/DKIM via TransIP) — `RESEND_API_KEY`
+      (Sending access) ingevuld in `.env.local` én Vercel, uitnodigingsmail getest en bevestigd
+      ontvangen op productie
 - [ ] Optioneel: los, toegewijd admin-account aanmaken (i.p.v. het huidige persoonlijke account)
 
 ---
