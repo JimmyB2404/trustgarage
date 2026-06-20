@@ -288,7 +288,7 @@ klaar voor productie, mist alleen nog een echt Resend-account voor verzending.
 - [x] trustgarage.be live + redirect naar trustgarage.nl
 - [x] trustgarage.nl live
 - [x] Omgevingsvariabelen ingesteld in Vercel (Supabase URL/key, service role key)
-- [ ] Stripe webhook endpoint registreren in Stripe dashboard
+- [x] Stripe webhook endpoint geregistreerd (test + live mode, op `www.trustgarage.nl`)
 - [ ] Smoke test: registreer garage → schrijf review → upgrade abonnement
 
 ---
