@@ -97,6 +97,14 @@
 
 ### 5.4 Wachtwoord reset (`/wachtwoord-reset`)
 - [x] Supabase gekoppeld, reset mail actief
+- [x] Bug gefixt: reset-link in de mail wees naar een niet-bestaande pagina
+      (`/account/nieuw-wachtwoord`), en zou daar zelfs bij bestaan alsnog door de middleware naar
+      `/inloggen` zijn gestuurd (geen sessie bekend op het moment dat de server het verzoek
+      binnenkrijgt). Nieuwe pagina `/wachtwoord-reset/nieuw` toegevoegd, buiten het door
+      middleware afgeschermde `/account`-pad — vraagt nieuw wachtwoord op en slaat het op via
+      `supabase.auth.updateUser()`
+- [ ] Controleren of `https://www.trustgarage.nl/wachtwoord-reset/nieuw` in Supabase's Redirect
+      URLs-lijst staat (Authentication → URL Configuration), anders weigert Supabase de redirect
 
 ---
 

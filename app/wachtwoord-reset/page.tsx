@@ -20,7 +20,7 @@ export default function WachtwoordResetPage() {
 
     const supabase = createClient()
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/account/nieuw-wachtwoord`,
+      redirectTo: `${window.location.origin}/wachtwoord-reset/nieuw`,
     })
 
     if (error) {
