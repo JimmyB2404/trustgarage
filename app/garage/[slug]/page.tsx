@@ -493,9 +493,19 @@ export default async function GarageProfilePage({ params }: PageProps) {
           {/* Location card */}
           <div className="card p-5">
             <h3 className="text-[15px] font-medium text-neutral-900 mb-3">Locatie</h3>
-            <div className="h-[150px] bg-surface rounded-lg flex items-center justify-center text-neutral-300 text-[13px] border border-neutral-100 text-center px-4">
-              Kaart beschikbaar na Google Maps setup
-            </div>
+            {process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY ? (
+              <iframe
+                title={`Kaart van ${garage.name}`}
+                className="w-full h-[150px] rounded-lg border border-neutral-100"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                src={`https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY}&q=${encodeURIComponent(`${garage.address}, ${garage.city}`)}`}
+              />
+            ) : (
+              <div className="h-[150px] bg-surface rounded-lg flex items-center justify-center text-neutral-300 text-[13px] border border-neutral-100 text-center px-4">
+                Kaart beschikbaar na Google Maps setup
+              </div>
+            )}
             <p className="text-[12px] text-neutral-500 mt-2">
               {garage.address}, {garage.city}
             </p>
