@@ -103,8 +103,9 @@
       binnenkrijgt). Nieuwe pagina `/wachtwoord-reset/nieuw` toegevoegd, buiten het door
       middleware afgeschermde `/account`-pad — vraagt nieuw wachtwoord op en slaat het op via
       `supabase.auth.updateUser()`
-- [ ] Controleren of `https://www.trustgarage.nl/wachtwoord-reset/nieuw` in Supabase's Redirect
-      URLs-lijst staat (Authentication → URL Configuration), anders weigert Supabase de redirect
+- [x] Bevestigd: `https://www.trustgarage.nl/**` staat als wildcard in Supabase's Redirect
+      URLs-lijst, dekt `/wachtwoord-reset/nieuw` automatisch — volledige flow getest en werkend
+      op productie (link → formulier → wachtwoord wijzigen → inloggen met nieuw wachtwoord)
 
 ---
 
