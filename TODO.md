@@ -217,7 +217,7 @@
 - [x] Bug gefixt: nieuwe review verscheen niet direct op het garageprofiel (geen refresh na
       opslaan — `ReviewButton` riep de bestaande `onSubmit`-callback van de modal nooit aan), nu
       via `router.refresh()`
-- [ ] Bevestigingsmail naar gebruiker sturen
+- [x] Bevestigingsmail naar gebruiker sturen (zie sectie 9b — `/api/reviews/notify`)
 
 ---
 
