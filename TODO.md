@@ -309,7 +309,10 @@ uitnodigingsmail via Resend) — geen openstaande punten meer.
 
 - [ ] Bevestigingsmail naar klant na review schrijven (Resend)
 - [ ] E-mailnotificaties voor garage-eigenaar bij nieuwe review (Resend)
-- [ ] Custom SMTP via Resend (vervangt Supabase free tier limiet van 4 mails/uur)
+- [x] Custom SMTP via Resend ingesteld in Supabase (Authentication → SMTP Settings) —
+      bevestigingsmail registreren, wachtwoord-reset en e-mailwijziging lopen nu via Resend i.p.v.
+      Supabase's eigen mailer. Rate limit verhoogd naar 30 mails/uur (instelbaar, was hard
+      vastgezet op 4/uur zolang Supabase's eigen mailer gebruikt werd)
 - [ ] `next/image` optimaliseren met `sizes` attribuut + lazy loading foto strips
 - [x] Google Maps embed op garageprofiel — vervangt placeholder, valt netjes terug als de key
       ontbreekt
