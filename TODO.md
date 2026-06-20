@@ -13,7 +13,7 @@
 - [x] Vercel account aanmaken + GitHub repository koppelen
 - [x] Stripe account aanmaken (NL bedrijf), bedrijfsgegevens geverifieerd
 - [ ] KVK API toegang aanvragen via developer.kvk.nl — aangevraagd 2026-06-19, ~2 werkdagen
-- [ ] Google Maps API key aanvragen (voor kaart embed op garageprofiel)
+- [x] Google Maps API key aangevraagd en ingevuld in `.env.local` — nog toevoegen aan Vercel
 - [ ] Initieel garagemateriaal verzamelen (10–15 garages in Maastricht als seed data)
 
 ---
@@ -299,7 +299,8 @@ klaar voor productie, mist alleen nog een echt Resend-account voor verzending.
 2. **Smoke test** — registreer garage → schrijf review → check dashboard, op productie
 3. **Google Analytics 4** — bezoekersdata bijhouden
 4. **KVK API activeren** — zodra API key beschikbaar is (aangevraagd 2026-06-19, opdrachtgever)
-5. **Google Maps API key** — zodra key beschikbaar is (opdrachtgever)
+5. **`NEXT_PUBLIC_GOOGLE_MAPS_KEY` toevoegen aan Vercel** + redeployen (key zelf is al opgehaald
+   en lokaal werkend bevestigd)
 
 ---
 
@@ -309,7 +310,10 @@ klaar voor productie, mist alleen nog een echt Resend-account voor verzending.
 - [ ] E-mailnotificaties voor garage-eigenaar bij nieuwe review (Resend)
 - [ ] Custom SMTP via Resend (vervangt Supabase free tier limiet van 4 mails/uur)
 - [ ] `next/image` optimaliseren met `sizes` attribuut + lazy loading foto strips
-- [ ] Google Maps embed op garageprofiel + kaartweergave zoekresultaten
+- [x] Google Maps embed op garageprofiel — vervangt placeholder, valt netjes terug als de key
+      ontbreekt
+- [ ] Kaartweergave zoekresultaten (meerdere markers — vereist Maps JavaScript API i.p.v. de
+      simpele Embed API die nu gebruikt wordt)
 - [ ] Afspraak maken functionaliteit
 - [ ] Volwaardig moderatie-dashboard (garages/gebruikers beheren, content verwijderen) — er bestaat
       nu alleen een admin-panel specifiek voor reviewverificatie (`/admin`)
