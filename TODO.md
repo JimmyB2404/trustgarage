@@ -13,7 +13,8 @@
 - [x] Vercel account aanmaken + GitHub repository koppelen
 - [x] Stripe account aanmaken (NL bedrijf), bedrijfsgegevens geverifieerd
 - [ ] KVK API toegang aanvragen via developer.kvk.nl — aangevraagd 2026-06-19, ~2 werkdagen
-- [x] Google Maps API key aangevraagd en ingevuld in `.env.local` — nog toevoegen aan Vercel
+- [x] Google Maps API key aangevraagd, ingevuld in `.env.local` én Vercel — werkend bevestigd op
+      productie
 - [ ] Initieel garagemateriaal verzamelen (10–15 garages in Maastricht als seed data)
 
 ---
@@ -285,7 +286,9 @@ klaar voor productie, mist alleen nog een echt Resend-account voor verzending.
 - [x] Vercel project + GitHub gekoppeld (auto-deploy actief)
 - [x] Domeinen toegevoegd: trustgarage.nl + trustgarage.be
 - [x] DNS ingesteld in TransIP
-- [x] trustgarage.be live + redirect naar trustgarage.nl
+- [x] trustgarage.nl is het hoofddomein — `.be` (met en zonder www) redirect met een 308 naar
+      `www.trustgarage.nl` via Vercel domain settings (was eerder onjuist gemarkeerd als gedaan:
+      `.be` redirectte naar zijn eigen www-versie, niet naar `.nl` — nu echt gefixt)
 - [x] trustgarage.nl live
 - [x] Omgevingsvariabelen ingesteld in Vercel (Supabase URL/key, service role key)
 - [x] Stripe webhook endpoint geregistreerd (test + live mode, op `www.trustgarage.nl`)
@@ -299,8 +302,6 @@ klaar voor productie, mist alleen nog een echt Resend-account voor verzending.
 2. **Smoke test** — registreer garage → schrijf review → check dashboard, op productie
 3. **Google Analytics 4** — bezoekersdata bijhouden
 4. **KVK API activeren** — zodra API key beschikbaar is (aangevraagd 2026-06-19, opdrachtgever)
-5. **`NEXT_PUBLIC_GOOGLE_MAPS_KEY` toevoegen aan Vercel** + redeployen (key zelf is al opgehaald
-   en lokaal werkend bevestigd)
 
 ---
 
