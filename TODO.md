@@ -307,8 +307,9 @@ uitnodigingsmail via Resend) — geen openstaande punten meer.
 
 ## Later (post-lancering) — P2
 
-- [ ] Bevestigingsmail naar klant na review schrijven (Resend)
-- [ ] E-mailnotificaties voor garage-eigenaar bij nieuwe review (Resend)
+- [x] Bevestigingsmail naar klant na review schrijven + e-mailnotificatie naar garage-eigenaar bij
+      nieuwe review (`POST /api/reviews/notify`, vanuit `ReviewModal.tsx` aangeroepen na opslaan,
+      best-effort — review zelf faalt niet als een van de mails mislukt)
 - [x] Custom SMTP via Resend ingesteld in Supabase (Authentication → SMTP Settings) —
       bevestigingsmail registreren, wachtwoord-reset en e-mailwijziging lopen nu via Resend i.p.v.
       Supabase's eigen mailer. Rate limit verhoogd naar 30 mails/uur (instelbaar, was hard

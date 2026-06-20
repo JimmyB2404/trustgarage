@@ -119,6 +119,14 @@ export default function ReviewModal({ garageId, garageName, onClose, onSubmit }:
       }).catch(() => {})
     }
 
+    // 4. Bevestigingsmail naar klant + notificatie naar garage — best-effort, blokkeert de
+    // succesweergave niet als het mislukt.
+    fetch('/api/reviews/notify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ reviewId: review.id }),
+    }).catch(() => {})
+
     setSubmitted(true)
     setLoading(false)
     onSubmit?.()

@@ -1,5 +1,17 @@
 import { Resend } from 'resend'
 
+// Klantinvoer (reviewtekst, naam) komt rechtstreeks van de gebruiker en wordt hieronder
+// geïnterpoleerd in e-mail-HTML — escapen voorkomt dat opgeslagen HTML/scripts in de mail
+// terechtkomen.
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;')
+}
+
 export async function sendInvitationEmail(opts: {
   to: string
   garageName: string
@@ -25,6 +37,73 @@ export async function sendInvitationEmail(opts: {
           </p>
           <p style="font-size: 13px; color: #666;">
             Vul bij het schrijven van uw review uw factuurnummer in om een &quot;Geverifieerd bezoek&quot;-badge te krijgen.
+          </p>
+        </div>
+      `,
+    })
+    return { sent: true }
+  } catch (err) {
+    return { sent: false, error: err instanceof Error ? err.message : 'Onbekende fout' }
+  }
+}
+
+export async function sendReviewConfirmationEmail(opts: {
+  to: string
+  garageName: string
+  garageUrl: string
+  rating: number
+}): Promise<{ sent: boolean; error?: string }> {
+  try {
+    const resend = new Resend(process.env.RESEND_API_KEY)
+    await resend.emails.send({
+      from: 'TrustGarage.nl <noreply@trustgarage.nl>',
+      to: opts.to,
+      subject: `Bedankt voor uw review bij ${opts.garageName}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
+          <h2 style="color: #0F6E56;">TrustGarage.nl</h2>
+          <p>Beste klant,</p>
+          <p>Bedankt voor uw review (${opts.rating}/5 sterren) bij <strong>${opts.garageName}</strong>. Deze is nu zichtbaar op het garageprofiel.</p>
+          <p>
+            <a href="${opts.garageUrl}" style="display: inline-block; background: #0F6E56; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none;">
+              Bekijk garageprofiel
+            </a>
+          </p>
+        </div>
+      `,
+    })
+    return { sent: true }
+  } catch (err) {
+    return { sent: false, error: err instanceof Error ? err.message : 'Onbekende fout' }
+  }
+}
+
+export async function sendNewReviewNotificationEmail(opts: {
+  to: string
+  garageName: string
+  customerName: string
+  rating: number
+  text: string
+  dashboardUrl: string
+}): Promise<{ sent: boolean; error?: string }> {
+  try {
+    const resend = new Resend(process.env.RESEND_API_KEY)
+    await resend.emails.send({
+      from: 'TrustGarage.nl <noreply@trustgarage.nl>',
+      to: opts.to,
+      subject: `Nieuwe review voor ${opts.garageName}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
+          <h2 style="color: #0F6E56;">TrustGarage.nl</h2>
+          <p>Beste ondernemer,</p>
+          <p><strong>${escapeHtml(opts.customerName)}</strong> heeft een review (${opts.rating}/5 sterren) geplaatst bij <strong>${opts.garageName}</strong>:</p>
+          <blockquote style="border-left: 3px solid #E1F5EE; margin: 16px 0; padding: 4px 16px; color: #444;">
+            ${escapeHtml(opts.text)}
+          </blockquote>
+          <p>
+            <a href="${opts.dashboardUrl}" style="display: inline-block; background: #0F6E56; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none;">
+              Reageer op deze review
+            </a>
           </p>
         </div>
       `,
