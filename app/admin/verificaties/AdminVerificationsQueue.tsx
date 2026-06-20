@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { cn } from '@/lib/utils'
 
 type VerificationItem = {
   id: string
@@ -9,6 +10,7 @@ type VerificationItem = {
   text: string
   receipt_number: string
   created_at: string
+  verification_path: 'invitation' | 'organic'
   garages: { name: string; slug: string } | null
   review_invitations: { invoice_number: string } | null
 }
@@ -44,27 +46,43 @@ export default function AdminVerificationsQueue() {
   return (
     <div className="flex flex-col gap-3 max-w-[720px]">
       {items.map(item => {
+        const isInvitation = item.verification_path === 'invitation'
         const garageNumber = item.review_invitations?.invoice_number ?? '—'
         const customerNumber = item.receipt_number
         const isMatch = garageNumber === customerNumber
         return (
           <div key={item.id} className="card p-4">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[14px] font-medium text-neutral-900">{item.garages?.name ?? 'Onbekende garage'}</span>
+              <div className="flex items-center gap-2">
+                <span className="text-[14px] font-medium text-neutral-900">{item.garages?.name ?? 'Onbekende garage'}</span>
+                <span className={cn(
+                  'text-[10px] font-medium px-2 py-[2px] rounded-sm',
+                  isInvitation ? 'bg-primary-light text-primary' : 'bg-[#FAEEDA] text-[#633806]'
+                )}>
+                  {isInvitation ? 'Via uitnodiging' : 'Spontaan — garage al bevestigd'}
+                </span>
+              </div>
               <span className="text-[11px] text-neutral-300">
                 {new Date(item.created_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })}
               </span>
             </div>
-            <div className="grid grid-cols-2 gap-3 text-[12px] mb-3">
-              <div>
-                <p className="text-neutral-500">Nummer (garage)</p>
-                <p className="font-medium text-neutral-900">{garageNumber}</p>
+            {isInvitation ? (
+              <div className="grid grid-cols-2 gap-3 text-[12px] mb-3">
+                <div>
+                  <p className="text-neutral-500">Nummer (garage)</p>
+                  <p className="font-medium text-neutral-900">{garageNumber}</p>
+                </div>
+                <div>
+                  <p className="text-neutral-500">Nummer (klant)</p>
+                  <p className={isMatch ? 'font-medium text-primary' : 'font-medium text-danger'}>{customerNumber}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-neutral-500">Nummer (klant)</p>
-                <p className={isMatch ? 'font-medium text-primary' : 'font-medium text-danger'}>{customerNumber}</p>
+            ) : (
+              <div className="text-[12px] mb-3">
+                <p className="text-neutral-500">Bonnummer (garage heeft dit al blind bevestigd)</p>
+                <p className="font-medium text-neutral-900">{customerNumber}</p>
               </div>
-            </div>
+            )}
             <div className="bg-surface rounded-md p-3 mb-3">
               <p className="text-[12px] text-neutral-500 mb-1">{item.user_name} — {item.rating}/5</p>
               <p className="text-[13px] text-neutral-900">{item.text}</p>

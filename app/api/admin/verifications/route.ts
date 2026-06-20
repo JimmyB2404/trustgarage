@@ -17,7 +17,7 @@ export async function GET() {
   const supabase = getSupabase()
   const { data, error } = await supabase
     .from('reviews')
-    .select('id, user_name, rating, text, receipt_number, created_at, garages(name, slug), review_invitations!invitation_id(invoice_number)')
+    .select('id, user_name, rating, text, receipt_number, created_at, verification_path, garages(name, slug), review_invitations!invitation_id(invoice_number)')
     .eq('verification_status', 'pending_admin')
     .order('created_at', { ascending: true })
 

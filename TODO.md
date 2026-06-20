@@ -228,6 +228,11 @@ uitnodigingsmail via Resend) — geen openstaande punten meer.
 - [x] Pad A (uitnodiging): nieuwe dashboardpagina `/dashboard/uitnodigingen` — garage stuurt
       factuurnummer vooraf naar klant via e-mail (Resend), platform vergelijkt nummers, match komt
       in admin-wachtrij voor laatste handmatige bevestiging
+- [x] Beide paden komen nu samen bij de admin: garage's blinde bevestiging (Pad B) zet niet meer
+      direct op `verified`, maar op `pending_admin` — zelfde eindstap als Pad A. Admin-wachtrij
+      toont per item via welk pad de review kwam ("Via uitnodiging" / "Spontaan — garage al
+      bevestigd"), met aangepaste weergave per pad (nummervergelijking bij Pad A, enkel bonnummer
+      bij Pad B)
 - [x] Badge op reviews ("Geverifieerd bezoek") + aggregaatcijfer op garageprofiel ("X van Y
       geverifieerd") + korte uitleg op homepage en zoekresultaten
 - [x] End-to-end getest met Playwright — 4 bugs gevonden en gefixt onderweg, inclusief een

@@ -65,9 +65,11 @@ export async function POST(req: Request) {
   }
 
   if (action === 'confirm') {
+    // Niet direct naar 'verified' — eerst nog een laatste handmatige check door de platform-admin,
+    // zelfde eindstap als Pad A. De garage blijft wel de eerste (blinde) poort.
     await supabase
       .from('reviews')
-      .update({ verification_status: 'verified', verified: true })
+      .update({ verification_status: 'pending_admin' })
       .eq('id', reviewId)
   } else {
     await supabase
