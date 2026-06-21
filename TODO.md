@@ -248,6 +248,13 @@ uitnodigingsmail via Resend) — geen openstaande punten meer.
       belangrijke fix: garageprofiel cachete Supabase-data oneindig (gold voor alle reviews/
       ratings/favorieten, niet alleen verificatie) — opgelost met `export const dynamic =
       'force-dynamic'`
+- [x] Tweede, vergelijkbare bug gevonden tijdens de smoke test (2026-06-21): een gloednieuwe
+      garage's allereerste review kwam soms structureel niet mee in de reviews-query op
+      `/garage/[slug]`, terwijl `garage.review_count` (een andere query) al wel correct was en
+      directe queries via een los script de review altijd gewoon teruggaven — wijst op een
+      kortstondige staleness in het leespad bij Vercel/Supabase, niet op een fout in de query
+      zelf. Mitigatie: als `rawReviews` leeg terugkomt terwijl `garage.review_count > 0`, één
+      automatische herhaalde poging na 300ms — verholpen het structureel bij testen
 - [x] `ADMIN_EMAIL`/`NEXT_PUBLIC_SITE_URL` toegevoegd aan Vercel environment variables + geredeployed
 - [x] Productie-buildfout gefixt: Resend-client werd op module-niveau aangemaakt en crashte de build
       zolang `RESEND_API_KEY` ontbrak — nu pas aangemaakt op het moment dat een mail verstuurd wordt

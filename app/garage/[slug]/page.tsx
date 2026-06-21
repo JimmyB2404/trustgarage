@@ -85,18 +85,34 @@ export default async function GarageProfilePage({ params }: PageProps) {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
-  const { data: rawReviews, error: reviewsDebugError } = await supabase
-    .from('reviews')
-    .select(`
-      id, garage_id, user_id, user_name, user_country, is_expat, rating, text, language, verified, created_at,
-      review_ratings(category, score),
-      garage_replies(id, text, created_at)
-    `)
-    .eq('garage_id', garage.id)
-    .order('created_at', { ascending: false })
-  const __debugInfo = JSON.stringify({ garageId: garage.id, count: rawReviews?.length, err: reviewsDebugError?.message })
-  // Expliciete kolommen, geen '*' — sluit bewust receipt_number/verification_status/
-  // verification_path/invitation_id uit zodat die nooit publiek lekken.
+
+  const garageId = garage.id
+
+  async function fetchReviews() {
+    return supabase
+      .from('reviews')
+      // Expliciete kolommen, geen '*' — sluit bewust receipt_number/verification_status/
+      // verification_path/invitation_id uit zodat die nooit publiek lekken.
+      .select(`
+        id, garage_id, user_id, user_name, user_country, is_expat, rating, text, language, verified, created_at,
+        review_ratings(category, score),
+        garage_replies(id, text, created_at)
+      `)
+      .eq('garage_id', garageId)
+      .order('created_at', { ascending: false })
+  }
+
+  let { data: rawReviews } = await fetchReviews()
+
+  // Waargenomen op productie: deze query komt soms leeg terug op het allereerste verzoek voor
+  // een garage met een net geplaatste review, terwijl garage.review_count (uit een andere query
+  // hierboven) al wel correct is. Eén herhaalde poging verhelpt dit consistent — wijst op een
+  // kortstondige staleness in de leespad, niet op een fout in deze query zelf.
+  if ((rawReviews?.length ?? 0) === 0 && garage.review_count > 0) {
+    await new Promise(resolve => setTimeout(resolve, 300))
+    const retry = await fetchReviews()
+    rawReviews = retry.data
+  }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const garageReviews: Review[] = (rawReviews ?? []).map((r: any) => ({
@@ -174,7 +190,6 @@ export default async function GarageProfilePage({ params }: PageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <span data-debug={__debugInfo} style={{ display: 'none' }} />
       <ViewTracker garageId={garage.id} />
       <Navbar />
 
