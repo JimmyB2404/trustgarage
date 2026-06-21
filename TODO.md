@@ -313,7 +313,11 @@ uitnodigingsmail via Resend) — geen openstaande punten meer.
 - [x] trustgarage.nl live
 - [x] Omgevingsvariabelen ingesteld in Vercel (Supabase URL/key, service role key)
 - [x] Stripe webhook endpoint geregistreerd (test + live mode, op `www.trustgarage.nl`)
-- [ ] Smoke test: registreer garage → schrijf review → upgrade abonnement
+- [x] Smoke test geslaagd op productie (2026-06-21): garage geregistreerd via de wizard, klant
+      schreef een review, checkout voor Premium correct aangemaakt in live mode. Betaling zelf
+      niet met een echte kaart afgerond (bewuste keuze, die flow is al uitgebreid gedekt door de
+      eerdere test-mode-tests) — onderweg de hierboven genoemde reviews-staleness-bug gevonden
+      en gefixt. Testdata (garage, account, reviews) achteraf opgeruimd
 
 ---
 
