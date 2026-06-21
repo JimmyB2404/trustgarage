@@ -12,10 +12,12 @@
 - [x] Supabase account aanmaken
 - [x] Vercel account aanmaken + GitHub repository koppelen
 - [x] Stripe account aanmaken (NL bedrijf), bedrijfsgegevens geverifieerd
-- [ ] KVK API toegang aanvragen via developer.kvk.nl — aangevraagd 2026-06-19, ~2 werkdagen
+- [ ] KVK API toegang aanvragen via developer.kvk.nl — aangevraagd 2026-06-19, oorspronkelijke
+      schatting van ~2 werkdagen bleek te optimistisch: stand 2026-06-22 nog zeker 5 werkdagen te gaan
 - [x] Google Maps API key aangevraagd, ingevuld in `.env.local` én Vercel — werkend bevestigd op
       productie
-- [ ] Initieel garagemateriaal verzamelen (10–15 garages in Maastricht als seed data)
+- [ ] Initieel garagemateriaal verzamelen (10–15 garages in Maastricht als seed data) — pas na
+      lancering, opdrachtgever doet dit zelf via sales-bezoeken bij de garages
 
 ---
 
@@ -43,7 +45,7 @@
 - [x] Supabase Auth inschakelen (e-mail + wachtwoord, bevestigingsmail actief)
 - [x] GRANT permissions ingesteld voor anon/authenticated/service_role
 - [x] Storage bucket aanmaken voor garage foto's (`garage-photos`)
-- [ ] Seed data invoeren: 10–15 Maastricht garages
+- [ ] Seed data invoeren: 10–15 Maastricht garages — pas na lancering, zie sectie 0
 
 ---
 
@@ -340,10 +342,12 @@ uitnodigingsmail via Resend) — geen openstaande punten meer.
 
 ## Prioriteiten voor lancering
 
-1. **Seed data** — 10–15 Maastricht garages invoeren in Supabase (wacht op materiaal van opdrachtgever)
-2. **Smoke test** — registreer garage → schrijf review → check dashboard, op productie
-3. **Google Analytics 4** — bezoekersdata bijhouden
-4. **KVK API activeren** — zodra API key beschikbaar is (aangevraagd 2026-06-19, opdrachtgever)
+1. ~~**Smoke test**~~ — geslaagd op productie, 2026-06-21 (zie sectie 13)
+2. **Google Analytics 4** — bezoekersdata bijhouden, opdrachtgever pakt dit 2026-06-23 op
+3. **KVK API activeren** — zodra API key beschikbaar is (aangevraagd 2026-06-19, stand 2026-06-22:
+   nog zeker 5 werkdagen)
+4. **Seed data** is geen lanceerblokker meer — opdrachtgever voert dit pas na lancering in, via
+   sales-bezoeken bij de garages zelf (zie sectie 0)
 
 ---
 
