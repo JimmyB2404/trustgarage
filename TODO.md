@@ -356,7 +356,7 @@ uitnodigingsmail via Resend) — geen openstaande punten meer.
       bevestigingsmail registreren, wachtwoord-reset en e-mailwijziging lopen nu via Resend i.p.v.
       Supabase's eigen mailer. Rate limit verhoogd naar 30 mails/uur (instelbaar, was hard
       vastgezet op 4/uur zolang Supabase's eigen mailer gebruikt werd)
-- [ ] `next/image` optimaliseren met `sizes` attribuut + lazy loading foto strips
+- [x] `next/image` optimaliseren met `sizes` attribuut + lazy loading foto strips — zie sectie 12
 - [x] Google Maps embed op garageprofiel — vervangt placeholder, valt netjes terug als de key
       ontbreekt
 - [ ] Kaartweergave zoekresultaten (meerdere markers — vereist Maps JavaScript API i.p.v. de
