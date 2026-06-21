@@ -85,7 +85,7 @@ export default async function GarageProfilePage({ params }: PageProps) {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
-  const { data: rawReviews } = await supabase
+  const { data: rawReviews, error: reviewsDebugError } = await supabase
     .from('reviews')
     .select(`
       id, garage_id, user_id, user_name, user_country, is_expat, rating, text, language, verified, created_at,
@@ -94,6 +94,7 @@ export default async function GarageProfilePage({ params }: PageProps) {
     `)
     .eq('garage_id', garage.id)
     .order('created_at', { ascending: false })
+  const __debugInfo = JSON.stringify({ garageId: garage.id, count: rawReviews?.length, err: reviewsDebugError?.message })
   // Expliciete kolommen, geen '*' — sluit bewust receipt_number/verification_status/
   // verification_path/invitation_id uit zodat die nooit publiek lekken.
 
@@ -173,6 +174,7 @@ export default async function GarageProfilePage({ params }: PageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+      <span data-debug={__debugInfo} style={{ display: 'none' }} />
       <ViewTracker garageId={garage.id} />
       <Navbar />
 
