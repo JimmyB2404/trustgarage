@@ -6,6 +6,7 @@ import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import { SERVICES, LANGUAGES, DAY_NAMES } from '@/lib/mock-data'
 import { createClient } from '@/lib/supabase'
+import { validatePhotoSize } from '@/lib/utils'
 import {
   IconCircleCheck,
   IconUpload,
@@ -125,6 +126,13 @@ export default function GarageAanmeldenPage() {
   function handleLogoSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
+    const sizeError = validatePhotoSize(file)
+    if (sizeError) {
+      setError(sizeError)
+      e.target.value = ''
+      return
+    }
+    setError('')
     setLogoFile(file)
     setLogoPreview(URL.createObjectURL(file))
     e.target.value = ''
@@ -138,6 +146,13 @@ export default function GarageAanmeldenPage() {
   function handlePhotoSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? [])
     if (!files.length) return
+    const sizeError = files.map(validatePhotoSize).find(Boolean)
+    if (sizeError) {
+      setError(sizeError)
+      e.target.value = ''
+      return
+    }
+    setError('')
     const remaining = 8 - wizardPhotos.length
     const toAdd = files.slice(0, remaining)
     setWizardPhotos(prev => [...prev, ...toAdd])
@@ -186,55 +201,60 @@ export default function GarageAanmeldenPage() {
     setError('')
     setLoading(true)
 
-    const res = await fetch('/api/garage/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email: formData.email,
-        password: formData.password,
-        garagenaam: formData.garagenaam,
-        adres: formData.adres,
-        stad: formData.stad,
-        telefoon: formData.telefoon,
-        bedrijfsEmail: formData.bedrijfsEmail,
-        website: formData.website,
-        description: formData.description,
-        kvkNumber: formData.kvkNumber,
-        kvkVerified,
-        services: formData.services,
-        languages: formData.languages,
-        hours: formData.hours,
-      }),
-    })
+    try {
+      const res = await fetch('/api/garage/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          garagenaam: formData.garagenaam,
+          adres: formData.adres,
+          stad: formData.stad,
+          telefoon: formData.telefoon,
+          bedrijfsEmail: formData.bedrijfsEmail,
+          website: formData.website,
+          description: formData.description,
+          kvkNumber: formData.kvkNumber,
+          kvkVerified,
+          services: formData.services,
+          languages: formData.languages,
+          hours: formData.hours,
+        }),
+      })
 
-    const result = await res.json()
+      const result = await res.json()
 
-    if (!res.ok) {
-      setError(result.error ?? 'Er is een fout opgetreden. Probeer opnieuw.')
+      if (!res.ok) {
+        setError(result.error ?? 'Er is een fout opgetreden. Probeer opnieuw.')
+        return
+      }
+
+      const garageId = result.garageId
+
+      // Logo/foto's uploaden — best-effort. Het account + de garage bestaan op dit punt al
+      // gewoon, dus een mislukte upload mag de bevestiging niet blokkeren; foto's kunnen altijd
+      // later nog via het dashboard toegevoegd worden.
+      if (logoFile && garageId) {
+        const logoFormData = new globalThis.FormData()
+        logoFormData.append('garageId', garageId)
+        logoFormData.append('file', logoFile)
+        await fetch('/api/garage/logo', { method: 'POST', body: logoFormData }).catch(() => {})
+      }
+
+      if (wizardPhotos.length > 0 && garageId) {
+        const photosFormData = new globalThis.FormData()
+        photosFormData.append('garageId', garageId)
+        wizardPhotos.forEach(f => photosFormData.append('files', f))
+        await fetch('/api/garage/photos', { method: 'POST', body: photosFormData }).catch(() => {})
+      }
+
+      setStep(5)
+    } catch {
+      setError('Er is een fout opgetreden. Probeer opnieuw.')
+    } finally {
       setLoading(false)
-      return
     }
-
-    const garageId = result.garageId
-
-    // Logo uploaden
-    if (logoFile && garageId) {
-      const logoFormData = new globalThis.FormData()
-      logoFormData.append('garageId', garageId)
-      logoFormData.append('file', logoFile)
-      await fetch('/api/garage/logo', { method: 'POST', body: logoFormData })
-    }
-
-    // Foto's uploaden
-    if (wizardPhotos.length > 0 && garageId) {
-      const photosFormData = new globalThis.FormData()
-      photosFormData.append('garageId', garageId)
-      wizardPhotos.forEach(f => photosFormData.append('files', f))
-      await fetch('/api/garage/photos', { method: 'POST', body: photosFormData })
-    }
-
-    setLoading(false)
-    setStep(5)
   }
 
   function handleKvkVerify() {

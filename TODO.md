@@ -93,6 +93,16 @@
 - [x] E-mailbevestiging verstuurd na aanmelding
 - [x] Logo upload in wizard (stap 4) — preview + upload na registratie
 - [x] Foto upload in wizard (stap 4) — preview + upload na registratie
+- [x] Bug gefixt: foto's uploaden bleef oneindig op "uploading..." staan op iPad. Oorzaak:
+      ontbrekende foutafhandeling rond de upload-`fetch`-calls (zowel hier als in
+      `/dashboard/profiel`) — een grote foto (iPad-camera's zitten al snel boven 5 MB) kreeg op de
+      server een platformfoutpagina i.p.v. JSON terug, en die crashte ongevangen op `res.json()`,
+      waardoor de laadstatus nooit meer werd gereset. De UI beloofde overal "max. 5 MB" maar dit
+      werd nergens echt gecontroleerd. Nu: clientside groottecheck vóór elke upload (gedeelde
+      `validatePhotoSize()` in `lib/utils.ts`) + try/catch/finally rond alle upload-calls, zodat de
+      gebruiker altijd een duidelijke foutmelding krijgt i.p.v. een oneindige spinner. In de wizard
+      blokkeert een mislukte logo/foto-upload bovendien niet langer de bevestigingsstap — het
+      account/de garage is op dat punt al aangemaakt
 - [ ] Echte KVK verificatie (wacht op API key)
 
 ### 5.4 Wachtwoord reset (`/wachtwoord-reset`)
@@ -185,6 +195,8 @@
 - [x] Omschrijving, diensten, talen, openingstijden bewerkbaar
 - [x] Logo uploaden, previewer en verwijderen via `/api/garage/logo`
 - [x] Foto's uploaden (max. 8) en verwijderen via `/api/garage/photos`
+- [x] Bug gefixt: zie de identieke fix bij 5.3 — dezelfde ontbrekende foutafhandeling/
+      groottecheck zat ook in `handlePhotoUpload`/`handleLogoUpload` hier
 
 ### 7.3 Reviews beheren (`/dashboard/reviews`)
 - [x] Echte reviews geladen via `useGarage` hook

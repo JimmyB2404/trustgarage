@@ -48,6 +48,18 @@ export function cn(...classes: (string | undefined | null | false)[]): string {
   return classes.filter(Boolean).join(' ')
 }
 
+// Komt overeen met de "max. 5 MB"-tekst bij elke foto/logo-upload — zonder deze check accepteert
+// de browser gewoon elk bestand (bv. een 15MB foto rechtstreeks van een telefoon/tablet-camera),
+// die dan op de server kan stranden op een platformlimiet zonder duidelijke foutmelding.
+export const MAX_PHOTO_SIZE_BYTES = 5 * 1024 * 1024
+
+export function validatePhotoSize(file: File): string | null {
+  if (file.size > MAX_PHOTO_SIZE_BYTES) {
+    return `"${file.name}" is te groot (max. 5 MB per foto).`
+  }
+  return null
+}
+
 export const COUNTRY_FLAGS: Record<string, string> = {
   GB: '🇬🇧',
   US: '🇺🇸',

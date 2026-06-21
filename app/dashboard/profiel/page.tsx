@@ -15,7 +15,7 @@ import {
   IconUpload,
   IconCheck,
 } from '@tabler/icons-react'
-import { cn } from '@/lib/utils'
+import { cn, validatePhotoSize } from '@/lib/utils'
 import { SERVICES, LANGUAGES, DAY_NAMES } from '@/lib/mock-data'
 import { useAuth } from '@/context/AuthContext'
 import { useGarage } from '@/hooks/useGarage'
@@ -197,6 +197,13 @@ export default function ProfielPage() {
     if (!files || !garage) return
     if (photos.length + files.length > 8) {
       setPhotoError("Maximum 8 foto's toegestaan.")
+      e.target.value = ''
+      return
+    }
+    const sizeError = Array.from(files).map(validatePhotoSize).find(Boolean)
+    if (sizeError) {
+      setPhotoError(sizeError)
+      e.target.value = ''
       return
     }
     setUploadingPhotos(true)
@@ -204,15 +211,20 @@ export default function ProfielPage() {
     const formData = new FormData()
     formData.append('garageId', garage.id)
     Array.from(files).forEach(f => formData.append('files', f))
-    const res = await fetch('/api/garage/photos', { method: 'POST', body: formData })
-    const result = await res.json()
-    setUploadingPhotos(false)
-    if (!res.ok) {
-      setPhotoError(result.error ?? 'Upload mislukt.')
-    } else {
-      setPhotos(prev => [...prev, ...result.photos])
+    try {
+      const res = await fetch('/api/garage/photos', { method: 'POST', body: formData })
+      const result = await res.json()
+      if (!res.ok) {
+        setPhotoError(result.error ?? 'Upload mislukt.')
+      } else {
+        setPhotos(prev => [...prev, ...result.photos])
+      }
+    } catch {
+      setPhotoError('Upload mislukt. Controleer je internetverbinding en probeer het opnieuw.')
+    } finally {
+      setUploadingPhotos(false)
+      e.target.value = ''
     }
-    e.target.value = ''
   }
 
   async function handlePhotoDelete(photoId: string) {
@@ -227,20 +239,31 @@ export default function ProfielPage() {
   async function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file || !garage) return
+    const sizeError = validatePhotoSize(file)
+    if (sizeError) {
+      setLogoError(sizeError)
+      e.target.value = ''
+      return
+    }
     setUploadingLogo(true)
     setLogoError('')
     const formData = new FormData()
     formData.append('garageId', garage.id)
     formData.append('file', file)
-    const res = await fetch('/api/garage/logo', { method: 'POST', body: formData })
-    const result = await res.json()
-    setUploadingLogo(false)
-    if (!res.ok) {
-      setLogoError(result.error ?? 'Upload mislukt.')
-    } else {
-      setLogoUrl(result.logo_url)
+    try {
+      const res = await fetch('/api/garage/logo', { method: 'POST', body: formData })
+      const result = await res.json()
+      if (!res.ok) {
+        setLogoError(result.error ?? 'Upload mislukt.')
+      } else {
+        setLogoUrl(result.logo_url)
+      }
+    } catch {
+      setLogoError('Upload mislukt. Controleer je internetverbinding en probeer het opnieuw.')
+    } finally {
+      setUploadingLogo(false)
+      e.target.value = ''
     }
-    e.target.value = ''
   }
 
   async function handleLogoDelete() {
