@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import {
   IconChartBar,
@@ -348,10 +349,9 @@ export default function ProfielPage() {
           <p className="text-[14px] font-semibold text-neutral-900 mb-1">Logo</p>
           <p className="text-[12px] text-neutral-500 mb-4">Zichtbaar in zoekresultaten en op uw profielpagina.</p>
           <div className="flex items-center gap-5">
-            <div className="w-[72px] h-[72px] rounded-xl overflow-hidden bg-primary-light flex-shrink-0 flex items-center justify-center">
+            <div className="relative w-[72px] h-[72px] rounded-xl overflow-hidden bg-primary-light flex-shrink-0 flex items-center justify-center">
               {logoUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={logoUrl} alt="Logo" className="w-full h-full object-cover" />
+                <Image src={logoUrl} alt="Logo" fill sizes="72px" className="object-cover" />
               ) : (
                 <span className="text-primary font-serif text-3xl select-none">{naam.charAt(0) || '?'}</span>
               )}
@@ -532,12 +532,13 @@ export default function ProfielPage() {
           {photos.length > 0 && (
             <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-4">
               {photos.map(photo => (
-                <div key={photo.id} className="relative group">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
+                <div key={photo.id} className="relative group h-[80px]">
+                  <Image
                     src={photo.url}
                     alt="Garagefoto"
-                    className="w-full h-[80px] object-cover rounded-md border border-neutral-100"
+                    fill
+                    sizes="(min-width: 640px) 25vw, 33vw"
+                    className="object-cover rounded-md border border-neutral-100"
                   />
                   <button
                     type="button"

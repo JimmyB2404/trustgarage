@@ -1,4 +1,5 @@
 import { cache } from 'react'
+import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import {
@@ -210,10 +211,9 @@ export default async function GarageProfilePage({ params }: PageProps) {
             {/* Left: avatar + info */}
             <div className="flex items-start gap-4 flex-1">
               {/* Avatar */}
-              <div className="flex-shrink-0 w-[80px] h-[80px] rounded-xl overflow-hidden">
+              <div className="relative flex-shrink-0 w-[80px] h-[80px] rounded-xl overflow-hidden">
                 {garage.logo_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={garage.logo_url} alt={garage.name} className="w-full h-full object-cover" />
+                  <Image src={garage.logo_url} alt={garage.name} fill sizes="80px" className="object-cover" />
                 ) : (
                   <div className="w-full h-full bg-primary-light flex items-center justify-center text-primary font-serif text-3xl select-none">
                     {initials}
@@ -298,10 +298,9 @@ export default async function GarageProfilePage({ params }: PageProps) {
               {garage.photos.slice(0, 5).map((photo, i) => (
                 <div
                   key={i}
-                  className="h-[120px] w-[160px] bg-neutral-100 rounded-lg flex-shrink-0 overflow-hidden"
+                  className="relative h-[120px] w-[160px] bg-neutral-100 rounded-lg flex-shrink-0 overflow-hidden"
                 >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={photo} alt={`Foto ${i + 1}`} className="w-full h-full object-cover" />
+                  <Image src={photo} alt={`Foto ${i + 1}`} fill sizes="160px" className="object-cover" />
                 </div>
               ))}
             </div>

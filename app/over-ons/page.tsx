@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import Image from 'next/image'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import {
@@ -101,12 +102,13 @@ export default function OverOnsPage() {
             </div>
 
             {/* Foto oprichters */}
-            <div className="rounded-xl overflow-hidden border border-neutral-100">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+            <div className="relative rounded-xl overflow-hidden border border-neutral-100 h-[250px]">
+              <Image
                 src="/jimmyalexandra_nieuw.png"
                 alt="Jimmy en Alexandra, oprichters van TrustGarage.nl"
-                className="w-full h-[250px] object-cover"
+                fill
+                sizes="(min-width: 1024px) 50vw, 100vw"
+                className="object-cover"
               />
             </div>
           </div>

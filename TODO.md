@@ -309,8 +309,13 @@ uitnodigingsmail via Resend) — geen openstaande punten meer.
 - [x] Open Graph + Twitter Card tags per garagepagina, met eigen logo/foto als afbeelding
 - [x] Standaard OG-afbeelding (`app/opengraph-image.tsx`) — gegenereerd met huisstijl, fallback voor garages zonder foto
 - [x] Structured data / JSON-LD voor garages (AutoRepair schema met aggregateRating + openingstijden)
-- [ ] `next/image` optimaliseren met `sizes` attribuut
-- [ ] Lazy loading voor foto strips
+- [x] `next/image` optimaliseren met `sizes` attribuut — alle echte foto/logo-`<img>`'s
+      (GarageCard, garageprofiel, dashboard profiel, over-ons) omgezet naar `<Image fill sizes=...>`,
+      met de Supabase Storage-domain toegevoegd aan `next.config.mjs`'s `remotePatterns`. De
+      blob-preview-afbeeldingen in de aanmeldwizard blijven bewust gewone `<img>`'s — `next/image`
+      optimaliseert lokale `blob:`-object-URL's niet
+- [x] Lazy loading voor foto strips — gratis meegekomen met de `next/image`-omzetting hierboven
+      (lazy-load by default)
 
 ---
 
