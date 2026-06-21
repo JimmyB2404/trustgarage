@@ -173,7 +173,6 @@ export default async function GarageProfilePage({ params }: PageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <span data-deploy-marker="7f3a91" style={{ display: 'none' }} />
       <ViewTracker garageId={garage.id} />
       <Navbar />
 
