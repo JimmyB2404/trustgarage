@@ -432,7 +432,7 @@ uitnodigingsmail via Resend) — geen openstaande punten meer.
       e-mailcode crasht niet, blokkeren → kan niet meer inloggen — alle end-to-end bevestigd op
       een lokale productie-build, daarna volledig opgeruimd
 - [x] Engelstalige versie van de website — bewust beperkt tot de publieke, klantgerichte
-      pagina's (homepage, zoeken, garageprofiel, voor-garages, over-ons); dashboard/account/admin
+      pagina's (homepage, zoeken, garageprofiel, voor-garages, tarieven, over-ons); dashboard/account/admin
       en de aanmeldwizard blijven Nederlands, want die gebruiken alleen Nederlandse garage-
       eigenaren en jijzelf. Geen i18n-framework (next-intl) — gewoon losse pagina's onder
       `/en/...` die dezelfde data/componenten herbruiken, met een `locale`-prop die doorgegeven

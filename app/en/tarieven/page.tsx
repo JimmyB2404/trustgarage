@@ -6,75 +6,75 @@ import { IconCheck } from '@tabler/icons-react'
 import { PLAN_PRICING } from '@/lib/plans'
 
 export const metadata: Metadata = {
-  title: 'Tarieven',
+  title: 'Pricing',
   description:
-    'Bekijk de tarieven van TrustGarage.nl voor garagebedrijven. Begin gratis en upgrade naar Premium of Business wanneer uw bedrijf groeit.',
-  alternates: { canonical: '/tarieven', languages: { nl: '/tarieven', en: '/en/tarieven' } },
+    'View TrustGarage.nl\'s pricing for garages. Start for free and upgrade to Premium or Business as your business grows.',
+  alternates: { canonical: '/en/tarieven', languages: { nl: '/tarieven', en: '/en/tarieven' } },
 }
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
 const plans = [
   {
-    name: 'Gratis',
+    name: 'Free',
     price: '0',
-    period: 'mnd',
+    period: 'mo',
     featured: false,
-    cta: 'Gratis aanmelden',
+    cta: 'Sign up for free',
     ctaVariant: 'primary' as const,
     href: '/garage/aanmelden',
     features: [
-      'Vermelding in zoekresultaten',
-      'Basisprofiel met contactgegevens',
-      'Tot 3 diensten vermelden',
-      'Klanten kunnen reviews plaatsen',
-      '1 foto',
+      'Listing in search results',
+      'Basic profile with contact details',
+      'List up to 3 services',
+      'Customers can leave reviews',
+      '1 photo',
     ],
     notIncluded: [
-      'Reageren op reviews',
-      'Statistieken en inzichten',
-      'Prioriteit in zoekresultaten',
-      'Onbeperkt foto\'s',
+      'Reply to reviews',
+      'Statistics and insights',
+      'Priority in search results',
+      'Unlimited photos',
     ],
   },
   {
     name: 'Premium',
     price: String(PLAN_PRICING.premium.amount),
-    period: 'mnd',
+    period: 'mo',
     featured: true,
-    cta: 'Premium kiezen',
+    cta: 'Choose Premium',
     ctaVariant: 'primary' as const,
     href: '/garage/aanmelden',
     features: [
-      'Alles in Gratis',
-      'Reageren op reviews',
-      'Tot 10 diensten vermelden',
-      'Statistieken en inzichten',
-      'Tot 10 foto\'s',
-      'Prioriteit in zoekresultaten',
-      'KVK-verificatiebadge',
+      'Everything in Free',
+      'Reply to reviews',
+      'List up to 10 services',
+      'Statistics and insights',
+      'Up to 10 photos',
+      'Priority in search results',
+      'KVK verification badge',
     ],
     notIncluded: [
-      'Uitgelicht profiel (featured)',
-      'Dedicated accountmanager',
+      'Featured profile',
+      'Dedicated account manager',
     ],
   },
   {
     name: 'Business',
     price: String(PLAN_PRICING.business.amount),
-    period: 'mnd',
+    period: 'mo',
     featured: false,
-    cta: 'Business kiezen',
+    cta: 'Choose Business',
     ctaVariant: 'secondary' as const,
     href: '/garage/aanmelden',
     features: [
-      'Alles in Premium',
-      'Onbeperkt foto\'s',
-      'Onbeperkt diensten',
-      'Uitgelicht profiel (featured)',
-      'Dedicated accountmanager',
-      'Vroege toegang tot nieuwe functies',
-      'Uitgebreide statistieken',
+      'Everything in Premium',
+      'Unlimited photos',
+      'Unlimited services',
+      'Featured profile',
+      'Dedicated account manager',
+      'Early access to new features',
+      'Advanced statistics',
     ],
     notIncluded: [],
   },
@@ -82,7 +82,7 @@ const plans = [
 
 // ─── Page ────────────────────────────────────────────────────────────────────
 
-export default function TarievenPage() {
+export default function TarievenPageEn() {
   return (
     <>
       <Navbar />
@@ -90,10 +90,10 @@ export default function TarievenPage() {
       <section className="py-16">
         <div className="max-w-site mx-auto px-4 sm:px-6">
           <h1 className="text-[34px] sm:text-[36px] font-normal font-serif text-neutral-900 mb-2 text-center">
-            Tarieven
+            Pricing
           </h1>
           <p className="text-[15px] text-neutral-500 text-center mb-12 max-w-lg mx-auto">
-            Begin gratis en upgrade wanneer uw garage groeit. Geen verplichtingen, op elk moment opzegbaar.
+            Start for free and upgrade as your garage grows. No commitments, cancel anytime.
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
@@ -108,7 +108,7 @@ export default function TarievenPage() {
               >
                 {plan.featured && (
                   <span className="self-start inline-flex items-center bg-primary-light text-primary text-[11px] font-medium px-2 py-[3px] rounded-sm">
-                    Meest gekozen
+                    Most popular
                   </span>
                 )}
 
@@ -152,12 +152,12 @@ export default function TarievenPage() {
           </div>
 
           <p className="text-[12px] text-neutral-300 mt-8 text-center">
-            Alle prijzen zijn exclusief BTW. U kunt op elk moment opzeggen.
+            All prices exclude VAT. You can cancel at any time.
           </p>
         </div>
       </section>
 
-      <Footer />
+      <Footer locale="en" />
     </>
   )
 }

@@ -16,6 +16,7 @@ function getOtherLocaleHref(pathname: string): string | null {
     base === '/' ||
     base === '/zoeken' ||
     base === '/voor-garages' ||
+    base === '/tarieven' ||
     base === '/over-ons' ||
     (base.startsWith('/garage/') && base !== '/garage/aanmelden')
   if (!translatable) return null
@@ -27,7 +28,7 @@ const TEXT = {
     navLinks: [
       { href: '/zoeken', hrefEn: '/en/zoeken', label: 'Zoek een garage' },
       { href: '/voor-garages', hrefEn: '/en/voor-garages', label: 'Voor garages' },
-      { href: '/tarieven', hrefEn: '/tarieven', label: 'Tarieven' },
+      { href: '/tarieven', hrefEn: '/en/tarieven', label: 'Tarieven' },
       { href: '/over-ons', hrefEn: '/en/over-ons', label: 'Over ons' },
     ],
     dashboard: 'Dashboard',
@@ -42,7 +43,7 @@ const TEXT = {
     navLinks: [
       { href: '/zoeken', hrefEn: '/en/zoeken', label: 'Find a garage' },
       { href: '/voor-garages', hrefEn: '/en/voor-garages', label: 'For garages' },
-      { href: '/tarieven', hrefEn: '/tarieven', label: 'Pricing' },
+      { href: '/tarieven', hrefEn: '/en/tarieven', label: 'Pricing' },
       { href: '/over-ons', hrefEn: '/en/over-ons', label: 'About us' },
     ],
     dashboard: 'Dashboard',
