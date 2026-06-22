@@ -391,7 +391,21 @@ uitnodigingsmail via Resend) — geen openstaande punten meer.
       gratis OpenStreetMap-geocoding (`lib/geocode.ts` — Google's Geocoding API accepteert geen
       server-side calls met een referrer-restricted key) bij aanmelden/adreswijziging. Bestaande
       11 garages eenmalig achteraf geocodeerd (9 gelukt, 2 nep-testadressen gemist, verwacht)
-- [ ] Afspraak maken functionaliteit
+- [x] Afspraak maken functionaliteit — bewust géén agenda/tijdslot-systeem (te veel gevraagd van
+      garages voor een eerste versie), maar een aanvraagformulier: klant vult naam, telefoon
+      (verplicht), e-mail/gewenste datum/omschrijving (optioneel) in via een modal op de
+      garagepagina (`components/modals/AppointmentModal.tsx`, geen login vereist — zelfde drempel
+      als "Bellen"). Garage krijgt een meldingsmail via Resend en ziet de aanvraag in een nieuwe
+      "Afspraken"-sectie in het dashboard (`/dashboard/afspraken`), met alleen "Markeer als
+      afgehandeld" — bewust geen "Bevestigen/Afwijzen", want het platform boekt zelf niets, de
+      garage regelt de afspraak telefonisch/per mail. Als de klant ingelogd was bij het aanvragen,
+      ziet die de aanvraag ook terug op `/account/aanvragen` (status "In behandeling" →
+      "Afgehandeld" zodra de garage hem afhandelt — zelfde onderliggende status, andere copy per
+      kant). Nieuwe `appointment_requests`-tabel, geen RLS-policies voor anon/authenticated (zelfde
+      privacypatroon als `review_invitations` — telefoonnummer/e-mail alleen via service-role
+      routes). Getest met een tijdelijk wegwerp-testaccount: gast-aanvraag, ingelogde aanvraag
+      (incl. voorinvullen naam/e-mail uit sessie), en de hele dashboard-flow inclusief
+      status-wijziging — alle drie end-to-end bevestigd, daarna opgeruimd
 - [ ] Volwaardig moderatie-dashboard (garages/gebruikers beheren, content verwijderen) — er bestaat
       nu alleen een admin-panel specifiek voor reviewverificatie (`/admin`)
 - [ ] Engelstalige versie van de website

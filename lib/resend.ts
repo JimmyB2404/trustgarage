@@ -78,6 +78,50 @@ export async function sendReviewConfirmationEmail(opts: {
   }
 }
 
+export async function sendAppointmentRequestEmail(opts: {
+  to: string
+  garageName: string
+  customerName: string
+  customerPhone: string
+  customerEmail?: string
+  preferredDate?: string
+  message?: string
+  dashboardUrl: string
+}): Promise<{ sent: boolean; error?: string }> {
+  try {
+    const resend = new Resend(process.env.RESEND_API_KEY)
+    await resend.emails.send({
+      from: 'TrustGarage.nl <noreply@trustgarage.nl>',
+      to: opts.to,
+      subject: `Nieuwe afspraakaanvraag voor ${opts.garageName}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
+          <h2 style="color: #0F6E56;">TrustGarage.nl</h2>
+          <p>Beste ondernemer,</p>
+          <p><strong>${escapeHtml(opts.customerName)}</strong> wil graag een afspraak maken bij <strong>${opts.garageName}</strong>:</p>
+          <ul style="color: #444; padding-left: 18px;">
+            <li>Telefoon: ${escapeHtml(opts.customerPhone)}</li>
+            ${opts.customerEmail ? `<li>E-mail: ${escapeHtml(opts.customerEmail)}</li>` : ''}
+            ${opts.preferredDate ? `<li>Gewenste datum: ${escapeHtml(opts.preferredDate)}</li>` : ''}
+          </ul>
+          ${opts.message ? `<blockquote style="border-left: 3px solid #E1F5EE; margin: 16px 0; padding: 4px 16px; color: #444;">${escapeHtml(opts.message)}</blockquote>` : ''}
+          <p style="font-size: 13px; color: #666;">
+            Dit is geen geboekte afspraak — neem zelf contact op met de klant om dit te regelen.
+          </p>
+          <p>
+            <a href="${opts.dashboardUrl}" style="display: inline-block; background: #0F6E56; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none;">
+              Bekijk in dashboard
+            </a>
+          </p>
+        </div>
+      `,
+    })
+    return { sent: true }
+  } catch (err) {
+    return { sent: false, error: err instanceof Error ? err.message : 'Onbekende fout' }
+  }
+}
+
 export async function sendNewReviewNotificationEmail(opts: {
   to: string
   garageName: string

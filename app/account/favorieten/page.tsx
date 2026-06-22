@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { IconHeart, IconSearch, IconChartBar, IconUser, IconLogout } from '@tabler/icons-react'
+import { IconHeart, IconSearch, IconChartBar, IconUser, IconLogout, IconCalendarEvent } from '@tabler/icons-react'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import GarageCard from '@/components/ui/GarageCard'
@@ -15,6 +15,7 @@ const NAV_ITEMS = [
   { href: '/account/reviews', label: 'Mijn reviews', Icon: IconChartBar },
   { href: '/account/profiel', label: 'Mijn profiel', Icon: IconUser },
   { href: '/account/favorieten', label: 'Favorieten', Icon: IconHeart },
+  { href: '/account/aanvragen', label: 'Aanvragen', Icon: IconCalendarEvent },
 ]
 
 function StaticSidebar({ activePath }: { activePath: string }) {

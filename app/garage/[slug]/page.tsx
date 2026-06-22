@@ -268,6 +268,7 @@ export default async function GarageProfilePage({ params }: PageProps) {
               <GarageCTAButtons
                 phone={garage.phone}
                 garageId={garage.id}
+                garageName={garage.name}
                 callClassName="btn-primary flex items-center justify-center gap-2"
                 appointmentClassName="btn-secondary flex items-center justify-center gap-2"
               />
@@ -490,6 +491,7 @@ export default async function GarageProfilePage({ params }: PageProps) {
               <GarageCTAButtons
                 phone={garage.phone}
                 garageId={garage.id}
+                garageName={garage.name}
                 callClassName="btn-primary text-center w-full flex items-center justify-center gap-2"
                 appointmentClassName="btn-secondary w-full flex items-center justify-center gap-2"
               />
@@ -524,6 +526,7 @@ export default async function GarageProfilePage({ params }: PageProps) {
         <GarageCTAButtons
           phone={garage.phone}
           garageId={garage.id}
+          garageName={garage.name}
           callClassName="btn-ghost flex-1 flex items-center justify-center gap-2"
           appointmentClassName="btn-primary flex-1 flex items-center justify-center gap-2"
         />

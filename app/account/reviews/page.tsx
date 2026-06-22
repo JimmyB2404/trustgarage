@@ -11,6 +11,7 @@ import {
   IconCircleCheck,
   IconLogout,
   IconHeart,
+  IconCalendarEvent,
   IconUser,
   IconChevronDown,
   IconCheck,
@@ -51,6 +52,7 @@ function AccountSidebar() {
     { href: '/account/reviews', label: 'Mijn reviews', icon: IconChartBar },
     { href: '/account/profiel', label: 'Mijn profiel', icon: IconUser },
     { href: '/account/favorieten', label: 'Favorieten', icon: IconHeart },
+    { href: '/account/aanvragen', label: 'Aanvragen', icon: IconCalendarEvent },
   ]
 
   const activeItem = navItems.find(item => pathname === item.href) ?? navItems[0]
