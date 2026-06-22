@@ -390,4 +390,10 @@ uitnodigingsmail via Resend) — geen openstaande punten meer.
 - [ ] Volwaardig moderatie-dashboard (garages/gebruikers beheren, content verwijderen) — er bestaat
       nu alleen een admin-panel specifiek voor reviewverificatie (`/admin`)
 - [ ] Engelstalige versie van de website
+- [x] Hardcoded "Maastricht"-teksten gegeneraliseerd voor SEO (`app/layout.tsx`'s keywords,
+      `app/page.tsx`'s "Aanbevolen garages in ..."-kop, `components/layout/Footer.tsx`'s
+      zoeklink) — geen van deze kwam overeen met een echte stadsfilter, puur tekst. Bewust
+      ongewijzigd gelaten: `app/over-ons/page.tsx`'s "In 2024 zijn we gestart in de regio
+      Maastricht" (klopt nog steeds, is oprichtingsgeschiedenis, geen scope-claim) en
+      `lib/mock-data.ts`'s voorbeeldgarages (nergens geïmporteerd/gerenderd, dus geen SEO-impact)
 - [ ] Meer steden toevoegen buiten Maastricht

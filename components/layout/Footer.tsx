@@ -19,7 +19,7 @@ export default function Footer() {
           <div>
             <h4 className="text-[13px] font-medium text-neutral-900 mb-3">Zoeken</h4>
             <ul className="space-y-2">
-              {['Garages in Maastricht', 'APK in de buurt', 'Engelstalige garage', 'Hoogst beoordeeld'].map(item => (
+              {['Garages in Nederland', 'APK in de buurt', 'Engelstalige garage', 'Hoogst beoordeeld'].map(item => (
                 <li key={item}>
                   <Link href="/zoeken" className="text-[13px] text-neutral-500 hover:text-primary transition-colors">
                     {item}

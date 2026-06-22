@@ -137,7 +137,7 @@ export default async function HomePage() {
       <section className="py-[64px]">
         <div className="max-w-site mx-auto px-4 sm:px-6">
           <h2 className="text-[22px] sm:text-[26px] font-normal font-serif text-neutral-900 text-center mb-3">
-            Aanbevolen garages in Maastricht
+            Aanbevolen garages in Nederland
           </h2>
           <p className="text-[15px] text-neutral-500 text-center mb-8">
             Geverifieerde garages met de hoogste beoordelingen van echte klanten.

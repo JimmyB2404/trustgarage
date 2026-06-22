@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     default: 'TrustGarage.nl — Vind een betrouwbare garage',
   },
   description: 'Vind een betrouwbare garage in Nederland. Lees eerlijke reviews, vergelijk diensten en prijzen. Ideaal voor Nederlanders en expats.',
-  keywords: ['garage', 'betrouwbaar', 'APK', 'autoonderhoud', 'reviews', 'Maastricht'],
+  keywords: ['garage', 'betrouwbaar', 'APK', 'autoonderhoud', 'reviews', 'Nederland'],
   openGraph: {
     title: 'TrustGarage.nl — Vind een betrouwbare garage',
     description: 'Lees eerlijke reviews en vind de beste garage bij jou in de buurt.',
