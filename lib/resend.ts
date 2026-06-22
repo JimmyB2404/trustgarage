@@ -157,3 +157,56 @@ export async function sendNewReviewNotificationEmail(opts: {
     return { sent: false, error: err instanceof Error ? err.message : 'Onbekende fout' }
   }
 }
+
+export async function sendGarageSuspendedEmail(opts: {
+  to: string
+  garageName: string
+}): Promise<{ sent: boolean; error?: string }> {
+  try {
+    const resend = new Resend(process.env.RESEND_API_KEY)
+    await resend.emails.send({
+      from: 'TrustGarage.nl <noreply@trustgarage.nl>',
+      to: opts.to,
+      subject: `Uw garage ${opts.garageName} is geschorst op TrustGarage.nl`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
+          <h2 style="color: #0F6E56;">TrustGarage.nl</h2>
+          <p>Beste ondernemer,</p>
+          <p><strong>${escapeHtml(opts.garageName)}</strong> is momenteel geschorst en niet meer
+          zichtbaar in zoekresultaten of op uw profielpagina. U kunt nog wel inloggen op uw
+          dashboard.</p>
+          <p>Heeft u vragen of wilt u meer weten over de reden? Neem contact met ons op.</p>
+        </div>
+      `,
+    })
+    return { sent: true }
+  } catch (err) {
+    return { sent: false, error: err instanceof Error ? err.message : 'Onbekende fout' }
+  }
+}
+
+export async function sendGarageDeletedEmail(opts: {
+  to: string
+  garageName: string
+}): Promise<{ sent: boolean; error?: string }> {
+  try {
+    const resend = new Resend(process.env.RESEND_API_KEY)
+    await resend.emails.send({
+      from: 'TrustGarage.nl <noreply@trustgarage.nl>',
+      to: opts.to,
+      subject: `Uw garage ${opts.garageName} is verwijderd van TrustGarage.nl`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
+          <h2 style="color: #0F6E56;">TrustGarage.nl</h2>
+          <p>Beste ondernemer,</p>
+          <p><strong>${escapeHtml(opts.garageName)}</strong> en alle bijbehorende gegevens
+          (reviews, foto's, etc.) zijn definitief verwijderd van TrustGarage.nl.</p>
+          <p>Heeft u vragen over deze beslissing? Neem contact met ons op.</p>
+        </div>
+      `,
+    })
+    return { sent: true }
+  } catch (err) {
+    return { sent: false, error: err instanceof Error ? err.message : 'Onbekende fout' }
+  }
+}

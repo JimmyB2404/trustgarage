@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 import { isAdmin } from '@/lib/admin'
+import { sendGarageSuspendedEmail, sendGarageDeletedEmail } from '@/lib/resend'
 
 function getSupabase() {
   return createClient(
@@ -36,9 +37,18 @@ export async function PATCH(req: Request) {
   }
 
   const supabase = getSupabase()
-  const { error } = await supabase.from('garages').update({ suspended }).eq('id', garageId)
+  const { data: garage, error } = await supabase
+    .from('garages')
+    .update({ suspended })
+    .eq('id', garageId)
+    .select('name, email')
+    .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+
+  if (suspended && garage) {
+    await sendGarageSuspendedEmail({ to: garage.email, garageName: garage.name }).catch(() => {})
+  }
 
   return NextResponse.json({ success: true })
 }
@@ -52,9 +62,21 @@ export async function DELETE(req: Request) {
   if (!garageId) return NextResponse.json({ error: 'garageId ontbreekt.' }, { status: 400 })
 
   const supabase = getSupabase()
+
+  // Naam/e-mail eerst ophalen — na het verwijderen bestaat de rij niet meer om naar te mailen.
+  const { data: garage } = await supabase
+    .from('garages')
+    .select('name, email')
+    .eq('id', garageId)
+    .single()
+
   const { error } = await supabase.from('garages').delete().eq('id', garageId)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+
+  if (garage) {
+    await sendGarageDeletedEmail({ to: garage.email, garageName: garage.name }).catch(() => {})
+  }
 
   return NextResponse.json({ success: true })
 }

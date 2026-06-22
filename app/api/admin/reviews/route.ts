@@ -17,7 +17,7 @@ export async function GET() {
   const supabase = getSupabase()
   const { data, error } = await supabase
     .from('reviews')
-    .select('id, user_name, rating, text, verified, created_at, garages(name, slug), review_reports(count)')
+    .select('id, user_name, rating, text, verified, created_at, garages(name, slug), review_reports(id, reason, created_at)')
     .order('created_at', { ascending: false })
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })

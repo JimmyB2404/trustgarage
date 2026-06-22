@@ -414,18 +414,23 @@ uitnodigingsmail via Resend) — geen openstaande punten meer.
         zelfde "geen publieke RLS-policy"-patroon als `review_invitations`/`appointment_requests`
       - **Garages** (`/admin/garages`): overzicht van alle garages met Schorsen (verdwijnt uit
         zoekresultaten/profiel/sitemap, eigenaar kan nog wel inloggen op het dashboard — met een
-        duidelijke melding daar) en Verwijderen (definitief, cascadeert naar reviews/foto's/etc.
-        via bestaande FK's). Nieuwe `garages.suspended`-kolom, gefilterd in `lib/garages.ts`,
+        duidelijke melding daar, **en krijgt nu een e-mail bij schorsen**) en Verwijderen
+        (definitief, cascadeert naar reviews/foto's/etc. via bestaande FK's, **en stuurt ook een
+        e-mail** — naam/adres worden vóór het verwijderen opgehaald, anders is er niemand meer om
+        naar te mailen). Nieuwe `garages.suspended`-kolom, gefilterd in `lib/garages.ts`,
         `/zoeken` en `app/sitemap.ts`
       - **Gebruikers** (`/admin/gebruikers`): overzicht van alle accounts (klant of garage-
         eigenaar), met blokkeren/deblokkeren via Supabase Auth's eigen ban-functionaliteit
+      - Rapportreden wordt nu ook echt getoond in `/admin/reviews` (eerste versie haalde alleen
+        het *aantal* rapportages op, niet de ingevulde reden zelf — gefixt)
       Eén bekende beperking: verwijderen van een garage ruimt de database-rijen op maar laat
       eventuele logo/foto-bestanden in Supabase Storage staan (die zijn niet aan een Postgres FK
       gekoppeld) — kleine, lage-prioriteit nette-afronding voor later.
       Getest met tijdelijke wegwerp-accounts (test-garage, test-klant, test-admin via een
-      tijdelijke toevoeging aan `ADMIN_EMAIL`): rapporteren → filter → verwijderen, schorsen →
-      404 op publieke pagina, blokkeren → kan niet meer inloggen — alle vijf end-to-end bevestigd
-      op een lokale productie-build, daarna volledig opgeruimd
+      tijdelijke toevoeging aan `ADMIN_EMAIL`): rapporteren → reden zichtbaar → filter →
+      verwijderen, schorsen → 404 op publieke pagina + e-mailcode crasht niet, verwijderen →
+      e-mailcode crasht niet, blokkeren → kan niet meer inloggen — alle end-to-end bevestigd op
+      een lokale productie-build, daarna volledig opgeruimd
 - [ ] Engelstalige versie van de website
 - [x] Hardcoded "Maastricht"-teksten gegeneraliseerd voor SEO (`app/layout.tsx`'s keywords,
       `app/page.tsx`'s "Aanbevolen garages in ..."-kop, `components/layout/Footer.tsx`'s

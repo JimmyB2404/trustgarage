@@ -11,7 +11,7 @@ type AdminReview = {
   verified: boolean
   created_at: string
   garages: { name: string; slug: string } | null
-  review_reports: { count: number }[]
+  review_reports: { id: string; reason: string | null; created_at: string }[]
 }
 
 export default function AdminReviewsTable() {
@@ -28,7 +28,7 @@ export default function AdminReviewsTable() {
   }, [])
 
   function reportCount(r: AdminReview): number {
-    return r.review_reports?.[0]?.count ?? 0
+    return r.review_reports?.length ?? 0
   }
 
   async function handleDelete(id: string) {
@@ -92,6 +92,18 @@ export default function AdminReviewsTable() {
                 <p className="text-[12px] text-neutral-500 mb-1">{r.user_name} — {r.rating}/5</p>
                 <p className="text-[13px] text-neutral-900">{r.text}</p>
               </div>
+              {r.review_reports.length > 0 && (
+                <div className="bg-danger/5 border border-danger/20 rounded-md p-3 mb-3">
+                  <p className="text-[11px] font-medium text-danger mb-1">Rapportages</p>
+                  <ul className="flex flex-col gap-1">
+                    {r.review_reports.map(report => (
+                      <li key={report.id} className="text-[12px] text-neutral-900">
+                        {report.reason || <span className="text-neutral-300">Geen reden opgegeven</span>}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
               <button
                 onClick={() => handleDelete(r.id)}
                 disabled={busyId === r.id}
