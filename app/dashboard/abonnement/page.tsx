@@ -10,6 +10,7 @@ import {
   IconShieldCheck,
   IconMailForward,
   IconCalendarEvent,
+  IconTrendingUp,
   IconMenu2,
   IconX,
   IconLogout,
@@ -29,6 +30,7 @@ const navItems = [
   { href: '/dashboard/reviews', label: 'Reviews', icon: <IconStar size={16} /> },
   { href: '/dashboard/uitnodigingen', label: 'Uitnodigingen', icon: <IconMailForward size={16} /> },
   { href: '/dashboard/afspraken', label: 'Afspraken', icon: <IconCalendarEvent size={16} /> },
+  { href: '/dashboard/inzichten', label: 'Inzichten', icon: <IconTrendingUp size={16} /> },
   { href: '/dashboard/abonnement', label: 'Abonnement', icon: <IconCircleCheck size={16} /> },
 ]
 

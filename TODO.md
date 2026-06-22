@@ -462,4 +462,27 @@ uitnodigingsmail via Resend) — geen openstaande punten meer.
       ongewijzigd gelaten: `app/over-ons/page.tsx`'s "In 2024 zijn we gestart in de regio
       Maastricht" (klopt nog steeds, is oprichtingsgeschiedenis, geen scope-claim) en
       `lib/mock-data.ts`'s voorbeeldgarages (nergens geïmporteerd/gerenderd, dus geen SEO-impact)
+- [x] Drie extra functies vóór v1.0-lancering, op verzoek:
+      - **"Nu open"-toggle** op `/zoeken` + `/en/zoeken` — filtert op `isGarageOpen()`, dezelfde
+        check die de Open/Gesloten-badge al gebruikte
+      - **Afstand-schuifbalk** — vraagt eenmalig browserlocatie (`navigator.geolocation`, met een
+        nette melding bij weigeren/niet-beschikbaar), berekent afstand via een haversine-formule
+        (`calculateDistanceKm` in `lib/utils.ts`) tegen de bestaande `latitude`/`longitude` op elke
+        garage. Garages die nog niet gegeocodeerd zijn vallen automatisch buiten een actief
+        afstandsfilter. Maakt de al langer bestaande maar nooit werkende "Dichtsbij"-sorteeroptie
+        voor het eerst functioneel
+      - **Garages vergelijken** — selectievakje ("Vergelijken") op elke garage in de
+        zoekresultaten (max. 3), vaste balk onderin bij 1+ selectie, nieuwe pagina's
+        `/vergelijken` en `/en/compare` (`?ids=a,b,c`) met beoordeling/KVK/open-status/diensten/
+        talen naast elkaar. Let op: de vergelijk-balk kreeg een hogere z-index dan de cookiebanner
+        — die overlapten elkaar onderin het scherm en blokkeerden anders de klik
+      - **Concurrentie-inzicht** (`/dashboard/inzichten`, **Business-only** met upsell-kaart voor
+        Free/Premium): vergelijkt eigen gemiddelde beoordeling, aantal reviews en reactiesnelheid
+        met het gemiddelde van andere niet-geschorste garages in dezelfde stad (zichzelf
+        uitgesloten van dat gemiddelde). Nieuwe route `/api/dashboard/insights`, in-app
+        geaggregeerd net als elders in dit project (geen SQL-aggregatiefuncties)
+      Getest met wegwerp-testaccounts: open-nu-filter (0 resultaten correct buiten openingstijden),
+      afstandsfilter (sluit niet-gegeocodeerde garages correct uit), vergelijken end-to-end in
+      beide talen, en Business- vs. Free-weergave van Inzichten met handmatig ingevoerde
+      review-/reactiedata om de berekening te verifiëren
 - [ ] Meer steden toevoegen buiten Maastricht

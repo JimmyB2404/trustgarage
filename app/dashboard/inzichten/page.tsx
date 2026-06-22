@@ -18,7 +18,7 @@ import {
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/context/AuthContext'
 import { useGarage } from '@/hooks/useGarage'
-import { useInvitations } from '@/hooks/useInvitations'
+import { useInsights } from '@/hooks/useInsights'
 
 // ─── Shared Dashboard Layout ──────────────────────────────────────────────────
 
@@ -135,68 +135,52 @@ function DashboardLayout({ children, reviewBadge }: { children: React.ReactNode;
   )
 }
 
-// ─── Status label ─────────────────────────────────────────────────────────────
+// ─── Comparison row ─────────────────────────────────────────────────────────
 
-function StatusBadge({ status, hasReview, verified }: { status: string; hasReview: boolean; verified: boolean }) {
-  if (verified) {
-    return <span className="text-[12px] text-primary font-medium">Geverifieerd</span>
-  }
-  if (hasReview) {
-    return <span className="text-[12px] text-neutral-500">Review ontvangen</span>
-  }
-  if (status === 'sent') {
-    return <span className="text-[12px] text-neutral-300">Verstuurd</span>
-  }
-  return <span className="text-[12px] text-neutral-300">{status}</span>
+function ComparisonRow({ label, own, regional, format, higherIsBetter = true }: {
+  label: string
+  own: number
+  regional: number
+  format: (v: number) => string
+  higherIsBetter?: boolean
+}) {
+  const diff = own - regional
+  const isBetter = higherIsBetter ? diff > 0 : diff < 0
+  const isWorse = higherIsBetter ? diff < 0 : diff > 0
+
+  return (
+    <div className="bg-white border border-neutral-100 rounded-[9px] p-4">
+      <p className="text-[12px] text-neutral-500 mb-2">{label}</p>
+      <div className="flex items-end justify-between">
+        <div>
+          <p className="text-[24px] font-semibold text-neutral-900 leading-none">{format(own)}</p>
+          <p className="text-[11px] text-neutral-300 mt-1">Uw garage</p>
+        </div>
+        <div className="text-right">
+          <p className="text-[16px] font-medium text-neutral-500 leading-none">{format(regional)}</p>
+          <p className="text-[11px] text-neutral-300 mt-1">Regionaal gemiddelde</p>
+        </div>
+      </div>
+      {Math.abs(diff) > 0.001 && (
+        <p className={cn('text-[12px] mt-2', isBetter && 'text-primary', isWorse && 'text-danger')}>
+          {isBetter ? '↑' : '↓'} {format(Math.abs(diff))} {isBetter ? 'boven' : 'onder'} het gemiddelde
+        </p>
+      )}
+    </div>
+  )
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-export default function UitnodigingenPage() {
+export default function InzichtenPage() {
   const { garage, loading: loadingGarage } = useGarage()
-  const { invitations, loading: loadingInvitations, refetch } = useInvitations(garage?.id)
-
-  const [email, setEmail] = useState('')
-  const [invoiceNumber, setInvoiceNumber] = useState('')
-  const [sending, setSending] = useState(false)
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
+  const { insights, loading: loadingInsights } = useInsights(garage?.id)
 
   const unanswered = garage?.reviews.filter(r => r.garage_replies.length === 0).length ?? 0
 
-  async function handleSend(e: React.FormEvent) {
-    e.preventDefault()
-    if (!garage) return
-    setSending(true)
-    setError('')
-    setSuccess('')
-
-    const res = await fetch('/api/garage/invitations', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ garageId: garage.id, customerEmail: email, invoiceNumber }),
-    })
-    const result = await res.json()
-    setSending(false)
-
-    if (!res.ok) {
-      setError(result.error ?? 'Er is een fout opgetreden.')
-      return
-    }
-
-    setSuccess(
-      result.emailSent
-        ? 'Uitnodiging verstuurd!'
-        : 'Uitnodiging aangemaakt, maar de e-mail kon niet worden verzonden.'
-    )
-    setEmail('')
-    setInvoiceNumber('')
-    await refetch()
-  }
-
-  if (loadingGarage) {
+  if (loadingGarage || loadingInsights) {
     return (
-      <DashboardLayout>
+      <DashboardLayout reviewBadge={unanswered}>
         <div className="flex items-center justify-center h-64">
           <span className="text-neutral-400 text-[14px]">Laden...</span>
         </div>
@@ -204,82 +188,61 @@ export default function UitnodigingenPage() {
     )
   }
 
+  if (!insights || insights.gated) {
+    return (
+      <DashboardLayout reviewBadge={unanswered}>
+        <h3 className="text-[22px] font-medium text-neutral-900 mb-1">Inzichten</h3>
+        <p className="text-[13px] text-neutral-500 mb-6 max-w-[600px]">
+          Zie hoe uw garage scoort t.o.v. andere garages in uw regio.
+        </p>
+        <div className="border-[1.5px] border-primary bg-[#F7FDF9] rounded-[9px] p-5 max-w-[480px]">
+          <p className="text-[16px] font-semibold text-neutral-900 mb-1">Exclusief voor Business</p>
+          <p className="text-[13px] text-neutral-500 mb-4">
+            Upgrade naar Business om te zien hoe uw beoordeling, aantal reviews en reactiesnelheid
+            zich verhouden tot het regionaal gemiddelde.
+          </p>
+          <Link href="/dashboard/abonnement" className="btn-primary text-[13px] py-[9px] px-5 rounded-md inline-flex items-center gap-2">
+            Upgrade naar Business
+          </Link>
+        </div>
+      </DashboardLayout>
+    )
+  }
+
+  const { own, regional, city } = insights
+  if (!own || !regional) return null
+
   return (
     <DashboardLayout reviewBadge={unanswered}>
-      <h3 className="text-[22px] font-medium text-neutral-900 mb-1">Uitnodigingen</h3>
+      <h3 className="text-[22px] font-medium text-neutral-900 mb-1">Inzichten</h3>
       <p className="text-[13px] text-neutral-500 mb-6 max-w-[600px]">
-        Nodig een klant uit om een review te schrijven. Vul het factuurnummer in dat bij dit
-        bezoek hoort — als de klant bij het schrijven van de review hetzelfde nummer invult,
-        wordt die review beoordeeld voor een &quot;Geverifieerd bezoek&quot;-badge.
+        Vergeleken met {regional.garageCount} andere {regional.garageCount === 1 ? 'garage' : "garage's"} in {city}.
       </p>
 
-      <form onSubmit={handleSend} className="bg-white border border-neutral-100 rounded-[9px] p-5 max-w-[480px] mb-8">
-        <div className="flex flex-col gap-3">
-          <div className="flex flex-col gap-1">
-            <label className="text-[12px] font-medium text-neutral-500">E-mailadres klant</label>
-            <input
-              type="email"
-              className="input-field"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              placeholder="klant@email.nl"
-              required
-            />
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-[12px] font-medium text-neutral-500">Factuurnummer</label>
-            <input
-              type="text"
-              className="input-field"
-              value={invoiceNumber}
-              onChange={e => setInvoiceNumber(e.target.value)}
-              placeholder="Bijv. 2024-00123"
-              required
-            />
-          </div>
-          {error && <p className="text-[12px] text-danger">{error}</p>}
-          {success && <p className="text-[12px] text-primary">{success}</p>}
-          <button
-            type="submit"
-            disabled={sending}
-            className={cn('btn-primary self-start', sending && 'opacity-50 cursor-not-allowed')}
-          >
-            {sending ? 'Versturen...' : 'Uitnodiging versturen'}
-          </button>
-        </div>
-      </form>
-
-      <h4 className="text-[14px] font-semibold text-neutral-900 mb-3">Verstuurde uitnodigingen</h4>
-      {loadingInvitations ? (
-        <p className="text-[13px] text-neutral-400">Laden...</p>
-      ) : invitations.length === 0 ? (
-        <p className="text-[13px] text-neutral-400">Nog geen uitnodigingen verstuurd.</p>
+      {regional.garageCount === 0 ? (
+        <p className="text-[13px] text-neutral-400">
+          Nog geen andere garages in {city} om mee te vergelijken.
+        </p>
       ) : (
-        <div className="bg-white border border-neutral-100 rounded-[9px] overflow-hidden max-w-[720px]">
-          <table className="w-full text-[13px]">
-            <thead>
-              <tr className="bg-surface text-left text-neutral-500 border-b border-neutral-100">
-                <th className="px-4 py-2 font-medium">E-mail</th>
-                <th className="px-4 py-2 font-medium">Factuurnummer</th>
-                <th className="px-4 py-2 font-medium">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {invitations.map(inv => (
-                <tr key={inv.id} className="border-b border-neutral-100 last:border-0">
-                  <td className="px-4 py-2 text-neutral-900">{inv.customer_email}</td>
-                  <td className="px-4 py-2 text-neutral-500">{inv.invoice_number}</td>
-                  <td className="px-4 py-2">
-                    <StatusBadge
-                      status={inv.status}
-                      hasReview={!!inv.reviews}
-                      verified={inv.reviews?.verified ?? false}
-                    />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-[760px]">
+          <ComparisonRow
+            label="Gemiddelde beoordeling"
+            own={own.avgRating}
+            regional={regional.avgRating}
+            format={v => v.toFixed(1)}
+          />
+          <ComparisonRow
+            label="Aantal reviews"
+            own={own.reviewCount}
+            regional={regional.avgReviewCount}
+            format={v => Math.round(v).toString()}
+          />
+          <ComparisonRow
+            label="Reactiesnelheid"
+            own={own.responseRate}
+            regional={regional.avgResponseRate}
+            format={v => `${Math.round(v)}%`}
+          />
         </div>
       )}
     </DashboardLayout>

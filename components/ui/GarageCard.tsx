@@ -2,7 +2,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { IconMapPin, IconCircleCheck, IconPhone, IconClock } from '@tabler/icons-react'
+import { IconMapPin, IconCircleCheck, IconPhone, IconClock, IconGitCompare } from '@tabler/icons-react'
 import type { Garage } from '@/types'
 import Badge from './Badge'
 import StarRating from './StarRating'
@@ -15,14 +15,25 @@ interface GarageCardProps {
   variant?: 'vertical' | 'horizontal'
   featured?: boolean
   locale?: 'nl' | 'en'
+  compareSelected?: boolean
+  onToggleCompare?: () => void
+  compareDisabled?: boolean
 }
 
 const TEXT = {
-  nl: { kvk: 'KVK geverifieerd', call: 'Bellen', viewProfile: 'Bekijk profiel', reviews: 'reviews' },
-  en: { kvk: 'KVK verified', call: 'Call', viewProfile: 'View profile', reviews: 'reviews' },
+  nl: { kvk: 'KVK geverifieerd', call: 'Bellen', viewProfile: 'Bekijk profiel', reviews: 'reviews', compare: 'Vergelijken' },
+  en: { kvk: 'KVK verified', call: 'Call', viewProfile: 'View profile', reviews: 'reviews', compare: 'Compare' },
 }
 
-export default function GarageCard({ garage, variant = 'vertical', featured = false, locale = 'nl' }: GarageCardProps) {
+export default function GarageCard({
+  garage,
+  variant = 'vertical',
+  featured = false,
+  locale = 'nl',
+  compareSelected = false,
+  onToggleCompare,
+  compareDisabled = false,
+}: GarageCardProps) {
   const t = TEXT[locale]
   const open = garage.is_open ?? isGarageOpen(garage.hours)
   const todayHours = getTodayHours(garage.hours, locale)
@@ -162,6 +173,19 @@ export default function GarageCard({ garage, variant = 'vertical', featured = fa
             showCount={true}
             size={15}
           />
+          {onToggleCompare && (
+            <button
+              type="button"
+              onClick={e => { e.stopPropagation(); onToggleCompare() }}
+              disabled={compareDisabled}
+              className={`flex items-center gap-1 text-[12px] transition-colors ${
+                compareSelected ? 'text-primary font-medium' : compareDisabled ? 'text-neutral-300 cursor-not-allowed' : 'text-neutral-500 hover:text-primary'
+              }`}
+            >
+              <IconGitCompare size={14} />
+              {t.compare}
+            </button>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <a

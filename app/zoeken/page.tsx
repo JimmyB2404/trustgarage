@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo, useEffect, Suspense } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import GarageCard from '@/components/ui/GarageCard'
@@ -10,6 +10,7 @@ import { SERVICES, LANGUAGES } from '@/lib/mock-data'
 import { createClient } from '@/lib/supabase'
 import { transformGarage } from '@/lib/garages'
 import { trackEvent } from '@/lib/analytics'
+import { calculateDistanceKm, isGarageOpen } from '@/lib/utils'
 import {
   IconSearch,
   IconFilter,
@@ -21,13 +22,18 @@ import {
   IconShieldCheck,
   IconMap,
   IconList,
+  IconLocation,
+  IconGitCompare,
 } from '@tabler/icons-react'
 import type { Garage } from '@/types'
 
 const RESULTS_PER_PAGE = 10
+const MAX_DISTANCE_LIMIT = 100
+const MAX_COMPARE = 3
 
 function ZoekenContent() {
   const searchParams = useSearchParams()
+  const router = useRouter()
   const initialQuery = searchParams.get('q') ?? ''
 
   const [allGarages, setAllGarages] = useState<Garage[]>([])
@@ -36,6 +42,11 @@ function ZoekenContent() {
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([])
   const [minRating, setMinRating] = useState<number>(0)
   const [kvkOnly, setKvkOnly] = useState(false)
+  const [openNowOnly, setOpenNowOnly] = useState(false)
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null)
+  const [locationStatus, setLocationStatus] = useState<'idle' | 'loading' | 'denied'>('idle')
+  const [maxDistance, setMaxDistance] = useState(MAX_DISTANCE_LIMIT)
+  const [compareIds, setCompareIds] = useState<string[]>([])
   const [sortBy, setSortBy] = useState<'rating' | 'reviews' | 'distance'>('rating')
   const [showFilters, setShowFilters] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
@@ -60,9 +71,36 @@ function ZoekenContent() {
       })
   }, [])
 
+  function requestLocation() {
+    if (!navigator.geolocation) {
+      setLocationStatus('denied')
+      return
+    }
+    setLocationStatus('loading')
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude })
+        setLocationStatus('idle')
+      },
+      () => setLocationStatus('denied')
+    )
+  }
+
+  // Garages van afstand voorzien zodra de gebruiker locatie heeft gedeeld — garages zonder
+  // coördinaten (nog niet gegeocodeerd) krijgen geen distance, en vallen dus buiten een actief
+  // afstandsfilter.
+  const garagesWithDistance = useMemo<Garage[]>(() => {
+    if (!userLocation) return allGarages
+    return allGarages.map(g =>
+      typeof g.latitude === 'number' && typeof g.longitude === 'number'
+        ? { ...g, distance: calculateDistanceKm(userLocation.lat, userLocation.lng, g.latitude, g.longitude) }
+        : g
+    )
+  }, [allGarages, userLocation])
+
   // --- filter logic ---
   const filteredGarages = useMemo<Garage[]>(() => {
-    let result = [...allGarages]
+    let result = [...garagesWithDistance]
 
     if (query.trim()) {
       const q = query.trim().toLowerCase()
@@ -95,6 +133,14 @@ function ZoekenContent() {
       result = result.filter(g => g.kvk_verified)
     }
 
+    if (openNowOnly) {
+      result = result.filter(g => g.is_open ?? isGarageOpen(g.hours))
+    }
+
+    if (userLocation && maxDistance < MAX_DISTANCE_LIMIT) {
+      result = result.filter(g => g.distance !== undefined && g.distance <= maxDistance)
+    }
+
     result.sort((a, b) => {
       if (sortBy === 'rating') return b.rating - a.rating
       if (sortBy === 'reviews') return b.review_count - a.review_count
@@ -107,7 +153,7 @@ function ZoekenContent() {
     })
 
     return result
-  }, [allGarages, query, selectedServices, selectedLanguages, minRating, kvkOnly, sortBy])
+  }, [garagesWithDistance, query, selectedServices, selectedLanguages, minRating, kvkOnly, openNowOnly, userLocation, maxDistance, sortBy])
 
   // Pas na 600ms stilte trackem — voorkomt dat elke toetsaanslag een eigen event wordt.
   useEffect(() => {
@@ -130,9 +176,17 @@ function ZoekenContent() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
+  function toggleCompare(id: string) {
+    setCompareIds(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : prev.length < MAX_COMPARE ? [...prev, id] : prev
+    )
+  }
+
   // --- active filters helpers ---
+  const distanceActive = userLocation !== null && maxDistance < MAX_DISTANCE_LIMIT
   const activeFilterCount =
-    selectedServices.length + selectedLanguages.length + (minRating > 0 ? 1 : 0) + (kvkOnly ? 1 : 0)
+    selectedServices.length + selectedLanguages.length + (minRating > 0 ? 1 : 0) + (kvkOnly ? 1 : 0) +
+    (openNowOnly ? 1 : 0) + (distanceActive ? 1 : 0)
 
   function removeService(s: string) {
     setSelectedServices(prev => prev.filter(x => x !== s))
@@ -150,11 +204,21 @@ function ZoekenContent() {
     setKvkOnly(false)
     setCurrentPage(1)
   }
+  function removeOpenNow() {
+    setOpenNowOnly(false)
+    setCurrentPage(1)
+  }
+  function removeDistance() {
+    setMaxDistance(MAX_DISTANCE_LIMIT)
+    setCurrentPage(1)
+  }
   function clearAllFilters() {
     setSelectedServices([])
     setSelectedLanguages([])
     setMinRating(0)
     setKvkOnly(false)
+    setOpenNowOnly(false)
+    setMaxDistance(MAX_DISTANCE_LIMIT)
     setCurrentPage(1)
   }
 
@@ -186,6 +250,59 @@ function ZoekenContent() {
 
   const FilterPanel = () => (
     <>
+      {/* Nu open */}
+      <label className="flex items-center gap-2 cursor-pointer mb-6">
+        <input
+          type="checkbox"
+          checked={openNowOnly}
+          onChange={e => {
+            setOpenNowOnly(e.target.checked)
+            setCurrentPage(1)
+          }}
+          className="w-[14px] h-[14px] accent-primary cursor-pointer"
+        />
+        <span className="text-[13px] text-neutral-900">Nu open</span>
+      </label>
+
+      {/* Afstand */}
+      <div className="mb-6">
+        <h4 className="text-[12px] font-medium text-neutral-500 uppercase tracking-wider mb-2">
+          Afstand
+        </h4>
+        {!userLocation ? (
+          <button
+            type="button"
+            onClick={requestLocation}
+            disabled={locationStatus === 'loading'}
+            className="flex items-center gap-1.5 text-[13px] text-primary hover:underline disabled:opacity-50"
+          >
+            <IconLocation size={14} />
+            {locationStatus === 'loading' ? 'Locatie ophalen...' : 'Gebruik mijn locatie'}
+          </button>
+        ) : (
+          <div>
+            <input
+              type="range"
+              min={5}
+              max={MAX_DISTANCE_LIMIT}
+              step={5}
+              value={maxDistance}
+              onChange={e => {
+                setMaxDistance(Number(e.target.value))
+                setCurrentPage(1)
+              }}
+              className="w-full accent-primary cursor-pointer"
+            />
+            <p className="text-[12px] text-neutral-500 mt-1">
+              {maxDistance >= MAX_DISTANCE_LIMIT ? 'Geen limiet' : `Binnen ${maxDistance} km`}
+            </p>
+          </div>
+        )}
+        {locationStatus === 'denied' && (
+          <p className="text-[12px] text-danger mt-1">Locatie niet beschikbaar.</p>
+        )}
+      </div>
+
       {/* Diensten */}
       <div className="mb-6">
         <h4 className="text-[12px] font-medium text-neutral-500 uppercase tracking-wider mb-2">
@@ -355,6 +472,22 @@ function ZoekenContent() {
             {/* Active filter chips */}
             {activeFilterCount > 0 && (
               <div className="flex flex-wrap gap-2 mt-2.5">
+                {openNowOnly && (
+                  <span className="inline-flex items-center gap-1 text-[12px] bg-primary-light text-primary px-2.5 py-1 rounded-full">
+                    Nu open
+                    <button onClick={removeOpenNow} aria-label="Verwijder nu-open filter">
+                      <IconX size={12} />
+                    </button>
+                  </span>
+                )}
+                {distanceActive && (
+                  <span className="inline-flex items-center gap-1 text-[12px] bg-primary-light text-primary px-2.5 py-1 rounded-full">
+                    Binnen {maxDistance} km
+                    <button onClick={removeDistance} aria-label="Verwijder afstandsfilter">
+                      <IconX size={12} />
+                    </button>
+                  </span>
+                )}
                 {selectedServices.map(s => (
                   <span
                     key={s}
@@ -473,6 +606,9 @@ function ZoekenContent() {
                     garage={garage}
                     variant="horizontal"
                     featured={garage.plan === 'premium' || garage.plan === 'business'}
+                    compareSelected={compareIds.includes(garage.id)}
+                    onToggleCompare={() => toggleCompare(garage.id)}
+                    compareDisabled={!compareIds.includes(garage.id) && compareIds.length >= MAX_COMPARE}
                   />
                 ))}
               </div>
@@ -609,6 +745,28 @@ function ZoekenContent() {
             </div>
           </div>
         </>
+      )}
+
+      {/* Vergelijk-balk */}
+      {compareIds.length > 0 && (
+        <div className="fixed bottom-0 left-0 right-0 bg-neutral-900 text-white px-4 py-3 z-[60] flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 text-[13px]">
+            <IconGitCompare size={16} />
+            <span>{compareIds.length} van {MAX_COMPARE} geselecteerd om te vergelijken</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button onClick={() => setCompareIds([])} className="text-[13px] text-white/70 hover:text-white">
+              Wissen
+            </button>
+            <button
+              onClick={() => router.push(`/vergelijken?ids=${compareIds.join(',')}`)}
+              disabled={compareIds.length < 2}
+              className="btn-primary text-[13px] py-[7px] px-4 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Vergelijken
+            </button>
+          </div>
+        </div>
       )}
 
       <Footer />
