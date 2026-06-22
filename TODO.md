@@ -431,7 +431,31 @@ uitnodigingsmail via Resend) — geen openstaande punten meer.
       verwijderen, schorsen → 404 op publieke pagina + e-mailcode crasht niet, verwijderen →
       e-mailcode crasht niet, blokkeren → kan niet meer inloggen — alle end-to-end bevestigd op
       een lokale productie-build, daarna volledig opgeruimd
-- [ ] Engelstalige versie van de website
+- [x] Engelstalige versie van de website — bewust beperkt tot de publieke, klantgerichte
+      pagina's (homepage, zoeken, garageprofiel, voor-garages, over-ons); dashboard/account/admin
+      en de aanmeldwizard blijven Nederlands, want die gebruiken alleen Nederlandse garage-
+      eigenaren en jijzelf. Geen i18n-framework (next-intl) — gewoon losse pagina's onder
+      `/en/...` die dezelfde data/componenten herbruiken, met een `locale`-prop die doorgegeven
+      wordt aan alle gedeelde componenten (inclusief de formulieren: review schrijven, afspraak
+      aanvragen, rapporteren). Nederlands blijft de standaard zonder URL-prefix (`/zoeken`),
+      Engels staat onder `/en/...` (`/en/zoeken`) — geen bestaande URL’s gewijzigd, dus geen
+      impact op de huidige SEO-indexering. Taalschakelaar (NL|EN, geselecteerde taal vetgedrukt)
+      rechtsboven in de Navbar, alleen zichtbaar op pagina's die een vertaling hebben; detecteert
+      zelf via het pad, geen prop nodig op bestaande paginas. `hreflang`-alternates toegevoegd op
+      alle vertaalde paginas, en `/en/...`-varianten toegevoegd aan `sitemap.ts`.
+      Dienst-/taalnamen (APK, Onderhoud, Banden, ...) zijn losse opgeslagen databasewaarden
+      waarop gefilterd wordt — vertaald alleen het getoonde label (`SERVICE_LABELS_EN`/
+      `LANGUAGE_LABELS_EN` in `lib/mock-data.ts`), de onderliggende waarde blijft Nederlands zodat
+      filteren correct blijft werken. Door garages/klanten geschreven tekst (omschrijvingen,
+      reviews) wordt nergens automatisch vertaald.
+      Bekende, bewust geaccepteerde beperking: de `<html lang="...">`-tag op alle pagina's staat
+      vast op `"nl"` (wordt door de root layout gezet, kan niet per-pagina variëren zonder een
+      service Next.js-aanpak) — heeft geen invloed op `hreflang`-gebaseerde taalherkenning door
+      Google, wel een klein gemis voor screenreaders op de Engelse pagina's.
+      Getest: alle 5 Engelse pagina's, taalschakelaar in beide richtingen (inclusief afwezig op
+      niet-vertaalde pagina's zoals `/tarieven`), reviewformulier + afspraakformulier + cookie-
+      banner volledig Engels, en een regressiecheck dat alle Nederlandse pagina's ongewijzigd
+      blijven werken
 - [x] Hardcoded "Maastricht"-teksten gegeneraliseerd voor SEO (`app/layout.tsx`'s keywords,
       `app/page.tsx`'s "Aanbevolen garages in ..."-kop, `components/layout/Footer.tsx`'s
       zoeklink) — geen van deze kwam overeen met een echte stadsfilter, puur tekst. Bewust

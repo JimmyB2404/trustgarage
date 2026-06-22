@@ -10,7 +10,13 @@ const GOOGLE_MAPS_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY
 
 const MAASTRICHT_CENTER = { lat: 50.8514, lng: 5.6910 }
 
-export default function SearchResultsMap({ garages }: { garages: Garage[] }) {
+const TEXT = {
+  nl: { mapUnavailable: 'Kaart beschikbaar na Google Maps setup', viewProfile: 'Bekijk profiel →' },
+  en: { mapUnavailable: 'Map available after Google Maps setup', viewProfile: 'View profile →' },
+}
+
+export default function SearchResultsMap({ garages, locale = 'nl' }: { garages: Garage[]; locale?: 'nl' | 'en' }) {
+  const t = TEXT[locale]
   const { isLoaded } = useLoadScript({ googleMapsApiKey: GOOGLE_MAPS_KEY ?? '' })
   const [activeId, setActiveId] = useState<string | null>(null)
 
@@ -26,7 +32,7 @@ export default function SearchResultsMap({ garages }: { garages: Garage[] }) {
   if (!GOOGLE_MAPS_KEY) {
     return (
       <div className="h-full bg-surface rounded-lg border border-neutral-100 flex items-center justify-center text-neutral-300 text-[13px] text-center px-4">
-        Kaart beschikbaar na Google Maps setup
+        {t.mapUnavailable}
       </div>
     )
   }
@@ -54,10 +60,10 @@ export default function SearchResultsMap({ garages }: { garages: Garage[] }) {
                 <p className="text-[14px] font-medium text-neutral-900 mb-1">{garage.name}</p>
                 <StarRating rating={garage.rating} size={12} showNumber count={garage.review_count} />
                 <Link
-                  href={`/garage/${garage.slug}`}
+                  href={locale === 'en' ? `/en/garage/${garage.slug}` : `/garage/${garage.slug}`}
                   className="block mt-2 text-[12px] text-primary font-medium hover:underline"
                 >
-                  Bekijk profiel →
+                  {t.viewProfile}
                 </Link>
               </div>
             </InfoWindowF>

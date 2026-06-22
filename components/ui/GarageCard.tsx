@@ -8,18 +8,27 @@ import Badge from './Badge'
 import StarRating from './StarRating'
 import FavoriteButton from './FavoriteButton'
 import { getTodayHours, isGarageOpen } from '@/lib/utils'
+import { SERVICE_LABELS_EN } from '@/lib/mock-data'
 
 interface GarageCardProps {
   garage: Garage
   variant?: 'vertical' | 'horizontal'
   featured?: boolean
+  locale?: 'nl' | 'en'
 }
 
-export default function GarageCard({ garage, variant = 'vertical', featured = false }: GarageCardProps) {
+const TEXT = {
+  nl: { kvk: 'KVK geverifieerd', call: 'Bellen', viewProfile: 'Bekijk profiel', reviews: 'reviews' },
+  en: { kvk: 'KVK verified', call: 'Call', viewProfile: 'View profile', reviews: 'reviews' },
+}
+
+export default function GarageCard({ garage, variant = 'vertical', featured = false, locale = 'nl' }: GarageCardProps) {
+  const t = TEXT[locale]
   const open = garage.is_open ?? isGarageOpen(garage.hours)
-  const todayHours = getTodayHours(garage.hours)
+  const todayHours = getTodayHours(garage.hours, locale)
   const router = useRouter()
-  const href = `/garage/${garage.slug}`
+  const href = locale === 'en' ? `/en/garage/${garage.slug}` : `/garage/${garage.slug}`
+  const serviceLabel = (s: string) => locale === 'en' ? (SERVICE_LABELS_EN[s] ?? s) : s
 
   if (variant === 'vertical') {
     // Vertical: footer has no links, safe to wrap entire card in Link
@@ -44,7 +53,7 @@ export default function GarageCard({ garage, variant = 'vertical', featured = fa
 
           <div className="p-[14px]">
             {featured && garage.plan === 'premium' && (
-              <Badge variant="recommended" className="mb-2" />
+              <Badge variant="recommended" className="mb-2" locale={locale} />
             )}
             <h3 className="text-[15px] font-medium text-neutral-900 leading-tight group-hover:text-primary transition-colors line-clamp-1 mb-1">
               {garage.name}
@@ -58,7 +67,7 @@ export default function GarageCard({ garage, variant = 'vertical', featured = fa
             </div>
             <div className="flex flex-wrap gap-1 mb-2">
               {garage.services.slice(0, 3).map(s => (
-                <Badge key={s} variant="service" label={s} />
+                <Badge key={s} variant="service" label={serviceLabel(s)} locale={locale} />
               ))}
               {garage.services.length > 3 && (
                 <span className="text-[11px] text-neutral-500">+{garage.services.length - 3}</span>
@@ -74,7 +83,7 @@ export default function GarageCard({ garage, variant = 'vertical', featured = fa
                   KVK
                 </span>
               )}
-              {open ? <Badge variant="open" /> : <Badge variant="closed" />}
+              {open ? <Badge variant="open" locale={locale} /> : <Badge variant="closed" locale={locale} />}
             </div>
             <span className="text-[12px] text-neutral-500">{todayHours}</span>
           </div>
@@ -102,7 +111,7 @@ export default function GarageCard({ garage, variant = 'vertical', featured = fa
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
             <div>
-              {featured && <Badge variant="recommended" className="mb-1" />}
+              {featured && <Badge variant="recommended" className="mb-1" locale={locale} />}
               <h3 className="text-[16px] font-medium text-neutral-900 group-hover:text-primary transition-colors">
                 {garage.name}
               </h3>
@@ -119,16 +128,16 @@ export default function GarageCard({ garage, variant = 'vertical', featured = fa
             </div>
             <div className="text-right flex-shrink-0">
               <StarRating rating={garage.rating} size={13} showNumber />
-              <div className="text-[11px] text-neutral-500 mt-0.5">{garage.review_count} reviews</div>
+              <div className="text-[11px] text-neutral-500 mt-0.5">{garage.review_count} {t.reviews}</div>
             </div>
           </div>
 
           <div className="flex flex-wrap gap-1 mt-2">
             {garage.services.slice(0, 4).map(s => (
-              <Badge key={s} variant="service" label={s} />
+              <Badge key={s} variant="service" label={serviceLabel(s)} locale={locale} />
             ))}
             {garage.languages.includes('Engels') && (
-              <Badge variant="english" />
+              <Badge variant="english" locale={locale} />
             )}
           </div>
         </div>
@@ -139,10 +148,10 @@ export default function GarageCard({ garage, variant = 'vertical', featured = fa
           {garage.kvk_verified && (
             <span className="flex items-center gap-1 text-[11px] text-primary">
               <IconCircleCheck size={12} />
-              KVK geverifieerd
+              {t.kvk}
             </span>
           )}
-          {open ? <Badge variant="open" /> : <Badge variant="closed" />}
+          {open ? <Badge variant="open" locale={locale} /> : <Badge variant="closed" locale={locale} />}
           <span className="text-[12px] text-neutral-500 flex items-center gap-1">
             <IconClock size={12} />
             {todayHours}
@@ -161,14 +170,14 @@ export default function GarageCard({ garage, variant = 'vertical', featured = fa
             className="hidden sm:flex items-center gap-1 bg-transparent text-neutral-900 border border-neutral-100 hover:bg-surface rounded-md text-[12px] py-[6px] px-3 transition-colors"
           >
             <IconPhone size={13} />
-            Bellen
+            {t.call}
           </a>
           <Link
             href={href}
             onClick={e => e.stopPropagation()}
             className="bg-primary text-white hover:bg-primary-dark rounded-md text-[12px] py-[6px] px-3 transition-colors"
           >
-            Bekijk profiel
+            {t.viewProfile}
           </Link>
         </div>
       </div>

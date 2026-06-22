@@ -10,16 +10,63 @@ import { trackEvent } from '@/lib/analytics'
 interface ReviewModalProps {
   garageId: string
   garageName: string
+  locale?: 'nl' | 'en'
   onClose: () => void
   onSubmit?: () => void
 }
 
-const CATEGORIES = [
-  { key: 'eerlijkheid', label: 'Eerlijkheid' },
-  { key: 'prijs', label: 'Prijs/kwaliteit' },
-  { key: 'snelheid', label: 'Snelheid' },
-  { key: 'communicatie', label: 'Communicatie' },
-]
+const CATEGORY_KEYS = ['eerlijkheid', 'prijs', 'snelheid', 'communicatie'] as const
+
+const TEXT = {
+  nl: {
+    title: 'Review schrijven',
+    garageLabel: 'Garage',
+    overallRating: 'Uw beoordeling',
+    selectRating: 'Selecteer een beoordeling',
+    subRatings: 'Deelcijfers',
+    optional: '(optioneel)',
+    categories: { eerlijkheid: 'Eerlijkheid', prijs: 'Prijs/kwaliteit', snelheid: 'Snelheid', communicatie: 'Communicatie' },
+    yourExperience: 'Uw ervaringen',
+    textPlaceholder: 'Beschrijf uw ervaringen bij deze garage...',
+    invoiceNumber: 'Factuurnummer',
+    receiptNumber: 'Bonnummer / factuurnummer',
+    receiptHelpInvite: 'Vul uw factuurnummer in om uw bezoek te verifiëren.',
+    receiptHelpOrganic: 'Vul dit in en krijg een "Geverifieerd bezoek"-badge bij uw review.',
+    receiptPlaceholder: 'Bijv. 2024-00123',
+    reviewLanguage: 'Taal van review',
+    languages: { nl: 'Nederlands', en: 'Engels', de: 'Duits', fr: 'Frans' },
+    cancel: 'Annuleren',
+    sending: 'Verzenden...',
+    submit: 'Review verzenden',
+    submittedTitle: 'Review verzonden!',
+    submittedBody: 'Bedankt voor uw review. Hij is nu zichtbaar op het garageprofiel.',
+    close: 'Sluiten',
+  },
+  en: {
+    title: 'Write a review',
+    garageLabel: 'Garage',
+    overallRating: 'Your rating',
+    selectRating: 'Select a rating',
+    subRatings: 'Sub-ratings',
+    optional: '(optional)',
+    categories: { eerlijkheid: 'Honesty', prijs: 'Price/quality', snelheid: 'Speed', communicatie: 'Communication' },
+    yourExperience: 'Your experience',
+    textPlaceholder: 'Describe your experience at this garage...',
+    invoiceNumber: 'Invoice number',
+    receiptNumber: 'Receipt / invoice number',
+    receiptHelpInvite: 'Enter your invoice number to verify your visit.',
+    receiptHelpOrganic: 'Fill this in to get a "Verified visit" badge on your review.',
+    receiptPlaceholder: 'E.g. 2024-00123',
+    reviewLanguage: 'Review language',
+    languages: { nl: 'Dutch', en: 'English', de: 'German', fr: 'French' },
+    cancel: 'Cancel',
+    sending: 'Sending...',
+    submit: 'Submit review',
+    submittedTitle: 'Review submitted!',
+    submittedBody: 'Thank you for your review. It is now visible on the garage profile.',
+    close: 'Close',
+  },
+}
 
 function StarPicker({ value, onChange, size = 28 }: { value: number; onChange: (v: number) => void; size?: number }) {
   const [hover, setHover] = useState(0)
@@ -45,7 +92,8 @@ function StarPicker({ value, onChange, size = 28 }: { value: number; onChange: (
   )
 }
 
-export default function ReviewModal({ garageId, garageName, onClose, onSubmit }: ReviewModalProps) {
+export default function ReviewModal({ garageId, garageName, locale = 'nl', onClose, onSubmit }: ReviewModalProps) {
+  const t = TEXT[locale]
   const { user } = useAuth()
   const searchParams = useSearchParams()
   const inviteToken = searchParams.get('invite')
@@ -142,7 +190,7 @@ export default function ReviewModal({ garageId, garageName, onClose, onSubmit }:
       >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-100">
-          <h2 className="text-[16px] font-medium text-neutral-900">Review schrijven</h2>
+          <h2 className="text-[16px] font-medium text-neutral-900">{t.title}</h2>
           <button onClick={onClose} className="text-neutral-300 hover:text-neutral-900 transition-colors">
             <IconX size={20} />
           </button>
@@ -155,36 +203,36 @@ export default function ReviewModal({ garageId, garageName, onClose, onSubmit }:
                 <polyline points="20 6 9 17 4 12"/>
               </svg>
             </div>
-            <h3 className="text-[18px] font-medium text-neutral-900 mb-2">Review verzonden!</h3>
-            <p className="text-[14px] text-neutral-500">Bedankt voor uw review. Hij is nu zichtbaar op het garageprofiel.</p>
-            <button onClick={onClose} className="btn-primary mt-6">Sluiten</button>
+            <h3 className="text-[18px] font-medium text-neutral-900 mb-2">{t.submittedTitle}</h3>
+            <p className="text-[14px] text-neutral-500">{t.submittedBody}</p>
+            <button onClick={onClose} className="btn-primary mt-6">{t.close}</button>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="px-6 py-5 space-y-5">
             <div>
-              <p className="text-[14px] text-neutral-500 mb-1">Garage</p>
+              <p className="text-[14px] text-neutral-500 mb-1">{t.garageLabel}</p>
               <p className="text-[15px] font-medium text-neutral-900">{garageName}</p>
             </div>
 
             {/* Overall rating */}
             <div>
-              <label className="block text-[14px] font-medium text-neutral-900 mb-2">Uw beoordeling</label>
+              <label className="block text-[14px] font-medium text-neutral-900 mb-2">{t.overallRating}</label>
               <StarPicker value={rating} onChange={setRating} />
-              {rating === 0 && <p className="text-[12px] text-neutral-300 mt-1">Selecteer een beoordeling</p>}
+              {rating === 0 && <p className="text-[12px] text-neutral-300 mt-1">{t.selectRating}</p>}
             </div>
 
             {/* Sub-ratings */}
             <div>
               <label className="block text-[14px] font-medium text-neutral-900 mb-3">
-                Deelcijfers <span className="text-neutral-300 font-normal">(optioneel)</span>
+                {t.subRatings} <span className="text-neutral-300 font-normal">{t.optional}</span>
               </label>
               <div className="space-y-2">
-                {CATEGORIES.map(cat => (
-                  <div key={cat.key} className="flex items-center justify-between">
-                    <span className="text-[13px] text-neutral-500 w-28">{cat.label}</span>
+                {CATEGORY_KEYS.map(key => (
+                  <div key={key} className="flex items-center justify-between">
+                    <span className="text-[13px] text-neutral-500 w-28">{t.categories[key]}</span>
                     <StarPicker
-                      value={subRatings[cat.key] ?? 0}
-                      onChange={v => setSubRatings(prev => ({ ...prev, [cat.key]: v }))}
+                      value={subRatings[key] ?? 0}
+                      onChange={v => setSubRatings(prev => ({ ...prev, [key]: v }))}
                       size={18}
                     />
                   </div>
@@ -194,11 +242,11 @@ export default function ReviewModal({ garageId, garageName, onClose, onSubmit }:
 
             {/* Text */}
             <div>
-              <label className="block text-[14px] font-medium text-neutral-900 mb-2">Uw ervaringen</label>
+              <label className="block text-[14px] font-medium text-neutral-900 mb-2">{t.yourExperience}</label>
               <textarea
                 value={text}
                 onChange={e => setText(e.target.value)}
-                placeholder="Beschrijf uw ervaringen bij deze garage..."
+                placeholder={t.textPlaceholder}
                 className="w-full min-h-[100px] px-3 py-2.5 border border-[#D8D8D8] rounded-md text-[14px] text-neutral-900 outline-none focus:border-primary focus:shadow-[0_0_0_3px_rgba(15,110,86,0.12)] resize-none"
                 required
               />
@@ -208,21 +256,19 @@ export default function ReviewModal({ garageId, garageName, onClose, onSubmit }:
             <div>
               <label className="block text-[14px] font-medium text-neutral-900 mb-1">
                 {isInviteMode ? (
-                  'Factuurnummer'
+                  t.invoiceNumber
                 ) : (
-                  <>Bonnummer / factuurnummer <span className="text-neutral-300 font-normal">(optioneel)</span></>
+                  <>{t.receiptNumber} <span className="text-neutral-300 font-normal">{t.optional}</span></>
                 )}
               </label>
               <p className="text-[12px] text-neutral-500 mb-2">
-                {isInviteMode
-                  ? 'Vul uw factuurnummer in om uw bezoek te verifiëren.'
-                  : 'Vul dit in en krijg een "Geverifieerd bezoek"-badge bij uw review.'}
+                {isInviteMode ? t.receiptHelpInvite : t.receiptHelpOrganic}
               </p>
               <input
                 type="text"
                 value={bonnummer}
                 onChange={e => setBonnummer(e.target.value)}
-                placeholder="Bijv. 2024-00123"
+                placeholder={t.receiptPlaceholder}
                 className="input-field"
                 required={isInviteMode}
               />
@@ -230,16 +276,16 @@ export default function ReviewModal({ garageId, garageName, onClose, onSubmit }:
 
             {/* Language */}
             <div>
-              <label className="block text-[14px] font-medium text-neutral-900 mb-2">Taal van review</label>
+              <label className="block text-[14px] font-medium text-neutral-900 mb-2">{t.reviewLanguage}</label>
               <select
                 value={language}
                 onChange={e => setLanguage(e.target.value)}
                 className="input-field"
               >
-                <option value="nl">Nederlands</option>
-                <option value="en">Engels</option>
-                <option value="de">Duits</option>
-                <option value="fr">Frans</option>
+                <option value="nl">{t.languages.nl}</option>
+                <option value="en">{t.languages.en}</option>
+                <option value="de">{t.languages.de}</option>
+                <option value="fr">{t.languages.fr}</option>
               </select>
             </div>
 
@@ -251,14 +297,14 @@ export default function ReviewModal({ garageId, garageName, onClose, onSubmit }:
 
             <div className="flex gap-3 pt-2 border-t border-neutral-100">
               <button type="button" onClick={onClose} className="btn-ghost flex-1">
-                Annuleren
+                {t.cancel}
               </button>
               <button
                 type="submit"
                 disabled={rating === 0 || !text.trim() || loading || (isInviteMode && !bonnummer.trim())}
                 className={cn('btn-primary flex-1', (rating === 0 || !text.trim() || loading || (isInviteMode && !bonnummer.trim())) && 'opacity-50 cursor-not-allowed')}
               >
-                {loading ? 'Verzenden...' : 'Review verzenden'}
+                {loading ? t.sending : t.submit}
               </button>
             </div>
           </form>

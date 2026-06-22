@@ -6,20 +6,25 @@ import { getInitials, COUNTRY_FLAGS } from '@/lib/utils'
 
 interface ReviewCardProps {
   review: Review
+  locale?: 'nl' | 'en'
 }
 
-const CATEGORY_LABELS: Record<string, string> = {
-  eerlijkheid: 'Eerlijkheid',
-  prijs: 'Prijs',
-  snelheid: 'Snelheid',
-  communicatie: 'Communicatie',
-  engels: 'Engelstalig',
+const CATEGORY_LABELS = {
+  nl: { eerlijkheid: 'Eerlijkheid', prijs: 'Prijs', snelheid: 'Snelheid', communicatie: 'Communicatie', engels: 'Engelstalig' },
+  en: { eerlijkheid: 'Honesty', prijs: 'Price', snelheid: 'Speed', communicatie: 'Communication', engels: 'English-speaking' },
+} as const
+
+const TEXT = {
+  nl: { expat: 'Expat', reply: 'Reactie van de garage', verified: 'Geverifieerd bezoek' },
+  en: { expat: 'Expat', reply: 'Reply from the garage', verified: 'Verified visit' },
 }
 
-export default function ReviewCard({ review }: ReviewCardProps) {
+export default function ReviewCard({ review, locale = 'nl' }: ReviewCardProps) {
+  const t = TEXT[locale]
+  const categoryLabels: Record<string, string> = CATEGORY_LABELS[locale]
   const avatarBg = review.is_expat ? '#185FA5' : '#0F6E56'
   const flag = review.user_country ? COUNTRY_FLAGS[review.user_country] : undefined
-  const date = new Date(review.created_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })
+  const date = new Date(review.created_at).toLocaleDateString(locale === 'en' ? 'en-GB' : 'nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })
 
   return (
     <div className="border border-[#EFEFEF] rounded-[9px] p-[14px] bg-white">
@@ -38,7 +43,7 @@ export default function ReviewCard({ review }: ReviewCardProps) {
             <span className="text-[13px] font-medium text-neutral-900">{review.user_name}</span>
             {review.is_expat && flag && (
               <span className="inline-flex items-center gap-1 bg-info-light text-info text-[10px] font-medium px-2 py-[2px] rounded-sm">
-                {flag} Expat
+                {flag} {t.expat}
               </span>
             )}
           </div>
@@ -57,7 +62,7 @@ export default function ReviewCard({ review }: ReviewCardProps) {
         <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1">
           {review.ratings.map(r => (
             <div key={r.category} className="flex items-center justify-between text-[11px]">
-              <span className="text-neutral-500">{CATEGORY_LABELS[r.category]}</span>
+              <span className="text-neutral-500">{categoryLabels[r.category]}</span>
               <div className="flex items-center gap-1">
                 <div className="w-12 h-[3px] bg-neutral-100 rounded-full overflow-hidden">
                   <div className="h-full bg-primary rounded-full" style={{ width: `${(r.score / 5) * 100}%` }} />
@@ -72,7 +77,7 @@ export default function ReviewCard({ review }: ReviewCardProps) {
       {/* Garage reply */}
       {review.reply && (
         <div className="mt-3 bg-surface border-t border-[#F0F0F0] border-l-[3px] border-l-primary rounded-sm pl-3 pr-3 py-2">
-          <div className="text-[12px] font-medium text-primary mb-1">Reactie van de garage</div>
+          <div className="text-[12px] font-medium text-primary mb-1">{t.reply}</div>
           <p className="text-[12px] text-[#444] leading-[1.5]">{review.reply.text}</p>
         </div>
       )}
@@ -81,11 +86,11 @@ export default function ReviewCard({ review }: ReviewCardProps) {
       {review.verified && (
         <div className="mt-2 flex items-center gap-1 text-[11px] text-primary">
           <IconCircleCheck size={12} />
-          Geverifieerd bezoek
+          {t.verified}
         </div>
       )}
 
-      <ReportReviewButton reviewId={review.id} />
+      <ReportReviewButton reviewId={review.id} locale={locale} />
     </div>
   )
 }

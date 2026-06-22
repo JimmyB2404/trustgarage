@@ -7,16 +7,39 @@ interface BadgeProps {
   variant: BadgeVariant
   label?: string
   className?: string
+  locale?: 'nl' | 'en'
 }
 
-export default function Badge({ variant, label, className }: BadgeProps) {
+const TEXT = {
+  nl: {
+    kvk: 'KVK geverifieerd',
+    english: 'Engels gesproken',
+    premium: 'Premium lid',
+    recommended: 'Aanbevolen',
+    open: 'Nu open',
+    closed: 'Gesloten',
+    new: 'Nieuw',
+  },
+  en: {
+    kvk: 'KVK verified',
+    english: 'English spoken',
+    premium: 'Premium member',
+    recommended: 'Recommended',
+    open: 'Open now',
+    closed: 'Closed',
+    new: 'New',
+  },
+}
+
+export default function Badge({ variant, label, className, locale = 'nl' }: BadgeProps) {
+  const t = TEXT[locale]
   const base = 'inline-flex items-center gap-1 text-[11px] font-medium px-2 py-[3px] rounded-sm whitespace-nowrap'
 
   if (variant === 'kvk') {
     return (
       <span className={cn(base, 'bg-primary-light text-primary', className)}>
         <IconCircleCheck size={11} />
-        KVK geverifieerd
+        {t.kvk}
       </span>
     )
   }
@@ -25,7 +48,7 @@ export default function Badge({ variant, label, className }: BadgeProps) {
     return (
       <span className={cn(base, 'bg-info-light text-info', className)}>
         <IconLanguage size={11} />
-        Engels gesproken
+        {t.english}
       </span>
     )
   }
@@ -42,7 +65,7 @@ export default function Badge({ variant, label, className }: BadgeProps) {
     return (
       <span className={cn(base, 'bg-[#FAEEDA] text-[#633806]', className)}>
         <IconStar size={11} />
-        Premium lid
+        {t.premium}
       </span>
     )
   }
@@ -51,7 +74,7 @@ export default function Badge({ variant, label, className }: BadgeProps) {
     return (
       <span className={cn(base, 'bg-primary-light text-primary', className)}>
         <IconStar size={11} />
-        Aanbevolen
+        {t.recommended}
       </span>
     )
   }
@@ -60,7 +83,7 @@ export default function Badge({ variant, label, className }: BadgeProps) {
     return (
       <span className={cn('inline-flex items-center gap-1.5 text-[12px] font-medium text-primary', className)}>
         <span className="w-2 h-2 rounded-full bg-primary" />
-        Nu open
+        {t.open}
       </span>
     )
   }
@@ -69,7 +92,7 @@ export default function Badge({ variant, label, className }: BadgeProps) {
     return (
       <span className={cn('inline-flex items-center gap-1.5 text-[12px] font-medium text-neutral-500', className)}>
         <IconClock size={13} />
-        Gesloten
+        {t.closed}
       </span>
     )
   }
@@ -77,7 +100,7 @@ export default function Badge({ variant, label, className }: BadgeProps) {
   if (variant === 'new') {
     return (
       <span className={cn(base, 'bg-danger text-white rounded-full', className)}>
-        Nieuw
+        {t.new}
       </span>
     )
   }

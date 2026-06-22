@@ -15,6 +15,7 @@ import Badge from '@/components/ui/Badge'
 import StarRating from '@/components/ui/StarRating'
 import ReviewCard from '@/components/ui/ReviewCard'
 import { fetchGarageBySlug } from '@/lib/garages'
+import { SERVICE_LABELS_EN } from '@/lib/mock-data'
 import { getDayName, isGarageOpen, getTodayHours, getInitials } from '@/lib/utils'
 import type { Review } from '@/types'
 import ReviewButton from '@/components/ui/ReviewButton'
@@ -22,9 +23,7 @@ import ViewTracker from '@/components/ui/ViewTracker'
 import FavoriteButton from '@/components/ui/FavoriteButton'
 import GarageCTAButtons from '@/components/ui/GarageCTAButtons'
 
-// Zonder dit cachet Next.js de interne fetch()-calls van de Supabase client (rating, reviews,
-// verificatiestatus, favorieten...) over requests heen, ook al is dit al een dynamische route.
-// Resultaat: bezoekers zien verstopte/oude data totdat de cache toevallig verloopt.
+// Zonder dit cachet Next.js de interne fetch()-calls van de Supabase client over requests heen.
 export const dynamic = 'force-dynamic'
 
 interface PageProps {
@@ -32,11 +31,11 @@ interface PageProps {
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
-  eerlijkheid: 'Eerlijkheid',
-  prijs: 'Prijs',
-  snelheid: 'Snelheid',
-  communicatie: 'Communicatie',
-  engels: 'Engelstalig',
+  eerlijkheid: 'Honesty',
+  prijs: 'Price',
+  snelheid: 'Speed',
+  communicatie: 'Communication',
+  engels: 'English-speaking',
 }
 
 const SUBCATEGORIES = ['eerlijkheid', 'prijs', 'snelheid', 'communicatie', 'engels'] as const
@@ -51,19 +50,19 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const title = `${garage.name} — ${garage.city}`
   const description = garage.description
     ? garage.description.slice(0, 155)
-    : `${garage.name} in ${garage.city}. ${garage.review_count} reviews met ${garage.rating.toFixed(1)} sterren. Bekijk diensten, openingstijden en contactgegevens.`
+    : `${garage.name} in ${garage.city}. ${garage.review_count} reviews with ${garage.rating.toFixed(1)} stars. View services, opening hours and contact details.`
   const hasPhoto = garage.logo_url || garage.photos[0]
   const image = hasPhoto
     ? { url: hasPhoto, width: 800, height: 600 }
     : { url: '/opengraph-image', width: 1200, height: 630 }
-  const url = `/garage/${garage.slug}`
+  const url = `/en/garage/${garage.slug}`
 
   return {
     title,
     description,
     alternates: {
       canonical: url,
-      languages: { nl: url, en: `/en/garage/${garage.slug}` },
+      languages: { nl: `/garage/${garage.slug}`, en: url },
     },
     openGraph: {
       title: `${garage.name} | TrustGarage.nl`,
@@ -80,7 +79,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 }
 
-export default async function GarageProfilePage({ params }: PageProps) {
+export default async function GarageProfilePageEn({ params }: PageProps) {
   const garage = await getGarage(params.slug)
   if (!garage) notFound()
 
@@ -108,10 +107,7 @@ export default async function GarageProfilePage({ params }: PageProps) {
 
   let { data: rawReviews } = await fetchReviews()
 
-  // Waargenomen op productie: deze query komt soms leeg terug op het allereerste verzoek voor
-  // een garage met een net geplaatste review, terwijl garage.review_count (uit een andere query
-  // hierboven) al wel correct is. Eén herhaalde poging verhelpt dit consistent — wijst op een
-  // kortstondige staleness in de leespad, niet op een fout in deze query zelf.
+  // Zelfde transiente-staleness-mitigatie als de Nederlandse pagina — zie die voor uitleg.
   if ((rawReviews?.length ?? 0) === 0 && garage.review_count > 0) {
     await new Promise(resolve => setTimeout(resolve, 300))
     const retry = await fetchReviews()
@@ -138,7 +134,7 @@ export default async function GarageProfilePage({ params }: PageProps) {
     reply: r.garage_replies?.[0] ?? undefined,
   }))
   const open = isGarageOpen(garage.hours)
-  const todayHours = getTodayHours(garage.hours)
+  const todayHours = getTodayHours(garage.hours, 'en')
   const initials = getInitials(garage.name)
   const todayDayIndex = new Date().getDay()
 
@@ -162,7 +158,7 @@ export default async function GarageProfilePage({ params }: PageProps) {
     '@type': 'AutoRepair',
     name: garage.name,
     image: garage.logo_url || garage.photos[0] || undefined,
-    url: `https://trustgarage.nl/garage/${garage.slug}`,
+    url: `https://trustgarage.nl/en/garage/${garage.slug}`,
     telephone: garage.phone || undefined,
     email: garage.email || undefined,
     address: {
@@ -232,14 +228,14 @@ export default async function GarageProfilePage({ params }: PageProps) {
 
                 {/* Badges row */}
                 <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
-                  {garage.kvk_verified && <Badge variant="kvk" />}
-                  {garage.plan === 'premium' && <Badge variant="premium" />}
+                  {garage.kvk_verified && <Badge variant="kvk" locale="en" />}
+                  {garage.plan === 'premium' && <Badge variant="premium" locale="en" />}
                   {garage.plan === 'business' && (
                     <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-[3px] rounded-sm whitespace-nowrap bg-[#FAEEDA] text-[#633806]">
-                      Business lid
+                      Business member
                     </span>
                   )}
-                  {speaksEnglish && <Badge variant="english" />}
+                  {speaksEnglish && <Badge variant="english" locale="en" />}
                 </div>
 
                 {/* Location */}
@@ -257,9 +253,9 @@ export default async function GarageProfilePage({ params }: PageProps) {
                   </div>
                   <span className="text-neutral-300">·</span>
                   {open ? (
-                    <Badge variant="open" />
+                    <Badge variant="open" locale="en" />
                   ) : (
-                    <Badge variant="closed" />
+                    <Badge variant="closed" locale="en" />
                   )}
                   <span className="text-[12px] text-neutral-500">{todayHours}</span>
                 </div>
@@ -274,6 +270,7 @@ export default async function GarageProfilePage({ params }: PageProps) {
                 garageName={garage.name}
                 callClassName="btn-primary flex items-center justify-center gap-2"
                 appointmentClassName="btn-secondary flex items-center justify-center gap-2"
+                locale="en"
               />
               <div className="flex items-center justify-center gap-2 py-[7px]">
                 <FavoriteButton
@@ -282,7 +279,7 @@ export default async function GarageProfilePage({ params }: PageProps) {
                   showCount={true}
                   size={16}
                 />
-                <span className="text-[13px] text-neutral-500">Favoriet</span>
+                <span className="text-[13px] text-neutral-500">Favorite</span>
               </div>
             </div>
           </div>
@@ -299,7 +296,7 @@ export default async function GarageProfilePage({ params }: PageProps) {
                   key={i}
                   className="relative h-[120px] w-[160px] bg-neutral-100 rounded-lg flex-shrink-0 overflow-hidden"
                 >
-                  <Image src={photo} alt={`Foto ${i + 1}`} fill sizes="160px" className="object-cover" />
+                  <Image src={photo} alt={`Photo ${i + 1}`} fill sizes="160px" className="object-cover" />
                 </div>
               ))}
             </div>
@@ -310,7 +307,7 @@ export default async function GarageProfilePage({ params }: PageProps) {
                   key={i}
                   className="h-[120px] w-[160px] bg-neutral-100 rounded-lg flex-shrink-0 flex items-center justify-center text-[12px] text-neutral-300"
                 >
-                  Geen foto
+                  No photo
                 </div>
               ))}
             </div>
@@ -324,10 +321,10 @@ export default async function GarageProfilePage({ params }: PageProps) {
         {/* Main column */}
         <div className="flex-1 min-w-0 space-y-8">
 
-          {/* Over de garage */}
+          {/* About the garage */}
           <section>
             <h2 className="text-[20px] font-serif font-normal text-neutral-900 mb-3">
-              Over de garage
+              About the garage
             </h2>
             <div className="space-y-3">
               {garage.description.split('\n\n').map((paragraph, i) => (
@@ -338,10 +335,10 @@ export default async function GarageProfilePage({ params }: PageProps) {
             </div>
           </section>
 
-          {/* Beoordelingen */}
+          {/* Ratings */}
           <section>
             <h2 className="text-[20px] font-serif font-normal text-neutral-900 mb-4">
-              Beoordelingen
+              Ratings
             </h2>
             <div className="flex items-start gap-8 mb-6 flex-wrap">
               {/* Overall score */}
@@ -379,25 +376,25 @@ export default async function GarageProfilePage({ params }: PageProps) {
             </div>
           </section>
 
-          {/* Diensten */}
+          {/* Services */}
           <section>
             <h2 className="text-[20px] font-serif font-normal text-neutral-900 mb-4">
-              Diensten
+              Services
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {garage.services.map(service => (
                 <div key={service} className="flex items-center gap-2 text-[14px] text-neutral-900">
                   <IconCircleCheck size={16} className="text-primary flex-shrink-0" />
-                  {service}
+                  {SERVICE_LABELS_EN[service] ?? service}
                 </div>
               ))}
             </div>
           </section>
 
-          {/* Openingstijden */}
+          {/* Opening hours */}
           <section>
             <h2 className="text-[20px] font-serif font-normal text-neutral-900 mb-4">
-              Openingstijden
+              Opening hours
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-0 max-w-[400px]">
               {garage.hours.map(h => {
@@ -408,7 +405,7 @@ export default async function GarageProfilePage({ params }: PageProps) {
                     className="flex justify-between py-1.5 border-b border-neutral-100 text-[14px]"
                   >
                     <span className={isToday ? 'font-medium text-primary' : 'text-neutral-900'}>
-                      {getDayName(h.day)}
+                      {getDayName(h.day, 'en')}
                     </span>
                     <span
                       className={
@@ -419,7 +416,7 @@ export default async function GarageProfilePage({ params }: PageProps) {
                           : 'text-neutral-900'
                       }
                     >
-                      {h.closed ? 'Gesloten' : `${h.open} – ${h.close}`}
+                      {h.closed ? 'Closed' : `${h.open} – ${h.close}`}
                     </span>
                   </div>
                 )
@@ -434,21 +431,21 @@ export default async function GarageProfilePage({ params }: PageProps) {
                 Reviews ({garageReviews.length})
                 {verifiedCount > 0 && (
                   <span className="text-[13px] font-sans text-primary ml-2">
-                    · {verifiedCount} van {garageReviews.length} geverifieerd
+                    · {verifiedCount} of {garageReviews.length} verified
                   </span>
                 )}
               </h2>
-              <ReviewButton garageId={garage.id} garageName={garage.name} />
+              <ReviewButton garageId={garage.id} garageName={garage.name} locale="en" />
             </div>
             {garageReviews.length > 0 ? (
               <div className="space-y-4">
                 {garageReviews.map(review => (
-                  <ReviewCard key={review.id} review={review} />
+                  <ReviewCard key={review.id} review={review} locale="en" />
                 ))}
               </div>
             ) : (
               <p className="text-[14px] text-neutral-500">
-                Nog geen reviews voor deze garage. Wees de eerste!
+                No reviews yet for this garage. Be the first!
               </p>
             )}
           </section>
@@ -497,16 +494,17 @@ export default async function GarageProfilePage({ params }: PageProps) {
                 garageName={garage.name}
                 callClassName="btn-primary text-center w-full flex items-center justify-center gap-2"
                 appointmentClassName="btn-secondary w-full flex items-center justify-center gap-2"
+                locale="en"
               />
             </div>
           </div>
 
           {/* Location card */}
           <div className="card p-5">
-            <h3 className="text-[15px] font-medium text-neutral-900 mb-3">Locatie</h3>
+            <h3 className="text-[15px] font-medium text-neutral-900 mb-3">Location</h3>
             {process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY ? (
               <iframe
-                title={`Kaart van ${garage.name}`}
+                title={`Map of ${garage.name}`}
                 className="w-full h-[150px] rounded-lg border border-neutral-100"
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
@@ -514,7 +512,7 @@ export default async function GarageProfilePage({ params }: PageProps) {
               />
             ) : (
               <div className="h-[150px] bg-surface rounded-lg flex items-center justify-center text-neutral-300 text-[13px] border border-neutral-100 text-center px-4">
-                Kaart beschikbaar na Google Maps setup
+                Map available after Google Maps setup
               </div>
             )}
             <p className="text-[12px] text-neutral-500 mt-2">
@@ -532,6 +530,7 @@ export default async function GarageProfilePage({ params }: PageProps) {
           garageName={garage.name}
           callClassName="btn-ghost flex-1 flex items-center justify-center gap-2"
           appointmentClassName="btn-primary flex-1 flex items-center justify-center gap-2"
+          locale="en"
         />
         <FavoriteButton
           garageId={garage.id}
@@ -544,7 +543,7 @@ export default async function GarageProfilePage({ params }: PageProps) {
       {/* Extra bottom padding on mobile for sticky footer */}
       <div className="lg:hidden h-[72px]" />
 
-      <Footer />
+      <Footer locale="en" />
     </>
   )
 }

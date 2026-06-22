@@ -1,5 +1,5 @@
 import type { GarageHours } from '@/types'
-import { DAY_NAMES } from '@/lib/mock-data'
+import { DAY_NAMES, DAY_NAMES_EN } from '@/lib/mock-data'
 
 export function isGarageOpen(hours: GarageHours[]): boolean {
   const now = new Date()
@@ -11,15 +11,15 @@ export function isGarageOpen(hours: GarageHours[]): boolean {
   return current >= openH * 60 + openM && current < closeH * 60 + closeM
 }
 
-export function getTodayHours(hours: GarageHours[]): string {
+export function getTodayHours(hours: GarageHours[], locale: 'nl' | 'en' = 'nl'): string {
   const now = new Date()
   const today = hours.find(h => h.day === now.getDay())
-  if (!today || today.closed) return 'Vandaag gesloten'
+  if (!today || today.closed) return locale === 'en' ? 'Closed today' : 'Vandaag gesloten'
   return `${today.open} – ${today.close}`
 }
 
-export function getDayName(day: number): string {
-  return DAY_NAMES[day] ?? ''
+export function getDayName(day: number, locale: 'nl' | 'en' = 'nl'): string {
+  return (locale === 'en' ? DAY_NAMES_EN : DAY_NAMES)[day] ?? ''
 }
 
 export function formatRating(rating: number): string {

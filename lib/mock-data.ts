@@ -266,4 +266,31 @@ export const SERVICES = [
 
 export const LANGUAGES = ['Nederlands', 'Engels', 'Duits', 'Frans', 'Turks', 'Arabisch']
 
+// Weergavelabels voor Engelse pagina's — de waarden zelf (SERVICES/LANGUAGES) blijven Nederlands,
+// want dat zijn de letterlijke opgeslagen waarden in garage_services/garage_languages waarop
+// gefilterd wordt. Alleen het label dat de gebruiker ziet wordt vertaald.
+export const SERVICE_LABELS_EN: Record<string, string> = {
+  APK: 'APK',
+  Onderhoud: 'Maintenance',
+  Banden: 'Tyres',
+  Airco: 'AC',
+  Schade: 'Bodywork',
+  Spuiterij: 'Paintwork',
+  Remmen: 'Brakes',
+  Uitlaat: 'Exhaust',
+  Elektrisch: 'Electrical',
+  Electrisch: 'Electrical',
+  Occasionhandel: 'Used car sales',
+}
+
+export const LANGUAGE_LABELS_EN: Record<string, string> = {
+  Nederlands: 'Dutch',
+  Engels: 'English',
+  Duits: 'German',
+  Frans: 'French',
+  Turks: 'Turkish',
+  Arabisch: 'Arabic',
+}
+
 export const DAY_NAMES = ['Zondag', 'Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag', 'Zaterdag']
+export const DAY_NAMES_EN = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']

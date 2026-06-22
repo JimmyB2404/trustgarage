@@ -11,6 +11,12 @@ interface GarageCTAButtonsProps {
   garageName: string
   callClassName: string
   appointmentClassName: string
+  locale?: 'nl' | 'en'
+}
+
+const TEXT = {
+  nl: { call: 'Bellen', appointment: 'Afspraak maken' },
+  en: { call: 'Call', appointment: 'Request appointment' },
 }
 
 export default function GarageCTAButtons({
@@ -19,7 +25,9 @@ export default function GarageCTAButtons({
   garageName,
   callClassName,
   appointmentClassName,
+  locale = 'nl',
 }: GarageCTAButtonsProps) {
+  const t = TEXT[locale]
   const [showAppointment, setShowAppointment] = useState(false)
 
   return (
@@ -30,7 +38,7 @@ export default function GarageCTAButtons({
         onClick={() => trackEvent('call_click', { garage_id: garageId })}
       >
         <IconPhone size={16} />
-        Bellen
+        {t.call}
       </a>
       <button
         type="button"
@@ -41,12 +49,13 @@ export default function GarageCTAButtons({
         }}
       >
         <IconCalendar size={16} />
-        Afspraak maken
+        {t.appointment}
       </button>
       {showAppointment && (
         <AppointmentModal
           garageId={garageId}
           garageName={garageName}
+          locale={locale}
           onClose={() => setShowAppointment(false)}
         />
       )}

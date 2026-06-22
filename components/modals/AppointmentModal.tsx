@@ -7,10 +7,55 @@ import { useAuth } from '@/context/AuthContext'
 interface AppointmentModalProps {
   garageId: string
   garageName: string
+  locale?: 'nl' | 'en'
   onClose: () => void
 }
 
-export default function AppointmentModal({ garageId, garageName, onClose }: AppointmentModalProps) {
+const TEXT = {
+  nl: {
+    title: 'Afspraak aanvragen',
+    submittedTitle: 'Aanvraag verzonden!',
+    submittedBody: (name: string) => `${name} neemt zo snel mogelijk telefonisch of per e-mail contact met u op.`,
+    close: 'Sluiten',
+    notice: (name: string) => `Dit is geen directe boeking — ${name} neemt zelf contact met u op om de afspraak te bevestigen.`,
+    name: 'Naam',
+    phone: 'Telefoonnummer',
+    phonePlaceholder: '06 12345678',
+    email: 'E-mailadres',
+    optional: '(optioneel)',
+    preferredDate: 'Gewenste datum',
+    description: 'Omschrijving',
+    descriptionPlaceholder: 'Bijv. APK-keuring, bandenwissel...',
+    cancel: 'Annuleren',
+    sending: 'Versturen...',
+    submit: 'Aanvraag versturen',
+    genericError: 'Er is een fout opgetreden. Probeer opnieuw.',
+    networkError: 'Er is een fout opgetreden. Controleer je internetverbinding en probeer opnieuw.',
+  },
+  en: {
+    title: 'Request an appointment',
+    submittedTitle: 'Request sent!',
+    submittedBody: (name: string) => `${name} will contact you by phone or email as soon as possible.`,
+    close: 'Close',
+    notice: (name: string) => `This isn't a direct booking — ${name} will contact you themselves to confirm the appointment.`,
+    name: 'Name',
+    phone: 'Phone number',
+    phonePlaceholder: '06 12345678',
+    email: 'Email address',
+    optional: '(optional)',
+    preferredDate: 'Preferred date',
+    description: 'Description',
+    descriptionPlaceholder: 'E.g. MOT inspection, tyre change...',
+    cancel: 'Cancel',
+    sending: 'Sending...',
+    submit: 'Send request',
+    genericError: 'Something went wrong. Please try again.',
+    networkError: 'Something went wrong. Check your internet connection and try again.',
+  },
+}
+
+export default function AppointmentModal({ garageId, garageName, locale = 'nl', onClose }: AppointmentModalProps) {
+  const t = TEXT[locale]
   const { user } = useAuth()
 
   const [customerName, setCustomerName] = useState(user?.user_metadata?.name ?? '')
@@ -44,12 +89,12 @@ export default function AppointmentModal({ garageId, garageName, onClose }: Appo
       })
       const result = await res.json()
       if (!res.ok) {
-        setError(result.error ?? 'Er is een fout opgetreden. Probeer opnieuw.')
+        setError(result.error ?? t.genericError)
         return
       }
       setSubmitted(true)
     } catch {
-      setError('Er is een fout opgetreden. Controleer je internetverbinding en probeer opnieuw.')
+      setError(t.networkError)
     } finally {
       setLoading(false)
     }
@@ -62,7 +107,7 @@ export default function AppointmentModal({ garageId, garageName, onClose }: Appo
         style={{ animation: 'modalIn 200ms cubic-bezier(0.4,0,0.2,1)' }}
       >
         <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-100">
-          <h2 className="text-[16px] font-medium text-neutral-900">Afspraak aanvragen</h2>
+          <h2 className="text-[16px] font-medium text-neutral-900">{t.title}</h2>
           <button onClick={onClose} className="text-neutral-300 hover:text-neutral-900 transition-colors">
             <IconX size={20} />
           </button>
@@ -75,20 +120,20 @@ export default function AppointmentModal({ garageId, garageName, onClose }: Appo
                 <polyline points="20 6 9 17 4 12"/>
               </svg>
             </div>
-            <h3 className="text-[18px] font-medium text-neutral-900 mb-2">Aanvraag verzonden!</h3>
+            <h3 className="text-[18px] font-medium text-neutral-900 mb-2">{t.submittedTitle}</h3>
             <p className="text-[14px] text-neutral-500">
-              {garageName} neemt zo snel mogelijk telefonisch of per e-mail contact met u op.
+              {t.submittedBody(garageName)}
             </p>
-            <button onClick={onClose} className="btn-primary mt-6">Sluiten</button>
+            <button onClick={onClose} className="btn-primary mt-6">{t.close}</button>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
             <p className="text-[13px] text-neutral-500">
-              Dit is geen directe boeking — {garageName} neemt zelf contact met u op om de afspraak te bevestigen.
+              {t.notice(garageName)}
             </p>
 
             <div>
-              <label className="block text-[14px] font-medium text-neutral-900 mb-1">Naam</label>
+              <label className="block text-[14px] font-medium text-neutral-900 mb-1">{t.name}</label>
               <input
                 type="text"
                 value={customerName}
@@ -99,12 +144,12 @@ export default function AppointmentModal({ garageId, garageName, onClose }: Appo
             </div>
 
             <div>
-              <label className="block text-[14px] font-medium text-neutral-900 mb-1">Telefoonnummer</label>
+              <label className="block text-[14px] font-medium text-neutral-900 mb-1">{t.phone}</label>
               <input
                 type="tel"
                 value={customerPhone}
                 onChange={e => setCustomerPhone(e.target.value)}
-                placeholder="06 12345678"
+                placeholder={t.phonePlaceholder}
                 className="input-field"
                 required
               />
@@ -112,7 +157,7 @@ export default function AppointmentModal({ garageId, garageName, onClose }: Appo
 
             <div>
               <label className="block text-[14px] font-medium text-neutral-900 mb-1">
-                E-mailadres <span className="text-neutral-300 font-normal">(optioneel)</span>
+                {t.email} <span className="text-neutral-300 font-normal">{t.optional}</span>
               </label>
               <input
                 type="email"
@@ -124,7 +169,7 @@ export default function AppointmentModal({ garageId, garageName, onClose }: Appo
 
             <div>
               <label className="block text-[14px] font-medium text-neutral-900 mb-1">
-                Gewenste datum <span className="text-neutral-300 font-normal">(optioneel)</span>
+                {t.preferredDate} <span className="text-neutral-300 font-normal">{t.optional}</span>
               </label>
               <input
                 type="date"
@@ -136,12 +181,12 @@ export default function AppointmentModal({ garageId, garageName, onClose }: Appo
 
             <div>
               <label className="block text-[14px] font-medium text-neutral-900 mb-1">
-                Omschrijving <span className="text-neutral-300 font-normal">(optioneel)</span>
+                {t.description} <span className="text-neutral-300 font-normal">{t.optional}</span>
               </label>
               <textarea
                 value={message}
                 onChange={e => setMessage(e.target.value)}
-                placeholder="Bijv. APK-keuring, bandenwissel..."
+                placeholder={t.descriptionPlaceholder}
                 className="w-full min-h-[80px] px-3 py-2.5 border border-[#D8D8D8] rounded-md text-[14px] text-neutral-900 outline-none focus:border-primary focus:shadow-[0_0_0_3px_rgba(15,110,86,0.12)] resize-none"
               />
             </div>
@@ -154,14 +199,14 @@ export default function AppointmentModal({ garageId, garageName, onClose }: Appo
 
             <div className="flex gap-3 pt-2 border-t border-neutral-100">
               <button type="button" onClick={onClose} className="btn-ghost flex-1">
-                Annuleren
+                {t.cancel}
               </button>
               <button
                 type="submit"
                 disabled={!customerName.trim() || !customerPhone.trim() || loading}
                 className={cn('btn-primary flex-1', (!customerName.trim() || !customerPhone.trim() || loading) && 'opacity-50 cursor-not-allowed')}
               >
-                {loading ? 'Versturen...' : 'Aanvraag versturen'}
+                {loading ? t.sending : t.submit}
               </button>
             </div>
           </form>
