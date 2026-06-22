@@ -1,12 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import { SERVICES, LANGUAGES, DAY_NAMES } from '@/lib/mock-data'
 import { createClient } from '@/lib/supabase'
 import { validatePhotoSize } from '@/lib/utils'
+import { trackEvent } from '@/lib/analytics'
 import {
   IconCircleCheck,
   IconUpload,
@@ -66,6 +67,10 @@ export default function GarageAanmeldenPage() {
   const [kvkVerifying, setKvkVerifying] = useState(false)
   const [kvkVerified, setKvkVerified] = useState(false)
   const [kvkBusinessName, setKvkBusinessName] = useState('')
+
+  useEffect(() => {
+    trackEvent('registration_started')
+  }, [])
 
   const [logoFile, setLogoFile] = useState<File | null>(null)
   const [logoPreview, setLogoPreview] = useState<string | null>(null)
@@ -249,6 +254,7 @@ export default function GarageAanmeldenPage() {
         await fetch('/api/garage/photos', { method: 'POST', body: photosFormData }).catch(() => {})
       }
 
+      trackEvent('registration_completed', { garage_id: garageId })
       setStep(5)
     } catch {
       setError('Er is een fout opgetreden. Probeer opnieuw.')

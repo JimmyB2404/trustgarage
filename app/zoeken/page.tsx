@@ -8,6 +8,7 @@ import GarageCard from '@/components/ui/GarageCard'
 import { SERVICES, LANGUAGES } from '@/lib/mock-data'
 import { createClient } from '@/lib/supabase'
 import { transformGarage } from '@/lib/garages'
+import { trackEvent } from '@/lib/analytics'
 import {
   IconSearch,
   IconFilter,
@@ -102,6 +103,16 @@ function ZoekenContent() {
 
     return result
   }, [allGarages, query, selectedServices, selectedLanguages, minRating, kvkOnly, sortBy])
+
+  // Pas na 600ms stilte trackem — voorkomt dat elke toetsaanslag een eigen event wordt.
+  useEffect(() => {
+    const trimmed = query.trim()
+    if (!trimmed) return
+    const timeout = setTimeout(() => {
+      trackEvent('search_performed', { query: trimmed })
+    }, 600)
+    return () => clearTimeout(timeout)
+  }, [query])
 
   const totalPages = Math.max(1, Math.ceil(filteredGarages.length / RESULTS_PER_PAGE))
   const paginatedGarages = filteredGarages.slice(

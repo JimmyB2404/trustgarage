@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, Suspense } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import {
@@ -18,6 +18,7 @@ import { cn } from '@/lib/utils'
 import { useAuth } from '@/context/AuthContext'
 import { useGarage } from '@/hooks/useGarage'
 import { PLAN_PRICING } from '@/lib/plans'
+import { trackEvent } from '@/lib/analytics'
 
 // ─── Shared Dashboard Layout ──────────────────────────────────────────────────
 
@@ -242,6 +243,13 @@ function AbonnementContent() {
   const justSucceeded = searchParams.get('success') === 'true'
   const justCanceled = searchParams.get('canceled') === 'true'
 
+  useEffect(() => {
+    if (justSucceeded) {
+      trackEvent('upgrade_completed', { garage_id: garage?.id })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [justSucceeded])
+
   async function handleUpgrade(planKey: 'premium' | 'business') {
     if (!garage) return
     setCheckoutError('')
@@ -258,6 +266,7 @@ function AbonnementContent() {
         setCheckingOut(null)
         return
       }
+      trackEvent('upgrade_started', { garage_id: garage.id, plan: planKey })
       router.push(result.url)
     } catch {
       setCheckoutError('Kon geen betaalpagina openen. Probeer het opnieuw.')

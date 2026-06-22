@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import { AuthProvider } from '@/context/AuthContext'
+import CookieConsent from '@/components/ui/CookieConsent'
+import GoogleAnalytics from '@/components/ui/GoogleAnalytics'
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://trustgarage.nl'),
@@ -35,6 +37,8 @@ export default function RootLayout({
         <AuthProvider>
           {children}
         </AuthProvider>
+        <CookieConsent />
+        <GoogleAnalytics />
       </body>
     </html>
   )

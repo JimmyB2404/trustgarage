@@ -5,7 +5,6 @@ import type { Metadata } from 'next'
 import {
   IconPhone,
   IconMail,
-  IconCalendar,
   IconCircleCheck,
   IconExternalLink,
   IconMapPin,
@@ -21,6 +20,7 @@ import type { Review } from '@/types'
 import ReviewButton from '@/components/ui/ReviewButton'
 import ViewTracker from '@/components/ui/ViewTracker'
 import FavoriteButton from '@/components/ui/FavoriteButton'
+import GarageCTAButtons from '@/components/ui/GarageCTAButtons'
 
 // Zonder dit cachet Next.js de interne fetch()-calls van de Supabase client (rating, reviews,
 // verificatiestatus, favorieten...) over requests heen, ook al is dit al een dynamische route.
@@ -265,17 +265,12 @@ export default async function GarageProfilePage({ params }: PageProps) {
 
             {/* Right: CTA buttons (desktop only) */}
             <div className="hidden lg:flex flex-col gap-2 flex-shrink-0">
-              <a
-                href={`tel:${garage.phone}`}
-                className="btn-primary flex items-center justify-center gap-2"
-              >
-                <IconPhone size={16} />
-                Bellen
-              </a>
-              <button className="btn-secondary flex items-center justify-center gap-2">
-                <IconCalendar size={16} />
-                Afspraak maken
-              </button>
+              <GarageCTAButtons
+                phone={garage.phone}
+                garageId={garage.id}
+                callClassName="btn-primary flex items-center justify-center gap-2"
+                appointmentClassName="btn-secondary flex items-center justify-center gap-2"
+              />
               <div className="flex items-center justify-center gap-2 py-[7px]">
                 <FavoriteButton
                   garageId={garage.id}
@@ -492,17 +487,12 @@ export default async function GarageProfilePage({ params }: PageProps) {
               )}
             </div>
             <div className="mt-4 flex flex-col gap-2">
-              <a
-                href={`tel:${garage.phone}`}
-                className="btn-primary text-center w-full flex items-center justify-center gap-2"
-              >
-                <IconPhone size={16} />
-                Bellen
-              </a>
-              <button className="btn-secondary w-full flex items-center justify-center gap-2">
-                <IconCalendar size={16} />
-                Afspraak maken
-              </button>
+              <GarageCTAButtons
+                phone={garage.phone}
+                garageId={garage.id}
+                callClassName="btn-primary text-center w-full flex items-center justify-center gap-2"
+                appointmentClassName="btn-secondary w-full flex items-center justify-center gap-2"
+              />
             </div>
           </div>
 
@@ -531,17 +521,12 @@ export default async function GarageProfilePage({ params }: PageProps) {
 
       {/* Mobile sticky footer CTA */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-neutral-100 px-4 py-3 flex gap-3 z-40">
-        <a
-          href={`tel:${garage.phone}`}
-          className="btn-ghost flex-1 flex items-center justify-center gap-2"
-        >
-          <IconPhone size={16} />
-          Bellen
-        </a>
-        <button className="btn-primary flex-1 flex items-center justify-center gap-2">
-          <IconCalendar size={16} />
-          Afspraak maken
-        </button>
+        <GarageCTAButtons
+          phone={garage.phone}
+          garageId={garage.id}
+          callClassName="btn-ghost flex-1 flex items-center justify-center gap-2"
+          appointmentClassName="btn-primary flex-1 flex items-center justify-center gap-2"
+        />
         <FavoriteButton
           garageId={garage.id}
           initialCount={garage.favorites_count ?? 0}

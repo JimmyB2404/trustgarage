@@ -5,6 +5,7 @@ import { IconX, IconStarFilled, IconStar } from '@tabler/icons-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/context/AuthContext'
 import { createClient } from '@/lib/supabase'
+import { trackEvent } from '@/lib/analytics'
 
 interface ReviewModalProps {
   garageId: string
@@ -127,6 +128,7 @@ export default function ReviewModal({ garageId, garageName, onClose, onSubmit }:
       body: JSON.stringify({ reviewId: review.id }),
     }).catch(() => {})
 
+    trackEvent('review_submitted', { garage_id: garageId, rating })
     setSubmitted(true)
     setLoading(false)
     onSubmit?.()

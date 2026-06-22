@@ -321,6 +321,27 @@ uitnodigingsmail via Resend) — geen openstaande punten meer.
 
 ---
 
+## 12b. Google Analytics 4
+
+- [x] Cookie-consent-banner (`components/ui/CookieConsent.tsx`) — keuze (geaccepteerd/geweigerd)
+      onthouden in `localStorage`, GA4 laadt nooit vóór een expliciete "Accepteren"
+- [x] GA4-script conditioneel geladen (`components/ui/GoogleAnalytics.tsx`, via `next/script`) —
+      alleen als er consent is gegeven **en** `NEXT_PUBLIC_GA_MEASUREMENT_ID` is ingesteld; zonder
+      Measurement ID (huidige status) doet de component niets, geen crash
+- [x] Custom events getagd op de afgesproken conversiemomenten (`lib/analytics.ts`'s `trackEvent`):
+      `search_performed` (zoekopdracht, gedebounced op 600ms), `call_click`/`appointment_click`
+      (CTA-knoppen op garagepagina, via nieuw `GarageCTAButtons.tsx`), `registration_started`/
+      `registration_completed` (aanmeldwizard), `review_submitted`, `upgrade_started`/
+      `upgrade_completed` (Stripe-checkout)
+- [ ] GA4-property aanmaken op analytics.google.com + Measurement ID invullen in `.env.local` en
+      Vercel als `NEXT_PUBLIC_GA_MEASUREMENT_ID` (opdrachtgever, gepland 2026-06-23) — zodra dat
+      gebeurd is werkt alles hierboven automatisch, geen codewijziging nodig
+- Let op: cijfers komen in Google's eigen GA4-interface (analytics.google.com) terecht, niet in
+  `/admin`. Per-garage profielweergaven blijven via de bestaande `page_views`-tabel/dashboard lopen
+  — dat is een apart systeem en verandert niet door GA4
+
+---
+
 ## 13. Deployment & Productie
 
 - [x] Vercel project + GitHub gekoppeld (auto-deploy actief)
@@ -343,7 +364,8 @@ uitnodigingsmail via Resend) — geen openstaande punten meer.
 ## Prioriteiten voor lancering
 
 1. ~~**Smoke test**~~ — geslaagd op productie, 2026-06-21 (zie sectie 13)
-2. **Google Analytics 4** — bezoekersdata bijhouden, opdrachtgever pakt dit 2026-06-23 op
+2. **Google Analytics 4** — code volledig klaar (zie sectie 12b), wacht nog op de GA4-property +
+   Measurement ID van opdrachtgever (gepland 2026-06-23)
 3. **KVK API activeren** — zodra API key beschikbaar is (aangevraagd 2026-06-19, stand 2026-06-22:
    nog zeker 5 werkdagen)
 4. **Seed data** is geen lanceerblokker meer — opdrachtgever voert dit pas na lancering in, via
