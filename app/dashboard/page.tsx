@@ -317,9 +317,9 @@ export default function DashboardPage() {
           <p className="text-[13px] text-neutral-500 mb-4">Bereik meer klanten en bouw vertrouwen op.</p>
           <ul className="flex flex-col gap-2 mb-5">
             {[
-              'Uitgelicht in zoekresultaten',
-              'Onbeperkt foto\'s uploaden',
-              'Prioriteit klantenservice',
+              'Reageren op reviews',
+              'Statistieken & inzichten',
+              '"Aanbevolen"-badge in zoekresultaten',
             ].map((benefit) => (
               <li key={benefit} className="flex items-center gap-2 text-[13px] text-neutral-900">
                 <IconCircleCheck size={15} className="text-primary shrink-0" />

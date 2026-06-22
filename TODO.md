@@ -178,6 +178,26 @@
 - [x] Bug gefixt: upgrade-knop bleef oneindig laden bij een Stripe-fout i.p.v. een melding te tonen
       (ontbrekende try/catch in zowel de API-route als de frontend)
 - [x] BTW (21% NL/BE) bevestigd correct werkend op de live checkout-pagina
+- [x] Plannen-indeling (Gratis/Premium/Business) herzien en consistent gemaakt — bleek voorheen op
+      6 plekken (`/tarieven`, `/voor-garages`, `/dashboard/abonnement`'s twee arrays, de
+      "Upgrade naar Premium"-kaart op het dashboard, en de Engelse varianten) elk een ANDER verhaal
+      te vertellen, en bijna geen van de beloofde limieten (foto's, diensten, reviews) werd ook
+      maar ergens in de code afgedwongen. Nieuwe, overal identieke indeling:
+      - **Gratis**: vermelding + basisprofiel, KVK-badge, **onbeperkt** foto's/diensten/reviews
+        (bewuste keuze: een onvolledig gratis profiel schaadt niet alleen de garage maar ook het
+        vertrouwen in het platform zelf — zie ook Google Business Profile/TripAdvisor, die hetzelfde
+        doen)
+      - **Premium** (€39): + reageren op reviews, statistieken & inzichten, "Aanbevolen"-badge
+      - **Business** (€89): + concurrentie-inzicht t.o.v. regionaal gemiddelde, dedicated
+        accountmanager, vroege toegang tot nieuwe functies
+      "Meerdere locaties beheren" en "API-integratie" geschrapt van de Business-lijst — die
+      bestonden alleen in tekst, nergens in de code (geen datamodel, geen endpoint)
+      "Reageren op reviews" is nu het hoofdargument voor Premium (niet statistieken) — een garage
+      die niet kan reageren op een onterechte review voelt dat acuut, sterker dan abstracte cijfers
+      Openstaand, nog te bespreken: hoe de "Aanbevolen"-badge voor Premium/Business zich verhoudt
+      tot de zoekresultaten-sortering (nu puur visueel, geen hogere positie — zie onderstaande
+      discussie over een apart "Aanbevolen"-blok bovenaan i.p.v. de sortering zelf aanpassen, om de
+      eerlijke beoordeling-gebaseerde ranking niet te ondermijnen)
 
 ---
 

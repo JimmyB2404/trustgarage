@@ -163,8 +163,8 @@ const PLANS: PlanDef[] = [
     badgeClass: 'bg-[#F5F5F5] text-neutral-500',
     features: [
       'Basisprofiel met contactgegevens',
-      'Tot 5 reviews ontvangen',
-      'Standaard zoekplaatsing',
+      'Onbeperkt reviews ontvangen',
+      'Onbeperkt foto\'s en diensten',
       'KVK-verificatie badge',
     ],
   },
@@ -178,11 +178,9 @@ const PLANS: PlanDef[] = [
     badgeClass: 'bg-primary text-white',
     features: [
       'Alles van Gratis',
-      'Uitgelicht in zoekresultaten',
-      'Onbeperkt foto\'s uploaden',
-      'Onbeperkt reviews ontvangen',
+      'Reageren op reviews',
       'Statistieken & inzichten',
-      'Prioriteit klantenservice',
+      '"Aanbevolen"-badge in zoekresultaten',
     ],
   },
   {
@@ -195,11 +193,9 @@ const PLANS: PlanDef[] = [
     badgeClass: 'bg-[#FAEEDA] text-[#633806]',
     features: [
       'Alles van Premium',
-      'Meerdere locaties beheren',
-      'API-integratie',
+      'Concurrentie-inzicht t.o.v. regionaal gemiddelde',
       'Dedicated accountmanager',
-      'Aangepaste rapportages',
-      'Vroeg toegang tot nieuwe functies',
+      'Vroege toegang tot nieuwe functies',
     ],
   },
 ]
@@ -208,12 +204,12 @@ const PLANS: PlanDef[] = [
 const COMPARISON_FEATURES: { label: string; free: boolean | string; premium: boolean | string; business: boolean | string }[] = [
   { label: 'Basisprofiel', free: true, premium: true, business: true },
   { label: 'KVK-verificatie', free: true, premium: true, business: true },
-  { label: 'Reviews ontvangen', free: 'Max. 5', premium: 'Onbeperkt', business: 'Onbeperkt' },
-  { label: "Foto's uploaden", free: 'Max. 3', premium: 'Onbeperkt', business: 'Onbeperkt' },
-  { label: 'Uitgelicht in zoeken', free: false, premium: true, business: true },
+  { label: 'Reviews ontvangen', free: 'Onbeperkt', premium: 'Onbeperkt', business: 'Onbeperkt' },
+  { label: "Foto's & diensten", free: 'Onbeperkt', premium: 'Onbeperkt', business: 'Onbeperkt' },
+  { label: 'Reageren op reviews', free: false, premium: true, business: true },
   { label: 'Statistieken', free: false, premium: true, business: true },
-  { label: 'Meerdere locaties', free: false, premium: false, business: true },
-  { label: 'API-integratie', free: false, premium: false, business: true },
+  { label: '"Aanbevolen"-badge', free: false, premium: true, business: true },
+  { label: 'Concurrentie-inzicht', free: false, premium: false, business: true },
   { label: 'Accountmanager', free: false, premium: false, business: true },
 ]
 
