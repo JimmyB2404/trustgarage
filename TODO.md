@@ -392,6 +392,19 @@ uitnodigingsmail via Resend) — geen openstaande punten meer.
 
 ---
 
+## Voor morgen (2026-06-24)
+
+- [ ] Privacybeleid-pagina (`/privacy`) — wordt al gelinkt vanuit de footer op elke pagina, maar
+      bestaat nog niet (dode link, 404)
+- [ ] Algemene voorwaarden-pagina (`/voorwaarden`) — zelfde situatie, al gelinkt vanuit de footer,
+      bestaat nog niet (dode link, 404)
+- [ ] Profielvolledigheid op het dashboard-overzicht uitbreiden: toont nu alleen een percentage
+      (`computeCompleteness` in `app/dashboard/page.tsx`) met een generieke tekst. Graag concreet
+      met bullet points tonen wélke velden nog ontbreken om naar 100% te gaan (bv. "Voeg een
+      omschrijving toe", "Voeg openingstijden toe")
+
+---
+
 ## Prioriteiten voor lancering
 
 1. ~~**Smoke test**~~ — geslaagd op productie, 2026-06-21 (zie sectie 13)
