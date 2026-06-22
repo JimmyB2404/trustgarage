@@ -333,9 +333,9 @@ uitnodigingsmail via Resend) — geen openstaande punten meer.
       (CTA-knoppen op garagepagina, via nieuw `GarageCTAButtons.tsx`), `registration_started`/
       `registration_completed` (aanmeldwizard), `review_submitted`, `upgrade_started`/
       `upgrade_completed` (Stripe-checkout)
-- [ ] GA4-property aanmaken op analytics.google.com + Measurement ID invullen in `.env.local` en
-      Vercel als `NEXT_PUBLIC_GA_MEASUREMENT_ID` (opdrachtgever, gepland 2026-06-23) — zodra dat
-      gebeurd is werkt alles hierboven automatisch, geen codewijziging nodig
+- [x] GA4-property aangemaakt op analytics.google.com + Measurement ID (`G-JS0L91R4RD`) ingevuld in
+      `.env.local` en Vercel — geverifieerd live op productie (2026-06-23): geen GA-verkeer vóór
+      consent, `gtag.js` laadt correct na "Accepteren" en er kwam een collect-hit binnen bij Google
 - Let op: cijfers komen in Google's eigen GA4-interface (analytics.google.com) terecht, niet in
   `/admin`. Per-garage profielweergaven blijven via de bestaande `page_views`-tabel/dashboard lopen
   — dat is een apart systeem en verandert niet door GA4
@@ -364,8 +364,7 @@ uitnodigingsmail via Resend) — geen openstaande punten meer.
 ## Prioriteiten voor lancering
 
 1. ~~**Smoke test**~~ — geslaagd op productie, 2026-06-21 (zie sectie 13)
-2. **Google Analytics 4** — code volledig klaar (zie sectie 12b), wacht nog op de GA4-property +
-   Measurement ID van opdrachtgever (gepland 2026-06-23)
+2. ~~**Google Analytics 4**~~ — live en geverifieerd op productie, 2026-06-23 (zie sectie 12b)
 3. **KVK API activeren** — zodra API key beschikbaar is (aangevraagd 2026-06-19, stand 2026-06-22:
    nog zeker 5 werkdagen)
 4. **Seed data** is geen lanceerblokker meer — opdrachtgever voert dit pas na lancering in, via
