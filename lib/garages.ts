@@ -21,6 +21,8 @@ export function transformGarage(raw: any): Garage {
     email: raw.email ?? '',
     website: raw.website ?? '',
     plan: raw.plan ?? 'free',
+    latitude: raw.latitude ?? null,
+    longitude: raw.longitude ?? null,
     rating: Math.round(rating * 10) / 10,
     review_count: reviews.length,
     services: (raw.garage_services ?? []).map((s: { service_name: string }) => s.service_name),

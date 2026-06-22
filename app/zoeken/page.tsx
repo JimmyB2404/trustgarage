@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import GarageCard from '@/components/ui/GarageCard'
+import SearchResultsMap from '@/components/ui/SearchResultsMap'
 import { SERVICES, LANGUAGES } from '@/lib/mock-data'
 import { createClient } from '@/lib/supabase'
 import { transformGarage } from '@/lib/garages'
@@ -18,6 +19,8 @@ import {
   IconChevronLeft,
   IconChevronRight,
   IconShieldCheck,
+  IconMap,
+  IconList,
 } from '@tabler/icons-react'
 import type { Garage } from '@/types'
 
@@ -36,6 +39,7 @@ function ZoekenContent() {
   const [sortBy, setSortBy] = useState<'rating' | 'reviews' | 'distance'>('rating')
   const [showFilters, setShowFilters] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
+  const [mobileView, setMobileView] = useState<'list' | 'map'>('list')
 
   useEffect(() => {
     const supabase = createClient()
@@ -422,8 +426,16 @@ function ZoekenContent() {
                 <span className="font-medium text-neutral-900">{filteredGarages.length}</span>{' '}
                 {filteredGarages.length === 1 ? 'garage gevonden' : 'garages gevonden'}
               </p>
-              {/* Mobile sort */}
+              {/* Mobile sort + lijst/kaart toggle */}
               <div className="lg:hidden flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setMobileView(v => (v === 'list' ? 'map' : 'list'))}
+                  className="flex items-center gap-1.5 text-[12px] text-neutral-900 border border-neutral-100 rounded-lg px-3 py-[6px]"
+                >
+                  {mobileView === 'list' ? <IconMap size={14} /> : <IconList size={14} />}
+                  {mobileView === 'list' ? 'Kaart' : 'Lijst'}
+                </button>
                 <div className="relative">
                   <select
                     value={sortBy}
@@ -444,8 +456,15 @@ function ZoekenContent() {
               </div>
             </div>
 
+            {/* Mobile kaartweergave — vervangt de lijst volledig, geen split zoals op desktop */}
+            {mobileView === 'map' && (
+              <div className="lg:hidden h-[calc(100dvh-260px)] mb-4">
+                <SearchResultsMap garages={filteredGarages} />
+              </div>
+            )}
+
             {/* Results list */}
-            {paginatedGarages.length > 0 ? (
+            {mobileView === 'map' ? null : paginatedGarages.length > 0 ? (
               <div className="flex flex-col gap-4">
                 {paginatedGarages.map(garage => (
                   <GarageCard
@@ -473,7 +492,7 @@ function ZoekenContent() {
             )}
 
             {/* Pagination */}
-            {totalPages > 1 && (
+            {mobileView !== 'map' && totalPages > 1 && (
               <div className="flex items-center justify-center gap-1.5 mt-10">
                 <button
                   onClick={() => handlePageChange(currentPage - 1)}
@@ -517,6 +536,13 @@ function ZoekenContent() {
               </div>
             )}
           </main>
+
+          {/* Kaart — desktop: permanente, sticky kolom naast de lijst */}
+          <aside className="hidden lg:block w-[420px] flex-shrink-0">
+            <div className="sticky top-[116px] h-[calc(100vh-140px)]">
+              <SearchResultsMap garages={filteredGarages} />
+            </div>
+          </aside>
         </div>
       </div>
 

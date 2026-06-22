@@ -384,8 +384,13 @@ uitnodigingsmail via Resend) — geen openstaande punten meer.
 - [x] `next/image` optimaliseren met `sizes` attribuut + lazy loading foto strips — zie sectie 12
 - [x] Google Maps embed op garageprofiel — vervangt placeholder, valt netjes terug als de key
       ontbreekt
-- [ ] Kaartweergave zoekresultaten (meerdere markers — vereist Maps JavaScript API i.p.v. de
-      simpele Embed API die nu gebruikt wordt)
+- [x] Kaartweergave zoekresultaten (meerdere markers, via `@react-google-maps/api`'s Maps
+      JavaScript API i.p.v. de simpele Embed API). Desktop: permanente split, lijst + sticky kaart
+      naast elkaar. Mobiel: Lijst/Kaart-toggle (nooit beide tegelijk). `garages` kreeg nieuwe
+      `latitude`/`longitude`-kolommen (`supabase/migration_garage_coordinates.sql`), gevuld via
+      gratis OpenStreetMap-geocoding (`lib/geocode.ts` — Google's Geocoding API accepteert geen
+      server-side calls met een referrer-restricted key) bij aanmelden/adreswijziging. Bestaande
+      11 garages eenmalig achteraf geocodeerd (9 gelukt, 2 nep-testadressen gemist, verwacht)
 - [ ] Afspraak maken functionaliteit
 - [ ] Volwaardig moderatie-dashboard (garages/gebruikers beheren, content verwijderen) — er bestaat
       nu alleen een admin-panel specifiek voor reviewverificatie (`/admin`)

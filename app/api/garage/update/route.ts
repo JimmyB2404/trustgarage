@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
+import { geocodeAddress } from '@/lib/geocode'
 
 export async function PUT(req: Request) {
   const { garageId, naam, adres, stad, telefoon, email, website, description, services, languages, hours } = await req.json()
@@ -10,6 +11,12 @@ export async function PUT(req: Request) {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
+
+  const { data: existing } = await supabase
+    .from('garages')
+    .select('address, city')
+    .eq('id', garageId)
+    .single()
 
   const { error: garageError } = await supabase
     .from('garages')
@@ -25,6 +32,14 @@ export async function PUT(req: Request) {
     .eq('id', garageId)
 
   if (garageError) return NextResponse.json({ error: garageError.message }, { status: 400 })
+
+  // Alleen opnieuw geocoderen als het adres echt veranderd is — niet op elke profielwijziging.
+  if (existing && (existing.address !== adres || existing.city !== stad)) {
+    const coords = await geocodeAddress(adres, stad)
+    if (coords) {
+      await supabase.from('garages').update(coords).eq('id', garageId)
+    }
+  }
 
   await supabase.from('garage_services').delete().eq('garage_id', garageId)
   if (services?.length > 0) {

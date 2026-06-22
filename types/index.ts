@@ -31,6 +31,8 @@ export interface Garage {
   created_at: string
   distance?: number
   is_open?: boolean
+  latitude?: number | null
+  longitude?: number | null
 }
 
 export interface ReviewRating {

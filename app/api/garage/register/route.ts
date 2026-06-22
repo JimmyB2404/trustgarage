@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
+import { geocodeAddress } from '@/lib/geocode'
 
 function slugify(text: string): string {
   return text
@@ -68,6 +69,13 @@ export async function POST(req: Request) {
   }
 
   const garageId = garage.id
+
+  // Coördinaten ophalen voor kaartweergave — best-effort, blokkeert de aanmelding niet als
+  // geocoding mislukt (bv. onvindbaar adres); de garage komt dan gewoon niet op de kaart te staan.
+  const coords = await geocodeAddress(adres, stad)
+  if (coords) {
+    await supabase.from('garages').update(coords).eq('id', garageId)
+  }
 
   // 3. Diensten opslaan
   if (services?.length > 0) {
