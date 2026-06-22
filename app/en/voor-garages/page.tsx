@@ -57,7 +57,7 @@ const plans = [
     notIncluded: [
       'Reply to reviews',
       'Statistics and insights',
-      '"Recommended" badge',
+      '"Featured" badge',
     ],
   },
   {
@@ -72,7 +72,7 @@ const plans = [
       'Everything in Free',
       'Reply to reviews',
       'Statistics and insights',
-      '"Recommended" badge in search results',
+      '"Featured" badge in search results',
     ],
     notIncluded: [
       'Competitive insights (regional)',

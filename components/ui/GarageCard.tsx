@@ -63,7 +63,7 @@ export default function GarageCard({
           </div>
 
           <div className="p-[14px]">
-            {featured && garage.plan === 'premium' && (
+            {featured && (
               <Badge variant="recommended" className="mb-2" locale={locale} />
             )}
             <h3 className="text-[15px] font-medium text-neutral-900 leading-tight group-hover:text-primary transition-colors line-clamp-1 mb-1">

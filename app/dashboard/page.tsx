@@ -319,7 +319,7 @@ export default function DashboardPage() {
             {[
               'Reageren op reviews',
               'Statistieken & inzichten',
-              '"Aanbevolen"-badge in zoekresultaten',
+              '"Uitgelicht"-badge in zoekresultaten',
             ].map((benefit) => (
               <li key={benefit} className="flex items-center gap-2 text-[13px] text-neutral-900">
                 <IconCircleCheck size={15} className="text-primary shrink-0" />

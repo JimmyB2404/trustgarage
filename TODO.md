@@ -187,17 +187,28 @@
         (bewuste keuze: een onvolledig gratis profiel schaadt niet alleen de garage maar ook het
         vertrouwen in het platform zelf — zie ook Google Business Profile/TripAdvisor, die hetzelfde
         doen)
-      - **Premium** (€39): + reageren op reviews, statistieken & inzichten, "Aanbevolen"-badge
+      - **Premium** (€39): + reageren op reviews, statistieken & inzichten, "Uitgelicht"-badge
       - **Business** (€89): + concurrentie-inzicht t.o.v. regionaal gemiddelde, dedicated
         accountmanager, vroege toegang tot nieuwe functies
       "Meerdere locaties beheren" en "API-integratie" geschrapt van de Business-lijst — die
       bestonden alleen in tekst, nergens in de code (geen datamodel, geen endpoint)
       "Reageren op reviews" is nu het hoofdargument voor Premium (niet statistieken) — een garage
       die niet kan reageren op een onterechte review voelt dat acuut, sterker dan abstracte cijfers
-      Openstaand, nog te bespreken: hoe de "Aanbevolen"-badge voor Premium/Business zich verhoudt
-      tot de zoekresultaten-sortering (nu puur visueel, geen hogere positie — zie onderstaande
-      discussie over een apart "Aanbevolen"-blok bovenaan i.p.v. de sortering zelf aanpassen, om de
-      eerlijke beoordeling-gebaseerde ranking niet te ondermijnen)
+- [x] Premium/Business-uitlichting op `/zoeken` + `/en/zoeken` nu ook echt functioneel, niet meer
+      puur visueel: betalende garages (Premium/Business) staan altijd boven Gratis-garages, voor
+      elke sorteeroptie (beoordeling/reviews/dichtsbij). Binnen die twee groepen blijft de
+      sortering zelf eerlijk/ongewijzigd — betalen bepaalt dus alleen óf je in de uitgelichte groep
+      zit, niet je positie daarbinnen (een slecht-beoordeelde Business-garage staat niet boven een
+      beter-beoordeelde Premium-garage). Voorkomt dat een betalende garage met een matige score een
+      betere gratis garage in de "eerlijke" ranking voorbij gaat, wat de reviews-gebaseerde
+      geloofwaardigheid van het platform zou ondermijnen
+      Badge hernoemd van "Aanbevolen" naar "Uitgelicht" op alle plekken (kaarten + alle
+      pricing-pagina's, NL en EN)
+      Bug gevonden en gefixt tijdens het bouwen: de verticale GarageCard (gebruikt op de homepage)
+      toonde de badge alleen bij `plan === 'premium'`, een overgebleven extra check die Business-
+      garages onterecht uitsloot — `featured` was al genoeg
+      Getest met de bestaande mix van Premium/Gratis-testgarages: een Gratis-garage met de hoogste
+      beoordeling van de hele lijst (5.0) staat na het sorteren correct ÓNDER alle Premium-garages
 
 ---
 

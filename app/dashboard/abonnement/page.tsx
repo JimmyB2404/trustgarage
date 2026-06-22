@@ -180,7 +180,7 @@ const PLANS: PlanDef[] = [
       'Alles van Gratis',
       'Reageren op reviews',
       'Statistieken & inzichten',
-      '"Aanbevolen"-badge in zoekresultaten',
+      '"Uitgelicht"-badge in zoekresultaten',
     ],
   },
   {
@@ -208,7 +208,7 @@ const COMPARISON_FEATURES: { label: string; free: boolean | string; premium: boo
   { label: "Foto's & diensten", free: 'Onbeperkt', premium: 'Onbeperkt', business: 'Onbeperkt' },
   { label: 'Reageren op reviews', free: false, premium: true, business: true },
   { label: 'Statistieken', free: false, premium: true, business: true },
-  { label: '"Aanbevolen"-badge', free: false, premium: true, business: true },
+  { label: '"Uitgelicht"-badge', free: false, premium: true, business: true },
   { label: 'Concurrentie-inzicht', free: false, premium: false, business: true },
   { label: 'Accountmanager', free: false, premium: false, business: true },
 ]

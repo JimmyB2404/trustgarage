@@ -57,7 +57,7 @@ const plans = [
     notIncluded: [
       'Reageren op reviews',
       'Statistieken en inzichten',
-      '"Aanbevolen"-badge',
+      '"Uitgelicht"-badge',
     ],
   },
   {
@@ -72,7 +72,7 @@ const plans = [
       'Alles in Gratis',
       'Reageren op reviews',
       'Statistieken en inzichten',
-      '"Aanbevolen"-badge in zoekresultaten',
+      '"Uitgelicht"-badge in zoekresultaten',
     ],
     notIncluded: [
       'Concurrentie-inzicht (regionaal)',

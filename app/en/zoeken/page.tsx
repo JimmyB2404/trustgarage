@@ -138,7 +138,13 @@ function ZoekenContentEn() {
       result = result.filter(g => g.distance !== undefined && g.distance <= maxDistance)
     }
 
+    // Paying garages (Premium/Business) always come before Free — sorted normally within each
+    // group. Paying only decides whether you're in the featured group, not your rank within it.
+    const isPaying = (g: Garage) => g.plan === 'premium' || g.plan === 'business'
     result.sort((a, b) => {
+      const paidDiff = Number(!isPaying(a)) - Number(!isPaying(b))
+      if (paidDiff !== 0) return paidDiff
+
       if (sortBy === 'rating') return b.rating - a.rating
       if (sortBy === 'reviews') return b.review_count - a.review_count
       if (sortBy === 'distance') {
