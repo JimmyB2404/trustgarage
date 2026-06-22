@@ -64,6 +64,7 @@ export async function fetchGarages(limit?: number): Promise<Garage[]> {
   let query = supabase
     .from('garages')
     .select(GARAGE_SELECT)
+    .eq('suspended', false)
     .order('plan', { ascending: false })
 
   if (limit) query = query.limit(limit)
@@ -83,6 +84,7 @@ export async function fetchGarageBySlug(slug: string): Promise<Garage | null> {
     .from('garages')
     .select(GARAGE_SELECT)
     .eq('slug', slug)
+    .eq('suspended', false)
     .single()
 
   return data ? transformGarage(data) : null

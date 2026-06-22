@@ -13,6 +13,9 @@ export default async function AdminStatsPage() {
         <Link href="/admin/verificaties" className="text-neutral-500 hover:text-neutral-900">
           Verificaties
         </Link>
+        <Link href="/admin/reviews" className="text-neutral-500 hover:text-neutral-900">Reviews</Link>
+        <Link href="/admin/garages" className="text-neutral-500 hover:text-neutral-900">Garages</Link>
+        <Link href="/admin/gebruikers" className="text-neutral-500 hover:text-neutral-900">Gebruikers</Link>
       </nav>
       <h1 className="text-[22px] font-medium text-neutral-900 mb-1">Garage-overzicht</h1>
       <p className="text-[13px] text-neutral-500 mb-6">

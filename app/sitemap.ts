@@ -12,6 +12,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const { data: garages } = await supabase
     .from('garages')
     .select('slug, created_at')
+    .eq('suspended', false)
 
   const garageEntries: MetadataRoute.Sitemap = (garages ?? []).map((g) => ({
     url: `${BASE_URL}/garage/${g.slug}`,

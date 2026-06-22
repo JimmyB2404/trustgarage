@@ -1,6 +1,7 @@
 import { IconCircleCheck } from '@tabler/icons-react'
 import type { Review } from '@/types'
 import StarRating from './StarRating'
+import ReportReviewButton from './ReportReviewButton'
 import { getInitials, COUNTRY_FLAGS } from '@/lib/utils'
 
 interface ReviewCardProps {
@@ -83,6 +84,8 @@ export default function ReviewCard({ review }: ReviewCardProps) {
           Geverifieerd bezoek
         </div>
       )}
+
+      <ReportReviewButton reviewId={review.id} />
     </div>
   )
 }

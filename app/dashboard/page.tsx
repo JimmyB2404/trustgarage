@@ -183,6 +183,13 @@ export default function DashboardPage() {
     <DashboardLayout reviewBadge={unanswered}>
       <h3 className="text-[22px] font-medium text-neutral-900 mb-6">Overzicht</h3>
 
+      {garage?.suspended && (
+        <p className="text-[13px] text-danger bg-danger/5 border border-danger/20 rounded-lg px-4 py-3 mb-5">
+          Uw garage is momenteel geschorst en niet zichtbaar in zoekresultaten of op uw
+          profielpagina. Neem contact op met TrustGarage voor meer informatie.
+        </p>
+      )}
+
       {/* Metric cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
         {/* Profielweergaven */}

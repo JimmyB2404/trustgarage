@@ -406,8 +406,26 @@ uitnodigingsmail via Resend) — geen openstaande punten meer.
       routes). Getest met een tijdelijk wegwerp-testaccount: gast-aanvraag, ingelogde aanvraag
       (incl. voorinvullen naam/e-mail uit sessie), en de hele dashboard-flow inclusief
       status-wijziging — alle drie end-to-end bevestigd, daarna opgeruimd
-- [ ] Volwaardig moderatie-dashboard (garages/gebruikers beheren, content verwijderen) — er bestaat
-      nu alleen een admin-panel specifiek voor reviewverificatie (`/admin`)
+- [x] Volwaardig moderatie-dashboard — drie nieuwe secties toegevoegd aan `/admin`, allemaal
+      bereikbaar via dezelfde nav als Statistieken/Verificaties:
+      - **Reviews** (`/admin/reviews`): overzicht van alle reviews met verwijderknop, plus een
+        "Gerapporteerd"-filter. Klanten kunnen nu zelf een review rapporteren (knop onderaan elke
+        review op de garagepagina, geen login vereist) via een nieuwe `review_reports`-tabel —
+        zelfde "geen publieke RLS-policy"-patroon als `review_invitations`/`appointment_requests`
+      - **Garages** (`/admin/garages`): overzicht van alle garages met Schorsen (verdwijnt uit
+        zoekresultaten/profiel/sitemap, eigenaar kan nog wel inloggen op het dashboard — met een
+        duidelijke melding daar) en Verwijderen (definitief, cascadeert naar reviews/foto's/etc.
+        via bestaande FK's). Nieuwe `garages.suspended`-kolom, gefilterd in `lib/garages.ts`,
+        `/zoeken` en `app/sitemap.ts`
+      - **Gebruikers** (`/admin/gebruikers`): overzicht van alle accounts (klant of garage-
+        eigenaar), met blokkeren/deblokkeren via Supabase Auth's eigen ban-functionaliteit
+      Eén bekende beperking: verwijderen van een garage ruimt de database-rijen op maar laat
+      eventuele logo/foto-bestanden in Supabase Storage staan (die zijn niet aan een Postgres FK
+      gekoppeld) — kleine, lage-prioriteit nette-afronding voor later.
+      Getest met tijdelijke wegwerp-accounts (test-garage, test-klant, test-admin via een
+      tijdelijke toevoeging aan `ADMIN_EMAIL`): rapporteren → filter → verwijderen, schorsen →
+      404 op publieke pagina, blokkeren → kan niet meer inloggen — alle vijf end-to-end bevestigd
+      op een lokale productie-build, daarna volledig opgeruimd
 - [ ] Engelstalige versie van de website
 - [x] Hardcoded "Maastricht"-teksten gegeneraliseerd voor SEO (`app/layout.tsx`'s keywords,
       `app/page.tsx`'s "Aanbevolen garages in ..."-kop, `components/layout/Footer.tsx`'s
