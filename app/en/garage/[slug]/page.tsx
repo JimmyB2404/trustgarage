@@ -23,6 +23,7 @@ import ViewTracker from '@/components/ui/ViewTracker'
 import FavoriteButton from '@/components/ui/FavoriteButton'
 import GarageCTAButtons from '@/components/ui/GarageCTAButtons'
 import ClaimGarageButton from '@/components/ui/ClaimGarageButton'
+import ShareGarageButton from '@/components/ui/ShareGarageButton'
 
 // Zonder dit cachet Next.js de interne fetch()-calls van de Supabase client over requests heen.
 export const dynamic = 'force-dynamic'
@@ -275,14 +276,17 @@ export default async function GarageProfilePageEn({ params }: PageProps) {
                 appointmentClassName="btn-secondary flex items-center justify-center gap-2"
                 locale="en"
               />
-              <div className="flex items-center justify-center gap-2 py-[7px]">
-                <FavoriteButton
-                  garageId={garage.id}
-                  initialCount={garage.favorites_count ?? 0}
-                  showCount={true}
-                  size={16}
-                />
-                <span className="text-[13px] text-neutral-500">Favorite</span>
+              <div className="flex items-center justify-center gap-4 py-[7px]">
+                <div className="flex items-center gap-2">
+                  <FavoriteButton
+                    garageId={garage.id}
+                    initialCount={garage.favorites_count ?? 0}
+                    showCount={true}
+                    size={16}
+                  />
+                  <span className="text-[13px] text-neutral-500">Favorite</span>
+                </div>
+                <ShareGarageButton garageName={garage.name} locale="en" />
               </div>
             </div>
           </div>
@@ -500,8 +504,11 @@ export default async function GarageProfilePageEn({ params }: PageProps) {
                 locale="en"
               />
             </div>
+            <div className="mt-3 flex items-center justify-center">
+              <ShareGarageButton garageName={garage.name} locale="en" />
+            </div>
             {!garage.claimed && (
-              <div className="mt-3 text-center">
+              <div className="mt-2 text-center">
                 <ClaimGarageButton garageId={garage.id} garageName={garage.name} locale="en" />
               </div>
             )}

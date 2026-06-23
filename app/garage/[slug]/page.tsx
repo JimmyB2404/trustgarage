@@ -22,6 +22,7 @@ import ViewTracker from '@/components/ui/ViewTracker'
 import FavoriteButton from '@/components/ui/FavoriteButton'
 import GarageCTAButtons from '@/components/ui/GarageCTAButtons'
 import ClaimGarageButton from '@/components/ui/ClaimGarageButton'
+import ShareGarageButton from '@/components/ui/ShareGarageButton'
 
 // Zonder dit cachet Next.js de interne fetch()-calls van de Supabase client (rating, reviews,
 // verificatiestatus, favorieten...) over requests heen, ook al is dit al een dynamische route.
@@ -279,14 +280,17 @@ export default async function GarageProfilePage({ params }: PageProps) {
                 callClassName="btn-primary flex items-center justify-center gap-2"
                 appointmentClassName="btn-secondary flex items-center justify-center gap-2"
               />
-              <div className="flex items-center justify-center gap-2 py-[7px]">
-                <FavoriteButton
-                  garageId={garage.id}
-                  initialCount={garage.favorites_count ?? 0}
-                  showCount={true}
-                  size={16}
-                />
-                <span className="text-[13px] text-neutral-500">Favoriet</span>
+              <div className="flex items-center justify-center gap-4 py-[7px]">
+                <div className="flex items-center gap-2">
+                  <FavoriteButton
+                    garageId={garage.id}
+                    initialCount={garage.favorites_count ?? 0}
+                    showCount={true}
+                    size={16}
+                  />
+                  <span className="text-[13px] text-neutral-500">Favoriet</span>
+                </div>
+                <ShareGarageButton garageName={garage.name} />
               </div>
             </div>
           </div>
@@ -503,8 +507,11 @@ export default async function GarageProfilePage({ params }: PageProps) {
                 appointmentClassName="btn-secondary w-full flex items-center justify-center gap-2"
               />
             </div>
+            <div className="mt-3 flex items-center justify-center">
+              <ShareGarageButton garageName={garage.name} />
+            </div>
             {!garage.claimed && (
-              <div className="mt-3 text-center">
+              <div className="mt-2 text-center">
                 <ClaimGarageButton garageId={garage.id} garageName={garage.name} />
               </div>
             )}

@@ -503,6 +503,12 @@ uitnodigingsmail via Resend) — geen openstaande punten meer.
       Het brondatabestand (`Auto_garages_ZuidLimburg.xlsx`) staat bewust niet in git — bevat
       ruwe contactgegevens van 239 bedrijven en heeft geen functie meer nu de data in Supabase
       staat
+- [x] Deelknop op garageprofiel ("Delen": WhatsApp + kopieer-link, `ShareGarageButton.tsx`, NL+EN)
+      — bewust voor iedereen zichtbaar (niet alleen de eigenaar): het is een publieke pagina, een
+      bezoeker mag de link net zo goed delen als de eigenaar, en onderscheid maken zou alleen een
+      onnodige eigendoms-check toevoegen zonder beveiligingsvoordeel. Bedoeld om garage-eigenaren
+      die net geclaimd hebben hun eigen profiel makkelijk naar klanten te kunnen doorsturen om een
+      review te vragen — onderdeel van het bredere "hoe krijgen we reviews"-gesprek
 - [x] "Ik ben de eigenaar"-claimflow — op een ongeclaimde garagepagina (subtiele tekstlink onder de
       contactkaart, NL+EN) kan een klant via "Ik ben de eigenaar" een account aanmaken/inloggen
       (gewoon het bestaande klant-account werkt ook) en telefoon + KVK-nummer opgeven. Komt in een
