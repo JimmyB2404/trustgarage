@@ -33,6 +33,7 @@ export interface Garage {
   is_open?: boolean
   latitude?: number | null
   longitude?: number | null
+  claimed?: boolean
 }
 
 export interface ReviewRating {

@@ -486,12 +486,34 @@ uitnodigingsmail via Resend) — geen openstaande punten meer.
       Maastrichtse garages vóór ze geclaimd zijn. Wacht op de brongegevens van de opdrachtgever;
       dan een eenmalig importscript (zelfde patroon als de geocoding-inhaalslag), inclusief
       automatisch geocoderen voor de kaartweergave
-- [ ] "Ik ben de eigenaar"-claimflow — knop op een ongeclaimde garagepagina, klant maakt
-      account/logt in, vult telefoon + KVK-nummer in, komt in een nieuwe wachtrij
-      (`/admin/claims`, naar het patroon van reviewverificatie/rapportages — geen publieke
-      RLS-policy, alles via service-role routes). Pas na handmatige goedkeuring door de
-      opdrachtgever wordt `garages.user_id` daadwerkelijk gekoppeld; bevestigingsmail bij
-      goedkeuring
+- [x] "Ik ben de eigenaar"-claimflow — op een ongeclaimde garagepagina (subtiele tekstlink onder de
+      contactkaart, NL+EN) kan een klant via "Ik ben de eigenaar" een account aanmaken/inloggen
+      (gewoon het bestaande klant-account werkt ook) en telefoon + KVK-nummer opgeven. Komt in een
+      nieuwe wachtrij (`/admin/claims`, zelfde "geen publieke RLS-policy"-patroon als
+      review_invitations/appointment_requests/review_reports). Daar staat het opgegeven
+      telefoon/KVK-nummer naast wat al op het profiel stond, zodat je in één oogopslag kan
+      vergelijken vóór je goedkeurt. Pas bij goedkeuring wordt `garages.user_id` echt gekoppeld
+      (en eventuele andere openstaande aanvragen voor diezelfde garage automatisch afgewezen) +
+      bevestigingsmail; bij afwijzen blijft de garage ongeclaimd + afwijsmail.
+      Bewust geen `?redirect=`-mechanisme na inloggen (bestaat nergens in de app) — klant klikt na
+      inloggen gewoon opnieuw op de garagepagina op "Ik ben de eigenaar". Toont "in behandeling"
+      i.p.v. de knop als er al een openstaande aanvraag van diezelfde klant is.
+      **Bijvangst, mogelijk belangrijke vondst**: tijdens het testen ontdekt dat de garagepagina
+      (`app/garage/[slug]/page.tsx`, en de Engelse variant) na een server-side update soms
+      verouderde data bleef tonen, zelfs met `force-dynamic` — root cause: de losse
+      `createClient()`-aanroepen voor de garage- en reviews-query gaven geen expliciete
+      `cache: 'no-store'` mee aan hun onderliggende `fetch()`. Toegevoegd via Supabase se
+      `global.fetch`-optie aan `fetchGarageBySlug`/`fetchGarages` (`lib/garages.ts`) en de
+      reviews-query in beide taalvarianten. Dit is zeer waarschijnlijk dezelfde onderliggende
+      oorzaak als het eerder gedocumenteerde, nooit-volledig-opgeloste "nieuwe review verschijnt
+      niet direct"-probleem (zie sectie hierboven) — de bestaande 300ms-retry daar laten staan als
+      extra vangnet, maar dit zou de echte fix kunnen zijn. Nog niet gecontroleerd of dit patroon
+      ook elders in de codebase voorkomt (andere server-side `createClient()`-aanroepen) — waard
+      om bij een volgende staleness-melding als eerste te checken.
+      Getest end-to-end met wegwerp-accounts (testklant + tijdelijke testadmin via `ADMIN_EMAIL`):
+      claimen → "in behandeling" → admin ziet vergelijking → goedkeuren → garage direct gekoppeld
+      (knop direct weg, geen verouderde weergave meer) → klant kan inloggen op het dashboard. Apart
+      ook het afwijs-pad getest: garage blijft ongeclaimd, claim-status wordt 'rejected'
 - [x] Engelstalige versie van de website — bewust beperkt tot de publieke, klantgerichte
       pagina's (homepage, zoeken, garageprofiel, voor-garages, tarieven, over-ons); dashboard/account/admin
       en de aanmeldwizard blijven Nederlands, want die gebruiken alleen Nederlandse garage-

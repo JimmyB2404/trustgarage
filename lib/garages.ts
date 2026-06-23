@@ -41,6 +41,7 @@ export function transformGarage(raw: any): Garage {
     photos: (raw.garage_photos ?? []).map((p: { url: string }) => p.url),
     logo_url: raw.logo_url ?? null,
     favorites_count: raw.favorites_count ?? 0,
+    claimed: raw.user_id !== null && raw.user_id !== undefined,
     created_at: raw.created_at,
   }
 }
@@ -56,9 +57,11 @@ const GARAGE_SELECT = `
 
 export async function fetchGarages(limit?: number): Promise<Garage[]> {
   const { createClient } = await import('@supabase/supabase-js')
+  // Zie fetchGarageBySlug — expliciete no-store voorkomt stale data ondanks force-dynamic.
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { global: { fetch: (url, options) => fetch(url, { ...options, cache: 'no-store' }) } }
   )
 
   let query = supabase
@@ -75,9 +78,12 @@ export async function fetchGarages(limit?: number): Promise<Garage[]> {
 
 export async function fetchGarageBySlug(slug: string): Promise<Garage | null> {
   const { createClient } = await import('@supabase/supabase-js')
+  // Expliciete no-store fetch — zonder dit kan Next.js's gepatchte fetch() deze aanroep
+  // alsnog cachen op een manier die force-dynamic niet altijd lijkt te dekken in de praktijk.
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { global: { fetch: (url, options) => fetch(url, { ...options, cache: 'no-store' }) } }
   )
 
   const { data } = await supabase

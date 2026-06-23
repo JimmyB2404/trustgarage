@@ -22,6 +22,7 @@ import ReviewButton from '@/components/ui/ReviewButton'
 import ViewTracker from '@/components/ui/ViewTracker'
 import FavoriteButton from '@/components/ui/FavoriteButton'
 import GarageCTAButtons from '@/components/ui/GarageCTAButtons'
+import ClaimGarageButton from '@/components/ui/ClaimGarageButton'
 
 // Zonder dit cachet Next.js de interne fetch()-calls van de Supabase client over requests heen.
 export const dynamic = 'force-dynamic'
@@ -84,9 +85,11 @@ export default async function GarageProfilePageEn({ params }: PageProps) {
   if (!garage) notFound()
 
   const { createClient } = await import('@supabase/supabase-js')
+  // Expliciete no-store — zie de Nederlandse variant van deze pagina voor de achtergrond.
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { global: { fetch: (url, options) => fetch(url, { ...options, cache: 'no-store' }) } }
   )
 
   const garageId = garage.id
@@ -497,6 +500,11 @@ export default async function GarageProfilePageEn({ params }: PageProps) {
                 locale="en"
               />
             </div>
+            {!garage.claimed && (
+              <div className="mt-3 text-center">
+                <ClaimGarageButton garageId={garage.id} garageName={garage.name} locale="en" />
+              </div>
+            )}
           </div>
 
           {/* Location card */}

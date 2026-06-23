@@ -21,6 +21,7 @@ import ReviewButton from '@/components/ui/ReviewButton'
 import ViewTracker from '@/components/ui/ViewTracker'
 import FavoriteButton from '@/components/ui/FavoriteButton'
 import GarageCTAButtons from '@/components/ui/GarageCTAButtons'
+import ClaimGarageButton from '@/components/ui/ClaimGarageButton'
 
 // Zonder dit cachet Next.js de interne fetch()-calls van de Supabase client (rating, reviews,
 // verificatiestatus, favorieten...) over requests heen, ook al is dit al een dynamische route.
@@ -85,9 +86,12 @@ export default async function GarageProfilePage({ params }: PageProps) {
   if (!garage) notFound()
 
   const { createClient } = await import('@supabase/supabase-js')
+  // Expliciete no-store — bleek de waarschijnlijke root cause van de hieronder gedocumenteerde
+  // staleness (zie fetchGarageBySlug in lib/garages.ts voor hetzelfde patroon/probleem).
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { global: { fetch: (url, options) => fetch(url, { ...options, cache: 'no-store' }) } }
   )
 
   const garageId = garage.id
@@ -499,6 +503,11 @@ export default async function GarageProfilePage({ params }: PageProps) {
                 appointmentClassName="btn-secondary w-full flex items-center justify-center gap-2"
               />
             </div>
+            {!garage.claimed && (
+              <div className="mt-3 text-center">
+                <ClaimGarageButton garageId={garage.id} garageName={garage.name} />
+              </div>
+            )}
           </div>
 
           {/* Location card */}

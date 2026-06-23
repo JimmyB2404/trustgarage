@@ -210,3 +210,59 @@ export async function sendGarageDeletedEmail(opts: {
     return { sent: false, error: err instanceof Error ? err.message : 'Onbekende fout' }
   }
 }
+
+export async function sendClaimApprovedEmail(opts: {
+  to: string
+  garageName: string
+  dashboardUrl: string
+}): Promise<{ sent: boolean; error?: string }> {
+  try {
+    const resend = new Resend(process.env.RESEND_API_KEY)
+    await resend.emails.send({
+      from: 'TrustGarage.nl <noreply@trustgarage.nl>',
+      to: opts.to,
+      subject: `U bent nu eigenaar van ${opts.garageName} op TrustGarage.nl`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
+          <h2 style="color: #0F6E56;">TrustGarage.nl</h2>
+          <p>Beste ondernemer,</p>
+          <p>Uw aanvraag om <strong>${escapeHtml(opts.garageName)}</strong> te claimen is goedgekeurd.
+          U kunt nu inloggen op uw dashboard om het profiel te beheren en op reviews te reageren.</p>
+          <p>
+            <a href="${opts.dashboardUrl}" style="display: inline-block; background: #0F6E56; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none;">
+              Naar mijn dashboard
+            </a>
+          </p>
+        </div>
+      `,
+    })
+    return { sent: true }
+  } catch (err) {
+    return { sent: false, error: err instanceof Error ? err.message : 'Onbekende fout' }
+  }
+}
+
+export async function sendClaimRejectedEmail(opts: {
+  to: string
+  garageName: string
+}): Promise<{ sent: boolean; error?: string }> {
+  try {
+    const resend = new Resend(process.env.RESEND_API_KEY)
+    await resend.emails.send({
+      from: 'TrustGarage.nl <noreply@trustgarage.nl>',
+      to: opts.to,
+      subject: `Uw aanvraag voor ${opts.garageName} op TrustGarage.nl`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
+          <h2 style="color: #0F6E56;">TrustGarage.nl</h2>
+          <p>Beste ondernemer,</p>
+          <p>Helaas konden we uw aanvraag om <strong>${escapeHtml(opts.garageName)}</strong> te
+          claimen niet bevestigen. Neem contact met ons op als u denkt dat dit niet klopt.</p>
+        </div>
+      `,
+    })
+    return { sent: true }
+  } catch (err) {
+    return { sent: false, error: err instanceof Error ? err.message : 'Onbekende fout' }
+  }
+}

@@ -16,6 +16,7 @@ export default async function AdminVerificationsPage() {
         <Link href="/admin/reviews" className="text-neutral-500 hover:text-neutral-900">Reviews</Link>
         <Link href="/admin/garages" className="text-neutral-500 hover:text-neutral-900">Garages</Link>
         <Link href="/admin/gebruikers" className="text-neutral-500 hover:text-neutral-900">Gebruikers</Link>
+        <Link href="/admin/claims" className="text-neutral-500 hover:text-neutral-900">Claims</Link>
       </nav>
       <h1 className="text-[22px] font-medium text-neutral-900 mb-1">Verificaties</h1>
       <p className="text-[13px] text-neutral-500 mb-6">
