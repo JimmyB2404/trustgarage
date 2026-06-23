@@ -475,6 +475,23 @@ uitnodigingsmail via Resend) — geen openstaande punten meer.
       verwijderen, schorsen → 404 op publieke pagina + e-mailcode crasht niet, verwijderen →
       e-mailcode crasht niet, blokkeren → kan niet meer inloggen — alle end-to-end bevestigd op
       een lokale productie-build, daarna volledig opgeruimd
+- [x] Garages bekijken vanuit admin — "Bekijk dashboard"-link per garage in `/admin/garages` naar
+      een nieuwe, alleen-lezen pagina (`/admin/garages/[id]`): profiel, profielweergaven, reviews
+      incl. reacties van de garage, geclaimd/niet-geclaimd-status. Bewust **niet** echte
+      impersonatie (inloggen als de garage) — een apart admin-only endpoint dat dezelfde data
+      teruggeeft, geen sessie-wissel, dus geen risico dat een admin per ongeluk iets verstuurt of
+      wijzigt namens de garage. Getest met een geclaimde testgarage (reviews + reactie correct
+      zichtbaar) én een niet-geclaimde garage zonder `user_id` (toont terecht "Niet geclaimd")
+- [ ] Garages bulk importeren zonder eigenaar (`user_id = null`) — voor het zelf invoeren van
+      Maastrichtse garages vóór ze geclaimd zijn. Wacht op de brongegevens van de opdrachtgever;
+      dan een eenmalig importscript (zelfde patroon als de geocoding-inhaalslag), inclusief
+      automatisch geocoderen voor de kaartweergave
+- [ ] "Ik ben de eigenaar"-claimflow — knop op een ongeclaimde garagepagina, klant maakt
+      account/logt in, vult telefoon + KVK-nummer in, komt in een nieuwe wachtrij
+      (`/admin/claims`, naar het patroon van reviewverificatie/rapportages — geen publieke
+      RLS-policy, alles via service-role routes). Pas na handmatige goedkeuring door de
+      opdrachtgever wordt `garages.user_id` daadwerkelijk gekoppeld; bevestigingsmail bij
+      goedkeuring
 - [x] Engelstalige versie van de website — bewust beperkt tot de publieke, klantgerichte
       pagina's (homepage, zoeken, garageprofiel, voor-garages, tarieven, over-ons); dashboard/account/admin
       en de aanmeldwizard blijven Nederlands, want die gebruiken alleen Nederlandse garage-

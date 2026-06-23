@@ -87,6 +87,12 @@ export default function AdminGaragesTable() {
               </td>
               <td className="px-4 py-2">
                 <div className="flex items-center gap-2 justify-end">
+                  <Link
+                    href={`/admin/garages/${g.id}`}
+                    className="text-[12px] text-neutral-500 hover:text-neutral-900 hover:underline"
+                  >
+                    Bekijk dashboard
+                  </Link>
                   <button
                     onClick={() => handleToggleSuspend(g)}
                     disabled={busyId === g.id}
