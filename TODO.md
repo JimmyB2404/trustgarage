@@ -482,10 +482,27 @@ uitnodigingsmail via Resend) — geen openstaande punten meer.
       teruggeeft, geen sessie-wissel, dus geen risico dat een admin per ongeluk iets verstuurt of
       wijzigt namens de garage. Getest met een geclaimde testgarage (reviews + reactie correct
       zichtbaar) én een niet-geclaimde garage zonder `user_id` (toont terecht "Niet geclaimd")
-- [ ] Garages bulk importeren zonder eigenaar (`user_id = null`) — voor het zelf invoeren van
-      Maastrichtse garages vóór ze geclaimd zijn. Wacht op de brongegevens van de opdrachtgever;
-      dan een eenmalig importscript (zelfde patroon als de geocoding-inhaalslag), inclusief
-      automatisch geocoderen voor de kaartweergave
+- [x] Garages bulk geïmporteerd zonder eigenaar (`user_id = null`) — 239 garages uit Zuid-Limburg
+      (niet alleen Maastricht; opdrachtgever leverde een breder bestand aan), aangeleverd als
+      `.xlsx` (Naam, Adres, Stad, Telefoonnummer, E-mailadres, Website, Korte omschrijving,
+      KVK-nummer, Talen — geen Diensten-kolom). Eenmalig importscript:
+      - Eerst alle bestaande placeholder/test-garages verwijderd (behalve BECKERS GARAGE, de enige
+        echte/geclaimde garage)
+      - Diensten afgeleid uit "Korte omschrijving" via keyword-matching tegen de vaste
+        SERVICES-lijst (217 van de 239 kregen minstens 1 dienst, 22 geen — kan de eigenaar zelf
+        aanvullen na claimen)
+      - Standaard openingstijden toegepast (ma–vr 08:00–17:30, weekend gesloten) bij ontbrekende
+        brongegevens — door eigenaar aanpasbaar na claimen
+      - Automatisch geocoderen (zelfde Nominatim-aanpak als eerder) — 237 van de 239 succesvol,
+        2 adressen niet gevonden (geen coördinaten, vallen dus buiten de afstandsfilter totdat
+        dit handmatig gecorrigeerd wordt)
+      - `xlsx`-package toegevoegd als devDependency om het bestand te kunnen inlezen
+      Resultaat: 0 fouten, 239/239 garages aangemaakt, allemaal ongeclaimd. Geverifieerd op
+      productie: zoekresultaten tonen "240 garages gevonden" (239 + Beckers), een steekproef-
+      garagepagina toont diensten/openingstijden/kaart correct én de "Ik ben de eigenaar"-link.
+      Het brondatabestand (`Auto_garages_ZuidLimburg.xlsx`) staat bewust niet in git — bevat
+      ruwe contactgegevens van 239 bedrijven en heeft geen functie meer nu de data in Supabase
+      staat
 - [x] "Ik ben de eigenaar"-claimflow — op een ongeclaimde garagepagina (subtiele tekstlink onder de
       contactkaart, NL+EN) kan een klant via "Ik ben de eigenaar" een account aanmaken/inloggen
       (gewoon het bestaande klant-account werkt ook) en telefoon + KVK-nummer opgeven. Komt in een
